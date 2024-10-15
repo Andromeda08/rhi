@@ -1,0 +1,9 @@
+[submodule "fmt"]
+	path = external/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "glfw"]
+	path = external/glfw
+	url = https://github.com/glfw/glfw
+[submodule "dx12headers"]
+	path = external/dx12headers
+	url = https://github.com/microsoft/DirectX-Headers.git
