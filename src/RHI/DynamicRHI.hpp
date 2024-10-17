@@ -10,11 +10,11 @@ public:
 
     virtual void init() = 0;
 
-    virtual RHIInterfaceType get_type() const { return RHIInterfaceType::None; }
+    virtual RHIInterfaceType getType() const { return RHIInterfaceType::None; }
 
     // RHI Commands
 
 };
 
 // Global pointer to the current RHI implementation
-extern std::shared_ptr<DynamicRHI> g_rhi;
+extern std::shared_ptr<DynamicRHI> gRHI;

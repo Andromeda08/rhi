@@ -5,7 +5,7 @@
 
 int main()
 {
-    g_rhi = std::make_shared<VulkanRHI>();
-    g_rhi->init();
+    gRHI = std::make_shared<VulkanRHI>();
+    gRHI->init();
     return 0;
 }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.28)
 project(rendeng)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -13,14 +13,16 @@ add_subdirectory(external/fmt)
 add_subdirectory(external/glfw)
 
 add_executable(rendeng main.cpp
-    src/RHI/DynamicRHI.hpp
-    src/RHI/RHIDefinitions.hpp
+    src/Core/Base.hpp
     src/Core/EnumFlags.hpp
+    src/RHI/DynamicRHI.hpp src/RHI/DynamicRHI.cpp
     src/RHI/IWindow.hpp
-    src/VulkanRHI/VulkanRHI.hpp
+    src/RHI/RHIDefinitions.hpp
     src/D3D12RHI/D3D12RHI.hpp
-    src/RHI/DynamicRHI.cpp
-    src/VulkanRHI/VulkanRHI.cpp
+    src/VulkanRHI/VulkanRHI.hpp src/VulkanRHI/VulkanRHI.cpp
+    src/VulkanRHI/VulkanLayer.hpp src/VulkanRHI/VulkanLayer.cpp
+    src/VulkanRHI/VulkanExtension.hpp
+        src/VulkanRHI/VulkanExtension.cpp
 )
 
 target_compile_definitions(rendeng PRIVATE

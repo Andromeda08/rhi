@@ -1,10 +1,11 @@
 #pragma once
 
-#include <fmt/format.h>
-#include <fmt/color.h>
 #include <vulkan/vulkan.hpp>
 
+#include "Core/Base.hpp"
 #include "RHI/DynamicRHI.hpp"
+#include "VulkanLayer.hpp"
+#include "VulkanExtension.hpp"
 
 // TODO: Change to fwd decl.
 class VulkanDevice {};
@@ -16,22 +17,22 @@ public:
 
     void init() override;
 
-    RHIInterfaceType get_type() const override { return RHIInterfaceType::Vulkan; }
+    RHIInterfaceType getType() const override { return RHIInterfaceType::Vulkan; }
 
-    static std::shared_ptr<DynamicRHI> create_vulkan_rhi();
+    static std::shared_ptr<DynamicRHI> createVulkanRHI();
 
 private:
-    void create_instance();
-    void select_physical_device();
-    void create_device();
+    void createInstance();
+    vk::PhysicalDevice selectPhysicalDevice() {}
+    void createDevice() {}
 
-    vk::Instance m_instance;
-    std::vector<const char*> m_instance_extensions;
-    std::vector<const char*> m_instance_layers;
+    vk::Instance mInstance;
+    VulkanInstanceLayers mInstanceLayers;
+    VulkanInstanceExtensions mInstanceExtensions;
 
     std::shared_ptr<VulkanDevice> m_device;
 
 #if VULKAN_DEBUGGING_ENABLED
-    vk::DebugUtilsMessengerEXT m_messenger {};
+    vk::DebugUtilsMessengerEXT mMessenger {};
 #endif
 };
