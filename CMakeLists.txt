@@ -31,6 +31,8 @@ add_executable(rendeng main.cpp
     src/D3D12RHI/D3D12RHI.cpp
     src/D3D12RHI/D3D12Device.hpp
     src/D3D12RHI/D3D12Device.cpp
+    src/WSI/Window.hpp
+    src/WSI/Window.cpp
 )
 
 target_compile_definitions(rendeng PRIVATE
@@ -40,16 +42,20 @@ target_compile_definitions(rendeng PRIVATE
     NOMINMAX
     _AMD64_=1
 
+    VULKAN_RHI_ENABLED
+    D3D12_RHI_ENABLED
+
     VULKAN_DEBUGGING_ENABLED
     D3D12_DEBUGGING_ENABLED
     RHI_DEBUGGING_ENABLED
 )
 
-target_link_libraries(rendeng PRIVATE ${Vulkan_LIBRARIES} ${D3D12_LIBRARIES} fmt::fmt)
+target_link_libraries(rendeng PRIVATE ${Vulkan_LIBRARIES} ${D3D12_LIBRARIES} fmt::fmt glfw)
 
 target_include_directories(rendeng PRIVATE
     ${Vulkan_INCLUDE_DIRS}
     ${D3D12_INCLUDE_DIRS}
     "src"
     external/fmt/include
+    external/glfw/include
 )
