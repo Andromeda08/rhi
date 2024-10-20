@@ -23,6 +23,7 @@ add_executable(rendeng main.cpp
     src/VulkanRHI/VulkanLayer.hpp src/VulkanRHI/VulkanLayer.cpp
     src/VulkanRHI/VulkanExtension.hpp
         src/VulkanRHI/VulkanExtension.cpp
+    src/VulkanRHI/VulkanUtil.hpp
 )
 
 target_compile_definitions(rendeng PRIVATE

@@ -1,8 +1,8 @@
-//
-// Created by andromeda on 10/15/2024.
-//
+#pragma once
 
-#ifndef IWINDOW_HPP
-#define IWINDOW_HPP
+class IWindow
+{
+public:
 
-#endif //IWINDOW_HPP
+private:
+};

@@ -35,3 +35,10 @@ std::vector<vk::LayerProperties> VulkanInstanceLayer::getDriverInstanceLayers()
     return vk::enumerateInstanceLayerProperties();
 }
 
+std::string VulkanInstanceLayer::toString() const
+{
+    return fmt::format("[Layer] {} (Active={}, Requested={})",
+        styled(mLayerName, fg(fmt::color::cornflower_blue)),
+        isActive() ? "y" : "n",
+        isRequested() ? "y" : "n");
+}

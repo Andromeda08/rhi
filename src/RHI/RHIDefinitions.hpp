@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/EnumFlags.hpp"
+
 struct Size2D
 {
     uint32_t width;
@@ -34,6 +36,7 @@ enum class BufferUsageFlags : uint32_t
     IndexBuffer     = 1 << 6,   // 64
     VertexBuffer    = 1 << 7,   // 128
 };
+ENUM_FLAGS(BufferUsageFlags);
 
 enum class ColorSpace
 {
@@ -60,6 +63,7 @@ enum class ImageUsageFlags
 {
     None = 0,
 };
+ENUM_FLAGS(ImageUsageFlags);
 
 enum class ShaderType
 {

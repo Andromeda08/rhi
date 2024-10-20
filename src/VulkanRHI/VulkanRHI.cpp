@@ -1,4 +1,9 @@
 #include "VulkanRHI.hpp"
+#ifdef VULKAN_DEBUGGING_ENABLED
+#include <iostream>
+#endif
+
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 
 VulkanRHI::VulkanRHI()
 : DynamicRHI()
@@ -36,10 +41,7 @@ void VulkanRHI::createInstance()
             layers.push_back(layer->layerName());
         }
         #if VULKAN_DEBUGGING_ENABLED
-        fmt::println("[Layer] {} (Active={}, Requested={})",
-                styled(layer->layerName(), fg(fmt::color::cornflower_blue)),
-                layer->isActive() ? "y" : "n",
-                layer->isRequested() ? "y" : "n");
+        std::cout << layer->toString() << std::endl;
         #endif
     }
 
@@ -47,8 +49,9 @@ void VulkanRHI::createInstance()
     const auto driverExtensions = VulkanInstanceExtension::getDriverInstanceExtensions();
     for (auto& rhiExtension : mInstanceExtensions)
     {
-        if (VulkanInstanceLayer::findLayer(driverLayers, rhiExtension->layerName()))
+        if (VulkanInstanceLayer::findLayer(driverLayers, rhiExtension->extensionName()))
         {
+            rhiExtension->setSupported();
             rhiExtension->setEnabled();
         }
     }
@@ -58,13 +61,10 @@ void VulkanRHI::createInstance()
     {
         if (extension->isActive())
         {
-            extensions.push_back(extension->layerName());
+            extensions.push_back(extension->extensionName());
         }
         #if VULKAN_DEBUGGING_ENABLED
-        fmt::println("[Extension] {} (Active={}, Requested={})",
-                styled(extension->layerName(), fg(fmt::color::cornflower_blue)),
-                extension->isActive() ? "y" : "n",
-                extension->isRequested() ? "y" : "n");
+        std::cout << extension->toString() << std::endl;
         #endif
     }
 

@@ -25,6 +25,8 @@ public:
     static VulkanInstanceLayers getRHIInstanceLayers();
     static std::vector<vk::LayerProperties> getDriverInstanceLayers();
 
+    std::string toString() const;
+
 private:
     const char* mLayerName;
     bool mIsEnabled {false};
