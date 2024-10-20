@@ -1,5 +1,4 @@
 #include "VulkanExtension.hpp"
-#include "VulkanUtil.hpp"
 
 int32_t VulkanExtension::findExtension(const std::vector<vk::ExtensionProperties>& extensionProperties, const char* extensionName)
 {

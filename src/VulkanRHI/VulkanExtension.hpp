@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-#include "Core/Base.hpp"
+#include "VulkanCore.hpp"
 
 using VulkanInstanceExtensions = std::vector<std::unique_ptr<class VulkanInstanceExtension>>;
 using VulkanDeviceExtensions   = std::vector<std::unique_ptr<class VulkanDeviceExtension>>;

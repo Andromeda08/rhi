@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-#include "Core/Base.hpp"
+#include "VulkanCore.hpp"
 #include "VulkanExtension.hpp"
 
 class VulkanDevice

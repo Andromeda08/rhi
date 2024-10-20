@@ -24,7 +24,6 @@ add_executable(rendeng main.cpp
     src/VulkanRHI/VulkanLayer.hpp src/VulkanRHI/VulkanLayer.cpp
     src/VulkanRHI/VulkanExtension.hpp src/VulkanRHI/VulkanExtension.cpp
     src/VulkanRHI/VulkanDevice.hpp src/VulkanRHI/VulkanDevice.cpp
-    src/VulkanRHI/VulkanUtil.hpp
 
     src/D3D12RHI/D3D12RHI.hpp
     src/D3D12RHI/D3D12Core.hpp src/D3D12RHI/D3D12Core.cpp

@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-#include "Core/Base.hpp"
+#include "VulkanCore.hpp"
 
 using VulkanInstanceLayers = std::vector<std::unique_ptr<class VulkanInstanceLayer>>;
 
