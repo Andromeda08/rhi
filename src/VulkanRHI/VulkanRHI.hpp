@@ -1,38 +1,39 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-
-#include "Core/Base.hpp"
-#include "RHI/DynamicRHI.hpp"
+#include "VulkanCore.hpp"
 #include "VulkanLayer.hpp"
 #include "VulkanExtension.hpp"
 
-// TODO: Change to fwd decl.
-class VulkanDevice {};
+using VulkanDevicePtr = std::shared_ptr<class VulkanDevice>;
 
 class VulkanRHI : public DynamicRHI
 {
 public:
-    VulkanRHI();
+    DEF_PRIMARY_CTOR(VulkanRHI);
+
+    ~VulkanRHI() override = default;
 
     void init() override;
 
     RHIInterfaceType getType() const override { return RHIInterfaceType::Vulkan; }
 
-    static std::shared_ptr<DynamicRHI> createVulkanRHI();
+    vk::Instance getInstance() const { return mInstance; }
+    VulkanDevicePtr getDevice() const { return mDevice; }
 
 private:
     void createInstance();
-    vk::PhysicalDevice selectPhysicalDevice() {}
-    void createDevice() {}
+
+    vk::PhysicalDevice selectPhysicalDevice() const;
+
+    void createDevice();
+
+    void createDebugUtilsMessenger() {}
 
     vk::Instance mInstance;
     VulkanInstanceLayers mInstanceLayers;
     VulkanInstanceExtensions mInstanceExtensions;
 
-    std::shared_ptr<VulkanDevice> m_device;
+    VulkanDevicePtr mDevice;
 
-#if VULKAN_DEBUGGING_ENABLED
     vk::DebugUtilsMessengerEXT mMessenger {};
-#endif
 };

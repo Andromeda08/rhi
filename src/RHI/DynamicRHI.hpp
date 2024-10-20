@@ -12,8 +12,15 @@ public:
 
     virtual RHIInterfaceType getType() const { return RHIInterfaceType::None; }
 
-    // RHI Commands
+    uint32_t currentFrameIndex() const { return mFrameIndex; }
 
+    // RHI Commands
+    // virtual void waitIdle() = 0;
+
+    // virtual void syncNextFrame() = 0;
+
+protected:
+    uint32_t mFrameIndex {0};
 };
 
 // Global pointer to the current RHI implementation

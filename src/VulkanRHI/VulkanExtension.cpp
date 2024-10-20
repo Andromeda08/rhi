@@ -3,6 +3,11 @@
 
 int32_t VulkanExtension::findExtension(const std::vector<vk::ExtensionProperties>& extensionProperties, const char* extensionName)
 {
+    if (extensionName == nullptr)
+    {
+        return -1;
+    }
+
     for (int32_t i = 0; i < extensionProperties.size(); i++)
     {
         if (!std::strcmp(extensionProperties[i].extensionName.operator const char*(), extensionName))
@@ -15,8 +20,8 @@ int32_t VulkanExtension::findExtension(const std::vector<vk::ExtensionProperties
 
 std::string VulkanExtension::toString() const
 {
-    return fmt::format("[Device] {} (Active={}, Requested={}, Supported={})",
-        styled(mExtensionName, fg(fmt::color::cornflower_blue)),
+    return fmt::format("[Extension] {} (Active={}, Requested={}, Supported={})",
+        styled(mExtensionName ? mExtensionName : "Vulkan Core Features", fg(fmt::color::cornflower_blue)),
         isActive() ? "y" : "n",
         isRequested() ? "y" : "n",
         isSupported() ? "y" : "n");
@@ -70,7 +75,10 @@ public:
 
     void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) override
     {
-        addToPNext(deviceCreateInfo, mVulkanCore11);
+        if (shouldActivate())
+        {
+            addToPNext(deviceCreateInfo, mVulkanCore11);
+        }
     }
 
 private:
@@ -98,7 +106,10 @@ public:
 
     void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) override
     {
-        addToPNext(deviceCreateInfo, mVulkanCore12);
+        if (shouldActivate())
+        {
+            addToPNext(deviceCreateInfo, mVulkanCore12);
+        }
     }
 
 private:
@@ -123,7 +134,10 @@ public:
 
     void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) override
     {
-        addToPNext(deviceCreateInfo, mVulkanCore13);
+        if (shouldActivate())
+        {
+            addToPNext(deviceCreateInfo, mVulkanCore13);
+        }
     }
 
 private:

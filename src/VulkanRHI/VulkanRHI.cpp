@@ -1,4 +1,6 @@
 #include "VulkanRHI.hpp"
+#include "VulkanDevice.hpp"
+
 #ifdef VULKAN_DEBUGGING_ENABLED
 #include <iostream>
 #endif
@@ -12,12 +14,25 @@ VulkanRHI::VulkanRHI()
 
 void VulkanRHI::init()
 {
+    const vk::DynamicLoader dynamicLoader;
+    const auto vkGetInstanceProcAddr = dynamicLoader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
+
     createInstance();
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(mInstance);
+
+    createDevice();
+    VULKAN_HPP_DEFAULT_DISPATCHER.init(mDevice->handle());
+
+    #ifdef VULKAN_DEBUGGING_ENABLED
+    fmt::println("[Info] RHI initialized, using API: {}",
+        styled("Vulkan", fg(fmt::color::crimson)));
+    #endif
 }
 
 void VulkanRHI::createInstance()
 {
-    auto appInfo = vk::ApplicationInfo()
+    constexpr auto appInfo = vk::ApplicationInfo()
         .setPApplicationName("RHI")
         .setApiVersion(VK_API_VERSION_1_3);
 
@@ -52,7 +67,10 @@ void VulkanRHI::createInstance()
         if (VulkanInstanceLayer::findLayer(driverLayers, rhiExtension->extensionName()))
         {
             rhiExtension->setSupported();
-            rhiExtension->setEnabled();
+            if (rhiExtension->isRequested())
+            {
+                rhiExtension->setEnabled();
+            }
         }
     }
 
@@ -87,7 +105,43 @@ void VulkanRHI::createInstance()
     }
 }
 
-std::shared_ptr<DynamicRHI> VulkanRHI::createVulkanRHI()
+vk::PhysicalDevice VulkanRHI::selectPhysicalDevice() const
+{
+    const auto requestedExtensions = VulkanDeviceExtension::getRHIDeviceExtensions();
+
+    const auto physicalDevices = mInstance.enumeratePhysicalDevices();
+    const auto candidate = std::ranges::find_if(physicalDevices, [&](const vk::PhysicalDevice& physicalDevice) {
+        const vk::PhysicalDeviceProperties props = physicalDevice.getProperties();
+
+        const auto supportedExtensions = VulkanDeviceExtension::getDriverDeviceExtensions(physicalDevice);
+        bool requirementsPassed = true;
+        for (const auto& extension : requestedExtensions)
+        {
+            if (!VulkanExtension::findExtension(supportedExtensions, extension->extensionName())
+                && extension->isRequested())
+            {
+                requirementsPassed = false;
+            }
+        }
+
+        return requirementsPassed;
+    });
+
+    if (candidate == std::end(physicalDevices))
+    {
+        throw std::runtime_error("Failed to find a suitable PhysicalDevice");
+    }
+
+    return *candidate;
+}
+
+void VulkanRHI::createDevice()
+{
+    const auto physicalDevice = selectPhysicalDevice();
+    mDevice = VulkanDevice::createDevice(physicalDevice);
+}
+
+std::shared_ptr<VulkanRHI> VulkanRHI::createVulkanRHI()
 {
     return std::make_shared<VulkanRHI>();
 }
