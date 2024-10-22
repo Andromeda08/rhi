@@ -3,8 +3,7 @@
 #include "VulkanCore.hpp"
 #include "VulkanLayer.hpp"
 #include "VulkanExtension.hpp"
-
-using VulkanDevicePtr = std::shared_ptr<class VulkanDevice>;
+#include "VulkanCommandQueue.hpp"
 
 class VulkanRHI : public DynamicRHI
 {
@@ -15,10 +14,12 @@ public:
 
     void init() override;
 
+    std::shared_ptr<RHICommandQueue> getGraphicsQueue() override { return nullptr; }
+
     RHIInterfaceType getType() const override { return RHIInterfaceType::Vulkan; }
 
     vk::Instance getInstance() const { return mInstance; }
-    VulkanDevicePtr getDevice() const { return mDevice; }
+    std::shared_ptr<VulkanDevice> getDevice() const { return mDevice; }
 
 private:
     void createInstance();
@@ -27,13 +28,11 @@ private:
 
     void createDevice();
 
-    void createDebugUtilsMessenger() {}
-
     vk::Instance mInstance;
     VulkanInstanceLayers mInstanceLayers;
     VulkanInstanceExtensions mInstanceExtensions;
 
-    VulkanDevicePtr mDevice;
+    std::shared_ptr<VulkanDevice> mDevice;
 
     vk::DebugUtilsMessengerEXT mMessenger {};
 };

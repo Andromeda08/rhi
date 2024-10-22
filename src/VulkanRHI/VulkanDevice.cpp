@@ -1,5 +1,7 @@
 #include "VulkanDevice.hpp"
 
+#include "VulkanCommandQueue.hpp"
+
 #ifdef VULKAN_DEBUGGING_ENABLED
 #include <iostream>
 #endif
@@ -7,8 +9,8 @@
 VulkanDevice::VulkanDevice(const vk::PhysicalDevice physicalDevice): mPhysicalDevice(physicalDevice)
 {
     mExtensions = VulkanDeviceExtension::getRHIDeviceExtensions();
-    std::vector<const char*> supportedExtensionNames;
 
+    std::vector<const char*> supportedExtensionNames;
     #pragma region "Extensions"
 
     const auto driverExtensions = VulkanDeviceExtension::getDriverDeviceExtensions(mPhysicalDevice);
@@ -42,6 +44,24 @@ VulkanDevice::VulkanDevice(const vk::PhysicalDevice physicalDevice): mPhysicalDe
 
     #pragma endregion
 
+    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
+    #pragma region "Queues"
+
+    auto queueGraphics = VulkanCommandQueue::findQueue(mPhysicalDevice, RHICommandQueueType::Graphics);
+
+    const float queuePriority = 1.0f;
+    std::set uniqueQueueFamilies = { queueGraphics->queueFamilyIndex };
+    for (const uint32_t familyIndex : uniqueQueueFamilies)
+    {
+        const auto queueCreateInfo = vk::DeviceQueueCreateInfo()
+            .setQueueFamilyIndex(familyIndex)
+            .setQueueCount(1)
+            .setPQueuePriorities(&queuePriority);
+        queueCreateInfos.push_back(queueCreateInfo);
+    }
+
+    #pragma endregion
+
     auto deviceFeatures = vk::PhysicalDeviceFeatures()
         .setFillModeNonSolid(true)
         .setSamplerAnisotropy(true)
@@ -51,8 +71,8 @@ VulkanDevice::VulkanDevice(const vk::PhysicalDevice physicalDevice): mPhysicalDe
     auto deviceCreateInfo = vk::DeviceCreateInfo()
         .setEnabledExtensionCount(supportedExtensionNames.size())
         .setPpEnabledExtensionNames(supportedExtensionNames.data())
-        .setQueueCreateInfoCount(0)
-        .setPQueueCreateInfos(nullptr)
+        .setQueueCreateInfoCount(queueCreateInfos.size())
+        .setPQueueCreateInfos(queueCreateInfos.data())
         .setPEnabledFeatures(&deviceFeatures);
 
     for (const auto& extensions : mExtensions)
@@ -73,4 +93,15 @@ VulkanDevice::VulkanDevice(const vk::PhysicalDevice physicalDevice): mPhysicalDe
     fmt::println("[Info] Using PhysicalDevice: {}",
         styled(mDeviceName, fg(fmt::color::honey_dew)));
     #endif
+
+    #pragma region "Create Queues"
+
+    mGraphicsQueue = VulkanCommandQueue::createVulkanCommandQueue({
+        .device = mDevice,
+        .type = RHICommandQueueType::Graphics,
+        .commandBufferCount = 2,
+        .queueProperties = queueGraphics.value(),
+    });
+
+    #pragma endregion
 }

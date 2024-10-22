@@ -4,6 +4,8 @@
 #include "RHI/DynamicRHI.hpp"
 #include <vulkan/vulkan.hpp>
 
+class VulkanDevice;
+
 template <typename Chain_t, typename Struct_t>
 static void addToPNext(Chain_t& existing, Struct_t& added)
 {

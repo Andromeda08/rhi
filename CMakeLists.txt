@@ -33,6 +33,16 @@ add_executable(rendeng main.cpp
     src/D3D12RHI/D3D12Device.cpp
     src/WSI/Window.hpp
     src/WSI/Window.cpp
+    src/RHI/CommandQueue.hpp
+    src/VulkanRHI/VulkanCommandQueue.hpp
+    src/VulkanRHI/VulkanCommandQueue.cpp
+    src/D3D12RHI/D3D12CommandQueue.hpp
+    src/D3D12RHI/D3D12CommandQueue.cpp
+    src/VulkanRHI/VulkanCommandList.hpp
+    src/VulkanRHI/VulkanCommandList.cpp
+    src/RHI/CommandList.hpp
+    src/D3D12RHI/D3D12CommandList.hpp
+    src/D3D12RHI/D3D12CommandList.cpp
 )
 
 target_compile_definitions(rendeng PRIVATE

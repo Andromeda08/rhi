@@ -3,10 +3,14 @@
 #include "VulkanCore.hpp"
 #include "VulkanExtension.hpp"
 
+class VulkanCommandQueue;
+
 class VulkanDevice
 {
 public:
     explicit VulkanDevice(vk::PhysicalDevice physicalDevice);
+
+    std::shared_ptr<VulkanCommandQueue> getGraphicsQueue() const { return mGraphicsQueue; }
 
     vk::PhysicalDevice physicalDevice() const { return mPhysicalDevice; }
     vk::Device handle() const { return mDevice; }
@@ -18,11 +22,12 @@ public:
     }
 
 private:
-    vk::PhysicalDevice mPhysicalDevice;
+    std::shared_ptr<VulkanCommandQueue> mGraphicsQueue;
 
     vk::Device mDevice;
     VulkanDeviceExtensions mExtensions;
 
+    vk::PhysicalDevice mPhysicalDevice;
     std::string mDeviceName;
     vk::PhysicalDeviceProperties mPhysicalDeviceProps;
 };

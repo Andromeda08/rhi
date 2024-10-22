@@ -3,6 +3,8 @@
 #include <memory>
 #include "RHIDefinitions.hpp"
 
+class RHICommandQueue;
+
 class DynamicRHI
 {
 public:
@@ -10,17 +12,13 @@ public:
 
     virtual void init() = 0;
 
-    virtual RHIInterfaceType getType() const { return RHIInterfaceType::None; }
+    virtual std::shared_ptr<RHICommandQueue> getGraphicsQueue() = 0;
 
-    uint32_t currentFrameIndex() const { return mFrameIndex; }
+    virtual RHIInterfaceType getType() const { return RHIInterfaceType::None; }
 
     // RHI Commands
     // virtual void waitIdle() = 0;
-
     // virtual void syncNextFrame() = 0;
-
-protected:
-    uint32_t mFrameIndex {0};
 };
 
 // Global pointer to the current RHI implementation

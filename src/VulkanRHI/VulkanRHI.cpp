@@ -1,4 +1,5 @@
 #include "VulkanRHI.hpp"
+#include "VulkanCommandQueue.hpp"
 #include "VulkanDevice.hpp"
 
 #ifdef VULKAN_DEBUGGING_ENABLED
@@ -122,6 +123,12 @@ vk::PhysicalDevice VulkanRHI::selectPhysicalDevice() const
             {
                 requirementsPassed = false;
             }
+        }
+
+        if (const auto queueGraphics = VulkanCommandQueue::findQueue(physicalDevice, RHICommandQueueType::Graphics);
+            not queueGraphics.has_value())
+        {
+            requirementsPassed = false;
         }
 
         return requirementsPassed;

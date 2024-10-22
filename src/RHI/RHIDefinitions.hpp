@@ -22,6 +22,12 @@ enum class RHIInterfaceType
     D3D12,
 };
 
+enum class RHICommandQueueType
+{
+    Graphics,
+    AsyncCompute,
+};
+
 enum class RHIResourceType
 {
 };

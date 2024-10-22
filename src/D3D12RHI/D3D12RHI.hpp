@@ -13,6 +13,10 @@ public:
 
     void init() override;
 
+    std::shared_ptr<RHICommandQueue> getGraphicsQueue() override { return nullptr; }
+
+    RHIInterfaceType getType() const override { return RHIInterfaceType::D3D12; }
+
     ComPtr<IDXGIFactory4> getFactory() const { return mFactory; }
     D3D12DevicePtr getDevice() const { return mDevice; }
 
@@ -23,6 +27,7 @@ private:
 
     void createDevice();
 
+private:
     ComPtr<IDXGIFactory4> mFactory;
     ComPtr<ID3D12Debug> mDebug;
 
