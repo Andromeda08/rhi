@@ -1,5 +1,6 @@
 #pragma once
 
+#include "RHI/DynamicRHI.hpp"
 #include "VulkanCore.hpp"
 #include "VulkanLayer.hpp"
 #include "VulkanExtension.hpp"
@@ -12,7 +13,7 @@ public:
 
     ~VulkanRHI() override = default;
 
-    void init() override;
+    void init(const std::shared_ptr<IRHIWindow>& window) override;
 
     std::shared_ptr<RHICommandQueue> getGraphicsQueue() override { return nullptr; }
 
@@ -28,11 +29,17 @@ private:
 
     void createDevice();
 
+    void createSurface(const std::shared_ptr<IRHIWindow>& window);
+
     vk::Instance mInstance;
     VulkanInstanceLayers mInstanceLayers;
     VulkanInstanceExtensions mInstanceExtensions;
 
     std::shared_ptr<VulkanDevice> mDevice;
+
+    vk::SurfaceKHR mSurface;
+    std::shared_ptr<VulkanSwapchain> mSwapchain;
+    std::shared_ptr<IRHIWindow> mWindow;
 
     vk::DebugUtilsMessengerEXT mMessenger {};
 };

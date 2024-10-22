@@ -2,7 +2,7 @@
 
 #include "VulkanCore.hpp"
 
-using VulkanInstanceLayers = std::vector<std::unique_ptr<class VulkanInstanceLayer>>;
+using VulkanInstanceLayers = std::vector<std::shared_ptr<class VulkanInstanceLayer>>;
 
 class VulkanInstanceLayer
 {

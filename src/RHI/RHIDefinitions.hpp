@@ -1,11 +1,36 @@
 #pragma once
 
-#include "Core/EnumFlags.hpp"
+#include "Core/Base.hpp"
+
+#ifdef VULKAN_RHI_ENABLED
+#include <vulkan/vulkan.hpp>
+#endif
 
 struct Size2D
 {
     uint32_t width;
     uint32_t height;
+
+    Size2D(const uint32_t _width = {}, const uint32_t _height = {})
+    : width(_width), height(_height)
+    {
+    }
+
+    auto setWidth(const uint32_t value)
+    {
+        width = value;
+        return *this;
+    }
+
+    auto setHeight(const uint32_t value)
+    {
+        height = value;
+        return *this;
+    }
+
+#ifdef VULKAN_RHI_ENABLED
+    explicit operator vk::Extent2D() const { return { width, height }; }
+#endif
 };
 
 struct Size3D
@@ -13,6 +38,140 @@ struct Size3D
     uint32_t width;
     uint32_t height;
     uint32_t depth;
+
+    Size3D(const uint32_t _width = {}, const uint32_t _height = {}, const uint32_t _depth = {})
+    : width(_width), height(_height), depth(_depth)
+    {
+    }
+
+    auto setWidth(const uint32_t value)
+    {
+        width = value;
+        return *this;
+    }
+
+    auto setHeight(const uint32_t value)
+    {
+        height = value;
+        return *this;
+    }
+
+    auto setDepth(const uint32_t value)
+    {
+        depth = value;
+        return *this;
+    }
+
+#ifdef VULKAN_RHI_ENABLED
+    explicit operator vk::Extent3D() const { return { width, height, depth }; }
+#endif
+};
+
+struct Offset2D
+{
+    int32_t x;
+    int32_t y;
+
+    Offset2D(const int32_t _x = {}, const int32_t _y = {})
+    : x(_x), y(_y)
+    {
+    }
+
+    auto setX(const int32_t value)
+    {
+        x = value;
+        return *this;
+    }
+
+    auto setY(const int32_t value)
+    {
+        y = value;
+        return *this;
+    }
+
+#ifdef VULKAN_RHI_ENABLED
+    explicit operator vk::Offset2D() const { return { x, y }; }
+#endif
+};
+
+struct Rect2D
+{
+    Size2D size;
+    Offset2D offset;
+
+    explicit Rect2D(const Size2D _size = {}, const Offset2D _offset = {})
+    : size(_size), offset(_offset)
+    {
+    }
+
+#ifdef VULKAN_RHI_ENABLED
+    explicit operator vk::Rect2D() const
+    {
+        return vk::Rect2D()
+            .setExtent(size.operator vk::Extent2D())
+            .setOffset(offset.operator vk::Offset2D());
+    }
+#endif
+};
+
+struct Viewport
+{
+    float x;
+    float y;
+    float width;
+    float height;
+    float minDepth;
+    float maxDepth;
+
+    Viewport(
+        const float _x = {}, const float _y = {}, const float _width = {},
+        const float _height = {}, const float _minDepth = {}, const float _maxDepth = {}
+    ) : x(_x), y(_y), width(_width), height(_height), minDepth(_minDepth), maxDepth(_maxDepth)
+    {
+    }
+
+    auto setX(const float value)
+    {
+        x = value;
+        return *this;
+    }
+
+    auto setY(const float value)
+    {
+        y = value;
+        return *this;
+    }
+
+    auto setWidth(const float value)
+    {
+        width = value;
+        return *this;
+    }
+
+    auto setHeight(const float value)
+    {
+        height = value;
+        return *this;
+    }
+
+    auto setMinDepth(const float value)
+    {
+        minDepth = value;
+        return *this;
+    }
+
+    auto setMaxDepth(const float value)
+    {
+        maxDepth = value;
+        return *this;
+    }
+
+#ifdef VULKAN_RHI_ENABLED
+    explicit operator vk::Viewport() const
+    {
+        return vk::Viewport { x, y, width, height, minDepth, maxDepth };
+    }
+#endif
 };
 
 enum class RHIInterfaceType

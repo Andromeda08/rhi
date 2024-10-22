@@ -2,8 +2,8 @@
 
 #include "VulkanCore.hpp"
 
-using VulkanInstanceExtensions = std::vector<std::unique_ptr<class VulkanInstanceExtension>>;
-using VulkanDeviceExtensions   = std::vector<std::unique_ptr<class VulkanDeviceExtension>>;
+using VulkanInstanceExtensions = std::vector<std::shared_ptr<class VulkanInstanceExtension>>;
+using VulkanDeviceExtensions   = std::vector<std::shared_ptr<class VulkanDeviceExtension>>;
 
 class VulkanExtension
 {

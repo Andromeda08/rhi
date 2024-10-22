@@ -17,7 +17,7 @@ VulkanInstanceLayers VulkanInstanceLayer::getRHIInstanceLayers()
     VulkanInstanceLayers instanceLayers;
 
     #define ADD_LAYER(LAYER_NAME, REQUESTED) \
-        instanceLayers.push_back(std::make_unique<VulkanInstanceLayer>(LAYER_NAME, REQUESTED));
+        instanceLayers.push_back(std::make_shared<VulkanInstanceLayer>(LAYER_NAME, REQUESTED));
 
 #if VULKAN_DEBUGGING_ENABLED
     ADD_LAYER("VK_LAYER_KHRONOS_validation", true);

@@ -33,7 +33,7 @@ VulkanInstanceExtensions VulkanInstanceExtension::getRHIInstanceExtensions()
     VulkanInstanceExtensions instanceExtensions;
 
     #define ADD_EXTENSION(EXT_NAME, REQUESTED) \
-        instanceExtensions.push_back(std::make_unique<VulkanInstanceExtension>(EXT_NAME, REQUESTED));
+        instanceExtensions.push_back(std::make_shared<VulkanInstanceExtension>(EXT_NAME, REQUESTED));
 
     #if __APPLE__
         ADD_EXTENSION(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, true);
@@ -148,7 +148,7 @@ VulkanDeviceExtensions VulkanDeviceExtension::getRHIDeviceExtensions()
     VulkanDeviceExtensions deviceExtensions;
 
     #define ADD_CORE(TYPE) \
-        deviceExtensions.push_back(std::make_unique<TYPE>());
+        deviceExtensions.push_back(std::make_shared<TYPE>());
 
     ADD_CORE(VulkanCore11);
     ADD_CORE(VulkanCore12);

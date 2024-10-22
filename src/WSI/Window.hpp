@@ -4,6 +4,7 @@
 
 #ifdef VULKAN_RHI_ENABLED
 #define GLFW_INCLUDE_VULKAN
+#include <vulkan/vk_enum_string_helper.h>
 #endif
 
 #include <GLFW/glfw3.h>
@@ -21,9 +22,7 @@ struct WindowCreateInfo
     std::string title;
 };
 
-using WindowPtr = std::shared_ptr<class Window>;
-
-class Window : IRHIWindow
+class Window : public IRHIWindow
 {
 public:
     explicit DEF_PRIMARY_CTOR(Window, const WindowCreateInfo&);

@@ -20,7 +20,7 @@ Window::Window(const WindowCreateInfo& createInfo)
     glfwSetKeyCallback(mWindow, Window::exitKeyHandler);
 }
 
-WindowPtr Window::createWindow(const WindowCreateInfo& createInfo)
+std::shared_ptr<Window> Window::createWindow(const WindowCreateInfo& createInfo)
 {
     return std::make_shared<Window>(createInfo);
 }
@@ -69,7 +69,7 @@ void Window::createVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* p
     if (const VkResult result = glfwCreateWindowSurface(instance, mWindow, nullptr, reinterpret_cast<VkSurfaceKHR*>(pSurface));
         result != VK_SUCCESS)
     {
-        throw std::runtime_error("Failed to create Surface for Window");
+        throw std::runtime_error(fmt::format("Failed to create Surface for Window ({})", string_VkResult(result)));
     }
 }
 

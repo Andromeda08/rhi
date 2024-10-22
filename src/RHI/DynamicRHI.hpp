@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "RHIDefinitions.hpp"
+#include "IWindow.hpp"
 
 class RHICommandQueue;
 
@@ -10,7 +11,7 @@ class DynamicRHI
 public:
     virtual ~DynamicRHI() = default;
 
-    virtual void init() = 0;
+    virtual void init(const std::shared_ptr<IRHIWindow>& window) = 0;
 
     virtual std::shared_ptr<RHICommandQueue> getGraphicsQueue() = 0;
 

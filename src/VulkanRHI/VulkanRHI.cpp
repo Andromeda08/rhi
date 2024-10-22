@@ -1,6 +1,7 @@
 #include "VulkanRHI.hpp"
 #include "VulkanCommandQueue.hpp"
 #include "VulkanDevice.hpp"
+#include "VulkanSwapchain.hpp"
 
 #ifdef VULKAN_DEBUGGING_ENABLED
 #include <iostream>
@@ -13,8 +14,10 @@ VulkanRHI::VulkanRHI()
 {
 }
 
-void VulkanRHI::init()
+void VulkanRHI::init(const std::shared_ptr<IRHIWindow>& window)
 {
+    mWindow = window;
+
     const vk::DynamicLoader dynamicLoader;
     const auto vkGetInstanceProcAddr = dynamicLoader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
@@ -24,6 +27,23 @@ void VulkanRHI::init()
 
     createDevice();
     VULKAN_HPP_DEFAULT_DISPATCHER.init(mDevice->handle());
+
+    createSurface(mWindow);
+    if (mSurface)
+    {
+        const auto swapchainParams = VulkanSwapchainParams({
+            .device  = mDevice,
+            .surface = mSurface,
+            .window  = mWindow,
+        });
+        mSwapchain = VulkanSwapchain::createVulkanSwapchain(swapchainParams);
+    }
+    else
+    {
+        fmt::println("[{}] {}",
+            styled("VulkanRHI", fg(fmt::color::crimson)),
+            styled("No Surface was created, creation of Swapchain skipped.", fg(fmt::color::light_yellow)));
+    }
 
     #ifdef VULKAN_DEBUGGING_ENABLED
     fmt::println("[Info] RHI initialized, using API: {}",
@@ -63,6 +83,16 @@ void VulkanRHI::createInstance()
 
     mInstanceExtensions = VulkanInstanceExtension::getRHIInstanceExtensions();
     const auto driverExtensions = VulkanInstanceExtension::getDriverInstanceExtensions();
+
+    if (mWindow)
+    {
+        for (auto glfw = mWindow->getVulkanInstanceExtensions();
+             const auto& glfwExtension : glfw)
+        {
+            mInstanceExtensions.push_back(glfwExtension);
+        }
+    }
+
     for (auto& rhiExtension : mInstanceExtensions)
     {
         if (VulkanInstanceLayer::findLayer(driverLayers, rhiExtension->extensionName()))
@@ -146,6 +176,18 @@ void VulkanRHI::createDevice()
 {
     const auto physicalDevice = selectPhysicalDevice();
     mDevice = VulkanDevice::createDevice(physicalDevice);
+}
+
+void VulkanRHI::createSurface(const std::shared_ptr<IRHIWindow>& window)
+{
+    if (!window)
+    {
+        fmt::println("[{}] {}",
+            styled("VulkanRHI", fg(fmt::color::crimson)),
+            styled("No Window specified, creation of Surface skipped.", fg(fmt::color::light_yellow)));
+        return;
+    }
+    window->createVulkanSurface(mInstance, &mSurface);
 }
 
 std::shared_ptr<VulkanRHI> VulkanRHI::createVulkanRHI()

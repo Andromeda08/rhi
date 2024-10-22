@@ -7,18 +7,18 @@
     #include "D3D12RHI/D3D12RHI.hpp"
 #endif
 
-WindowPtr gWindow;
+std::shared_ptr<Window> gWindow;
 
 int main()
 {
     const auto windowCreateInfo = WindowCreateInfo {
-        .resolution = { 1600, 900 },
+        .resolution = { 400, 400 },
         .title = "RHI Example Window",
     };
-    // gWindow = Window::createWindow(windowCreateInfo);
+    gWindow = Window::createWindow(windowCreateInfo);
 
     gRHI = VulkanRHI::createVulkanRHI();
-    gRHI->init();
+    gRHI->init(gWindow);
 
     std::cout << std::string(48, '=') << std::endl;
 

@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Core/Base.hpp"
-#include "RHI/DynamicRHI.hpp"
 #include <vulkan/vulkan.hpp>
 
 class VulkanDevice;
+class VulkanCommandQueue;
+class VulkanCommandList;
+class VulkanSwapchain;
 
 template <typename Chain_t, typename Struct_t>
 static void addToPNext(Chain_t& existing, Struct_t& added)
