@@ -4,9 +4,9 @@
 
 #ifdef VULKAN_RHI_ENABLED
 #define GLFW_INCLUDE_VULKAN
-#endif;
+#endif
 
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 
 #ifdef D3D12_RHI_ENABLED
     #define GLFW_EXPOSE_NATIVE_WIN32
