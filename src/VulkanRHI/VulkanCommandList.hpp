@@ -8,8 +8,9 @@ class VulkanCommandList : public RHICommandList
 public:
     explicit DEF_PRIMARY_CTOR(VulkanCommandList, vk::CommandBuffer commandBuffer);
 
-    void begin() override {}
-    void end() override {}
+    void begin() override;
+
+    void end() override;
 
     ~VulkanCommandList() override = default;
 
