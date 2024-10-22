@@ -12,7 +12,7 @@ std::shared_ptr<D3D12RHI> D3D12RHI::createD3D12RHI()
     return std::make_shared<D3D12RHI>();
 }
 
-void D3D12RHI::init()
+void D3D12RHI::init(const std::shared_ptr<IRHIWindow>& window)
 {
     createFactory();
 

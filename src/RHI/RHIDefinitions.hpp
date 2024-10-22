@@ -2,9 +2,6 @@
 
 #include "Core/Base.hpp"
 
-#ifdef VULKAN_RHI_ENABLED
-#include <vulkan/vulkan.hpp>
-#endif
 
 struct Size2D
 {
@@ -27,10 +24,6 @@ struct Size2D
         height = value;
         return *this;
     }
-
-#ifdef VULKAN_RHI_ENABLED
-    explicit operator vk::Extent2D() const { return { width, height }; }
-#endif
 };
 
 struct Size3D
@@ -61,10 +54,6 @@ struct Size3D
         depth = value;
         return *this;
     }
-
-#ifdef VULKAN_RHI_ENABLED
-    explicit operator vk::Extent3D() const { return { width, height, depth }; }
-#endif
 };
 
 struct Offset2D
@@ -88,10 +77,6 @@ struct Offset2D
         y = value;
         return *this;
     }
-
-#ifdef VULKAN_RHI_ENABLED
-    explicit operator vk::Offset2D() const { return { x, y }; }
-#endif
 };
 
 struct Rect2D
@@ -103,15 +88,6 @@ struct Rect2D
     : size(_size), offset(_offset)
     {
     }
-
-#ifdef VULKAN_RHI_ENABLED
-    explicit operator vk::Rect2D() const
-    {
-        return vk::Rect2D()
-            .setExtent(size.operator vk::Extent2D())
-            .setOffset(offset.operator vk::Offset2D());
-    }
-#endif
 };
 
 struct Viewport
@@ -165,13 +141,6 @@ struct Viewport
         maxDepth = value;
         return *this;
     }
-
-#ifdef VULKAN_RHI_ENABLED
-    explicit operator vk::Viewport() const
-    {
-        return vk::Viewport { x, y, width, height, minDepth, maxDepth };
-    }
-#endif
 };
 
 enum class RHIInterfaceType

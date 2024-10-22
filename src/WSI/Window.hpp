@@ -40,7 +40,7 @@ public:
 #ifdef VULKAN_RHI_ENABLED
     void createVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* pSurface) override;
 
-    VulkanInstanceExtensions getVulkanInstanceExtensions() override;
+    std::vector<std::shared_ptr<VulkanInstanceExtension>> getVulkanInstanceExtensions() override;
 #endif
 
 private:

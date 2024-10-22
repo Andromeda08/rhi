@@ -1,5 +1,7 @@
 #include "Window.hpp"
 
+#include "VulkanRHI/VulkanExtension.hpp"
+
 Window::Window(const WindowCreateInfo& createInfo)
 {
     if (!glfwInit())
@@ -73,13 +75,13 @@ void Window::createVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* p
     }
 }
 
-VulkanInstanceExtensions Window::getVulkanInstanceExtensions()
+std::vector<std::shared_ptr<VulkanInstanceExtension>> Window::getVulkanInstanceExtensions()
 {
     uint32_t extension_count = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&extension_count);
     const auto extensionNames = std::vector<const char*>(glfwExtensions, glfwExtensions + extension_count);
 
-    VulkanInstanceExtensions extensions;
+    std::vector<std::shared_ptr<VulkanInstanceExtension>> extensions;
 
     for (const auto& name : extensionNames)
     {

@@ -24,7 +24,7 @@ int main()
 
 #ifdef D3D12_RHI_ENABLED
     gRHI = D3D12RHI::createD3D12RHI();
-    gRHI->init();
+    gRHI->init(gWindow);
 #endif
 
     return 0;

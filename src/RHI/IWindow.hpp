@@ -7,8 +7,11 @@
 #endif
 
 #ifdef VULKAN_RHI_ENABLED
-#include <vulkan/vulkan.hpp>
-#include "VulkanRHI/VulkanExtension.hpp"
+namespace vk
+{
+    class Instance;
+    class SurfaceKHR;
+}
 #endif
 
 class IRHIWindow
@@ -23,7 +26,7 @@ public:
 
 #ifdef VULKAN_RHI_ENABLED
     virtual void createVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* pSurface) = 0;
-    virtual VulkanInstanceExtensions getVulkanInstanceExtensions() = 0;
+    virtual std::vector<std::shared_ptr<class VulkanInstanceExtension>> getVulkanInstanceExtensions() = 0;
 #endif
 
 #ifdef D3D12_RHI_ENABLED

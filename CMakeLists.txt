@@ -71,8 +71,8 @@ add_executable(${PROJECT_NAME}
     src/RHI/RHISwapchain.hpp
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE RHI_DEBUGGING_ENABLED)
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw)
+target_compile_definitions(${PROJECT_NAME} PRIVATE RHI_DEBUGGING_ENABLED)
 target_include_directories(${PROJECT_NAME} PRIVATE
     "src"
     external/fmt/include

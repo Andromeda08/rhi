@@ -1,6 +1,7 @@
 #pragma once
 
 #include "D3D12Core.hpp"
+#include "RHI/RHIDefinitions.hpp"
 #include "RHI/CommandList.hpp"
 
 struct D3D12CommandListParams

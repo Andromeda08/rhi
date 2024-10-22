@@ -32,9 +32,9 @@ void VulkanRHI::init(const std::shared_ptr<IRHIWindow>& window)
     if (mSurface)
     {
         const auto swapchainParams = VulkanSwapchainParams({
+            .window  = mWindow,
             .device  = mDevice,
             .surface = mSurface,
-            .window  = mWindow,
         });
         mSwapchain = VulkanSwapchain::createVulkanSwapchain(swapchainParams);
     }
