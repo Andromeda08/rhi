@@ -31,6 +31,6 @@ public:
      */
     // virtual void synchronize() = 0;
 
-private:
+protected:
     bool mIsRecording = false;
 };
