@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core/Base.hpp"
-#include "RHI/DynamicRHI.hpp"
 
 /**
  * DirectX 12, Windows and related headers

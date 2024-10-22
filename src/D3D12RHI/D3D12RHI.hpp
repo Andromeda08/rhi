@@ -1,5 +1,7 @@
 #pragma once
 
+#include "RHI/DynamicRHI.hpp"
+#include "RHI/IWindow.hpp"
 #include "D3D12Core.hpp"
 
 using D3D12DevicePtr = std::shared_ptr<class D3D12Device>;
@@ -11,7 +13,7 @@ public:
 
     ~D3D12RHI() override = default;
 
-    void init() override;
+    void init(const std::shared_ptr<IRHIWindow>& window) override;
 
     std::shared_ptr<RHICommandQueue> getGraphicsQueue() override { return nullptr; }
 
