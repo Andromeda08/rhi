@@ -32,33 +32,32 @@ public:
     uint32_t getFrameCount()        override { return mImageCount; }
 
 private:
-    void createSurface();
     void checkSwapchainSupport();
     void createSwapchain();
     void acquireImages();
     void createFrameSyncObjects();
     void makeDynamicState();
 
-    uint32_t            mImageCount;
-    Size2D              mExtent;
-    float               mAspectRatio {};
-    Format              mFormat {Format::B8G8R8A8Unorm};
-    ColorSpace          mColorSpace {ColorSpace::SrgbNonLinear};
-    vk::PresentModeKHR  mPresentMode {vk::PresentModeKHR::eMailbox};
+    uint32_t                        mImageCount;
+    Size2D                          mExtent;
+    float                           mAspectRatio {};
+    Format                          mFormat {Format::B8G8R8A8Unorm};
+    ColorSpace                      mColorSpace {ColorSpace::SrgbNonLinear};
+    vk::PresentModeKHR              mPresentMode {vk::PresentModeKHR::eFifo};
+    vk::SurfaceTransformFlagBitsKHR mCurrentTransform;
+    vk::SurfaceKHR                  mSurface;
+    vk::SwapchainKHR                mSwapchain;
+    Rect2D                          mCachedScissor;
+    Viewport                        mCachedViewport;
 
-    vk::SurfaceKHR      mSurface;
-    vk::SwapchainKHR    mSwapchain;
-    Rect2D              mCachedScissor;
-    Viewport            mCachedViewport;
+    std::vector<vk::Image>          mImages;
+    std::vector<vk::ImageView>      mImageViews;
 
-    std::vector<vk::Image>     mImages;
-    std::vector<vk::ImageView> mImageViews;
-
-    std::shared_ptr<IRHIWindow>   mWindow;
-    std::shared_ptr<VulkanDevice> mDevice;
+    std::shared_ptr<IRHIWindow>     mWindow;
+    std::shared_ptr<VulkanDevice>   mDevice;
 
     // Frame Sync
-    std::vector<vk::Semaphore> mImageReady;
-    std::vector<vk::Semaphore> mRenderingFinished;
-    std::vector<vk::Fence>     mFrameInFLight;
+    std::vector<vk::Semaphore>      mImageReady;
+    std::vector<vk::Semaphore>      mRenderingFinished;
+    std::vector<vk::Fence>          mFrameInFLight;
 };

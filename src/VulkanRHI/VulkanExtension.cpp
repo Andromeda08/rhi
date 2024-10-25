@@ -143,17 +143,36 @@ private:
     vk::PhysicalDeviceVulkan13Features mVulkanCore13;
 };
 
+class VulkanSwapchainExtension final : public VulkanDeviceExtension
+{
+public:
+    explicit VulkanSwapchainExtension() : VulkanDeviceExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true) {}
+
+    void postSupportCheck() override
+    {
+        if (!shouldActivate()) return;
+        mIsEnabled = true;
+    }
+
+    void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) override {}
+};
+
 VulkanDeviceExtensions VulkanDeviceExtension::getRHIDeviceExtensions()
 {
     VulkanDeviceExtensions deviceExtensions;
 
     #define ADD_CORE(TYPE) \
         deviceExtensions.push_back(std::make_shared<TYPE>());
+    #define ADD_BASIC(TYPE) \
+        deviceExtensions.push_back(std::make_shared<TYPE>());
 
     ADD_CORE(VulkanCore11);
     ADD_CORE(VulkanCore12);
     ADD_CORE(VulkanCore13);
 
+    ADD_BASIC(VulkanSwapchainExtension);
+
+    #undef ADD_BASIC
     #undef ADD_CORE
 
     return deviceExtensions;

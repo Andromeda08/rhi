@@ -105,3 +105,12 @@ VulkanDevice::VulkanDevice(const vk::PhysicalDevice physicalDevice): mPhysicalDe
 
     #pragma endregion
 }
+
+void VulkanDevice::createSwapchain(const vk::SwapchainCreateInfoKHR& swapchainCreateInfo, vk::SwapchainKHR* pSwapchain) const
+{
+    if (const vk::Result result = mDevice.createSwapchainKHR(&swapchainCreateInfo, nullptr, pSwapchain);
+        result != vk::Result::eSuccess)
+    {
+        throw std::runtime_error(fmt::format("Failed to create Swapchain ({})", to_string(result)));
+    }
+}

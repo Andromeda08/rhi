@@ -12,6 +12,8 @@ public:
 
     std::shared_ptr<VulkanCommandQueue> getGraphicsQueue() const { return mGraphicsQueue; }
 
+    void createSwapchain(const vk::SwapchainCreateInfoKHR& swapchainCreateInfo, vk::SwapchainKHR* pSwapchain) const;
+
     vk::PhysicalDevice physicalDevice() const { return mPhysicalDevice; }
     vk::Device handle() const { return mDevice; }
     const std::string& getPhysicalDeviceName() const { return mDeviceName; }
