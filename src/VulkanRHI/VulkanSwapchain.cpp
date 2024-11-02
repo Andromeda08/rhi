@@ -117,12 +117,71 @@ void VulkanSwapchain::createSwapchain()
 
 void VulkanSwapchain::acquireImages()
 {
+    mImages.resize(mImageCount);
+    mImages = mDevice->handle().getSwapchainImagesKHR(mSwapchain);
+
+    vk::ComponentMapping componentMapping = {
+        vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity,
+        vk::ComponentSwizzle::eIdentity, vk::ComponentSwizzle::eIdentity
+    };
+
+    auto create_info = vk::ImageViewCreateInfo()
+        .setComponents(componentMapping)
+        .setFormat(toVulkan(mFormat))
+        .setSubresourceRange({ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 })
+        .setViewType(vk::ImageViewType::e2D);
+
+    mImageViews.resize(mImageCount);
+    for (uint32_t i = 0; i < mImageCount; i++)
+    {
+        create_info.setImage(mImages[i]);
+        if (const vk::Result result = mDevice->handle().createImageView(&create_info, nullptr, &mImageViews[i]);
+            result != vk::Result::eSuccess)
+        {
+            throw std::runtime_error(fmt::format("Failed to create vk::ImageView #{} for Swapchain", i));
+        }
+
+        mDevice->nameObject(mImages[i], fmt::format("Swapchain #{}", i), vk::ObjectType::eImage);
+        mDevice->nameObject(mImageViews[i], fmt::format("Swapchain ImageView #{}", i), vk::ObjectType::eImageView);
+    }
 }
 
 void VulkanSwapchain::createFrameSyncObjects()
 {
+    mImageReady.resize(mImageCount);
+    mRenderingFinished.resize(mImageCount);
+    mFrameInFLight.resize(mImageCount);
+
+    for (size_t i = 0; i < mImageCount; i++)
+    {
+        auto sci = vk::SemaphoreCreateInfo();
+        auto fci = vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
+
+        vk::Result result = mDevice->handle().createSemaphore(&sci, nullptr, &mImageReady[i]);
+        mDevice->nameObject(mImageReady[i], fmt::format("ImageReady {}", i), vk::ObjectType::eSemaphore);
+
+        result = mDevice->handle().createSemaphore(&sci, nullptr, &mRenderingFinished[i]);
+        mDevice->nameObject(mRenderingFinished[i], fmt::format("RenderingFinished {}", i), vk::ObjectType::eSemaphore);
+
+        result = mDevice->handle().createFence(&fci, nullptr, &mFrameInFLight[i]);
+        mDevice->nameObject(mFrameInFLight[i], fmt::format("FrameInFlight {}", i), vk::ObjectType::eFence);
+    }
 }
 
 void VulkanSwapchain::makeDynamicState()
 {
+    mCachedScissor = Rect2D {{ 0, 0 }, { static_cast<int>(mExtent.width), static_cast<int>(mExtent.height) }};
+    /**
+     * Create a viewport object based on the current state of the Swapchain.
+     * The viewport is flipped along the Y axis for GLM compatibility.
+     * This requires Maintenance1, which is core Vulkan since API version 1.1.
+     * https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
+     */
+    mCachedViewport = Viewport()
+        .setX(0.0f)
+        .setWidth(static_cast<float>(mExtent.width))
+        .setY(static_cast<float>(mExtent.height))
+        .setHeight(-1.0f * static_cast<float>(mExtent.height))
+        .setMaxDepth(1.0f)
+        .setMinDepth(0.0f);
 }
