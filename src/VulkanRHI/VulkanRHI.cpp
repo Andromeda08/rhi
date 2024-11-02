@@ -190,6 +190,37 @@ void VulkanRHI::createSurface(const std::shared_ptr<IRHIWindow>& window)
     window->createVulkanSurface(mInstance, &mSurface);
 }
 
+void VulkanRHI::initializeDebugFeatures()
+{
+    using Severity = vk::DebugUtilsMessageSeverityFlagBitsEXT;
+    auto severity = Severity::eInfo | Severity::eWarning | Severity::eError | Severity::eVerbose;
+
+    using Type = vk::DebugUtilsMessageTypeFlagBitsEXT;
+    auto type = Type::eGeneral | Type::ePerformance | Type::eValidation;
+
+    auto create_info = vk::DebugUtilsMessengerCreateInfoEXT()
+        .setMessageSeverity(severity)
+        .setMessageType(type)
+        .setPfnUserCallback(debugMessageCallback);
+
+    if (const vk::Result result = mInstance.createDebugUtilsMessengerEXT(&create_info, nullptr, &mMessenger);
+        result != vk::Result::eSuccess)
+    {
+        throw std::runtime_error(fmt::format("Failed to initialize Vulkan debug features. ({})", to_string(result)));
+    }
+}
+
+VkBool32 VulkanRHI::debugMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+    VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT *p_data, void *p_user)
+{
+    if (!p_data) return vk::False;
+    if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
+        fmt::println("{}", p_data->pMessage);
+    }
+    return vk::False;
+}
+
 std::shared_ptr<VulkanRHI> VulkanRHI::createVulkanRHI()
 {
     return std::make_shared<VulkanRHI>();

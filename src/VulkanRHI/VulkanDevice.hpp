@@ -14,6 +14,32 @@ public:
 
     void createSwapchain(const vk::SwapchainCreateInfoKHR& swapchainCreateInfo, vk::SwapchainKHR* pSwapchain) const;
 
+    template <typename T>
+    void nameObject(const T& handle, const std::string& name, const vk::ObjectType objectType) const
+    {
+        #ifdef VULKAN_DEBUGGING_ENABLED
+
+        const std::string nameStr = name.empty() ? "Unknown" : name;
+        const uint64_t handleU64 = uint64_t(static_cast<typename T::CType>(handle));
+        const auto name_info = vk::DebugUtilsObjectNameInfoEXT()
+            .setPObjectName(nameStr.c_str())
+            .setObjectHandle(handleU64)
+            .setObjectType(objectType);
+
+        if (const vk::Result result = mDevice.setDebugUtilsObjectNameEXT(&name_info);
+            result != vk::Result::eSuccess)
+        {
+            fmt::println("[{}] {}",
+                styled("VulkanRHI", fg(fmt::color::crimson)),
+                fmt::format("Failed to name Vulkan Object {} of type {} as \"{}\"",
+                styled(handleU64, fg(fmt::color::light_yellow)),
+                styled(to_string(objectType), fg(fmt::color::crimson)),
+                name));
+        }
+
+        #endif
+    }
+
     vk::PhysicalDevice physicalDevice() const { return mPhysicalDevice; }
     vk::Device handle() const { return mDevice; }
     const std::string& getPhysicalDeviceName() const { return mDeviceName; }

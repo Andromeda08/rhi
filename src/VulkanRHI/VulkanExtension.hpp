@@ -18,7 +18,7 @@ public:
     const char* extensionName() const { return mExtensionName; }
     bool isEnabled() const { return mIsEnabled; }
     bool isRequested() const { return mIsRequested; }
-    bool isSupported() const { return mIsSupported; }
+    virtual bool isSupported() const { return mIsSupported; }
 
     bool isActive() const { return mIsEnabled && mIsRequested && mIsSupported; }
 
@@ -53,8 +53,8 @@ public:
 class VulkanDeviceExtension : public VulkanExtension
 {
 public:
-    VulkanDeviceExtension(const char* extensionName, const bool requested)
-    : VulkanExtension(extensionName, requested)
+    VulkanDeviceExtension(const char* extensionName, const bool requested, uint32_t apiVersion = VK_API_VERSION_1_0)
+    : VulkanExtension(extensionName, requested), mApiVersion(apiVersion)
     {
     }
 
@@ -64,8 +64,16 @@ public:
     // e.g. for setting pNext
     virtual void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) {}
 
+    bool isSupported() const override
+    {
+
+    }
+
     static VulkanDeviceExtensions getRHIDeviceExtensions();
     static std::vector<vk::ExtensionProperties> getDriverDeviceExtensions(vk::PhysicalDevice physicalDevice);
+
+private:
+    const uint32_t mApiVersion;
 };
 
 std::ostream& operator<<(std::ostream& os, const VulkanExtension& vulkanExtension);

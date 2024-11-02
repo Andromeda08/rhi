@@ -41,6 +41,8 @@ VulkanInstanceExtensions VulkanInstanceExtension::getRHIInstanceExtensions()
         ADD_EXTENSION(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, false);
     #endif
 
+    ADD_EXTENSION(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, true)
+
     #undef ADD_EXTENSION
 
     return instanceExtensions;
@@ -157,6 +159,31 @@ public:
     void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) override {}
 };
 
+class VulkanPortabilitySubsetExtension final : public VulkanDeviceExtension
+{
+public:
+    explicit VulkanPortabilitySubsetExtension(const bool required = false)
+    : VulkanDeviceExtension("VK_KHR_portability_subset", required) {}
+
+    void postSupportCheck() override
+    {
+        if (!shouldActivate()) return;
+        mIsEnabled = true;
+    }
+
+    void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) override {}
+
+    // For now this method assumes that only Apple devices require this...
+    static std::shared_ptr<VulkanPortabilitySubsetExtension> makePlatformSpecific()
+    {
+        bool required = false;
+        #ifdef __APPLE__
+            required = true;
+        #endif
+        return std::make_shared<VulkanPortabilitySubsetExtension>(required);
+    }
+};
+
 VulkanDeviceExtensions VulkanDeviceExtension::getRHIDeviceExtensions()
 {
     VulkanDeviceExtensions deviceExtensions;
@@ -171,6 +198,8 @@ VulkanDeviceExtensions VulkanDeviceExtension::getRHIDeviceExtensions()
     ADD_CORE(VulkanCore13);
 
     ADD_BASIC(VulkanSwapchainExtension);
+
+    deviceExtensions.push_back(VulkanPortabilitySubsetExtension::makePlatformSpecific());
 
     #undef ADD_BASIC
     #undef ADD_CORE

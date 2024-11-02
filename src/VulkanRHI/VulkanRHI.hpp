@@ -42,4 +42,9 @@ private:
     std::shared_ptr<IRHIWindow> mWindow;
 
     vk::DebugUtilsMessengerEXT mMessenger {};
+    void initializeDebugFeatures();
+
+    static VkBool32 VKAPI_CALL debugMessageCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type,
+        const VkDebugUtilsMessengerCallbackDataEXT* p_data, void* p_user);
 };
