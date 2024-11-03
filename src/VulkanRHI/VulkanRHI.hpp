@@ -18,7 +18,9 @@ public:
     /**
      * Public API
      */
-    void init(const std::shared_ptr<IRHIWindow>& window) override;
+    void init(const std::shared_ptr<IRHIWindow>& window) override
+
+    void waitIdle() override;
 
     std::shared_ptr<RHICommandQueue> getGraphicsQueue()       override { return mDevice->getGraphicsQueue(); }
     RHIInterfaceType                 getType()          const override { return RHIInterfaceType::Vulkan; }

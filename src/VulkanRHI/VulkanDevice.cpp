@@ -105,9 +105,9 @@ VulkanDevice::VulkanDevice(const vk::PhysicalDevice physicalDevice): mPhysicalDe
     #pragma endregion
 }
 
-void VulkanDevice::createSwapchain(const vk::SwapchainCreateInfoKHR& swapchainCreateInfo, vk::SwapchainKHR* pSwapchain) const
+void VulkanDevice::createSwapchain(const VulkanCreateSwapchainParams& params) const
 {
-    if (const vk::Result result = mDevice.createSwapchainKHR(&swapchainCreateInfo, nullptr, pSwapchain);
+    if (const vk::Result result = mDevice.createSwapchainKHR(&params.createInfo, nullptr, params.pSwapchain);
         result != vk::Result::eSuccess)
     {
         throw std::runtime_error(fmt::format("Failed to create Swapchain ({})", to_string(result)));
@@ -117,4 +117,9 @@ void VulkanDevice::createSwapchain(const vk::SwapchainCreateInfoKHR& swapchainCr
 std::shared_ptr<VulkanDevice> VulkanDevice::createVulkanDevice(vk::PhysicalDevice physicalDevice)
 {
     return std::make_shared<VulkanDevice>(physicalDevice);
+}
+
+void VulkanDevice::waitIdle() const
+{
+    mDevice.waitIdle();
 }

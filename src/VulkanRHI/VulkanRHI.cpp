@@ -50,6 +50,11 @@ void VulkanRHI::init(const std::shared_ptr<IRHIWindow>& window)
     #endif
 }
 
+void VulkanRHI::waitIdle()
+{
+    mDevice->waitIdle();
+}
+
 void VulkanRHI::createInstance()
 {
     constexpr auto appInfo = vk::ApplicationInfo()

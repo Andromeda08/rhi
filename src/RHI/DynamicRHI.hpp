@@ -13,13 +13,18 @@ public:
 
     virtual void init(const std::shared_ptr<IRHIWindow>& window) = 0;
 
+    /**
+     * RHI Commands
+     */
+    virtual void waitIdle() = 0;
+    // virtual void syncNextFrame() = 0;
+    // virtual std::shared_ptr<class RHIBuffer>   createBuffer(const struct RHICreateBufferParams& params) = 0;
+    // virtual std::shared_ptr<class RHITexture>  createTexture(const struct RHICreateTextureParams& params) = 0;
+    // virtual std::shared_ptr<class RHIPipeline> createPipeline(const struct RHICreatePipelineParams& params) = 0;
+
     virtual std::shared_ptr<RHICommandQueue> getGraphicsQueue() = 0;
 
     virtual RHIInterfaceType getType() const { return RHIInterfaceType::None; }
-
-    // RHI Commands
-    // virtual void waitIdle() = 0;
-    // virtual void syncNextFrame() = 0;
 };
 
 // Global pointer to the current RHI implementation

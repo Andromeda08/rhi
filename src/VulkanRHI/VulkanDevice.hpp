@@ -3,6 +3,12 @@
 #include "VulkanCore.hpp"
 #include "VulkanExtension.hpp"
 
+struct VulkanCreateSwapchainParams
+{
+    const vk::SwapchainCreateInfoKHR& createInfo;
+    vk::SwapchainKHR*                 pSwapchain {nullptr};
+};
+
 class VulkanDevice
 {
 public:
@@ -10,7 +16,9 @@ public:
     explicit DEF_PRIMARY_CTOR(VulkanDevice, vk::PhysicalDevice physicalDevice);
 
 
-    void createSwapchain(const vk::SwapchainCreateInfoKHR& swapchainCreateInfo, vk::SwapchainKHR* pSwapchain) const;
+    void waitIdle() const;
+
+    void createSwapchain(const VulkanCreateSwapchainParams& params) const;
 
     template <typename T>
     void nameObject(const T& handle, const std::string& name, vk::ObjectType objectType) const;
