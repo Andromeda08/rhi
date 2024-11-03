@@ -90,8 +90,7 @@ VulkanDevice::VulkanDevice(const vk::PhysicalDevice physicalDevice): mPhysicalDe
     mDeviceName = mPhysicalDeviceProps.deviceName.data();
 
     #ifdef VULKAN_DEBUGGING_ENABLED
-    fmt::println("[Info] Using PhysicalDevice: {}",
-        styled(mDeviceName, fg(fmt::color::honey_dew)));
+    VK_PRINTLN(fmt::format("Using PhysicalDevice: {}", styled(mDeviceName, fg(fmt::color::honey_dew))));
     #endif
 
     #pragma region "Create Queues"
@@ -113,4 +112,9 @@ void VulkanDevice::createSwapchain(const vk::SwapchainCreateInfoKHR& swapchainCr
     {
         throw std::runtime_error(fmt::format("Failed to create Swapchain ({})", to_string(result)));
     }
+}
+
+std::shared_ptr<VulkanDevice> VulkanDevice::createVulkanDevice(vk::PhysicalDevice physicalDevice)
+{
+    return std::make_shared<VulkanDevice>(physicalDevice);
 }

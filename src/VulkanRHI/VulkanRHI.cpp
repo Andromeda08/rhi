@@ -46,8 +46,7 @@ void VulkanRHI::init(const std::shared_ptr<IRHIWindow>& window)
     }
 
     #ifdef VULKAN_DEBUGGING_ENABLED
-    fmt::println("[Info] RHI initialized, using API: {}",
-        styled("Vulkan", fg(fmt::color::crimson)));
+    RHI_PRINTLN(fmt::format("RHI Initialized, using API: {}", styled("Vulkan", fg(fmt::color::crimson))));
     #endif
 }
 
@@ -175,7 +174,7 @@ vk::PhysicalDevice VulkanRHI::selectPhysicalDevice() const
 void VulkanRHI::createDevice()
 {
     const auto physicalDevice = selectPhysicalDevice();
-    mDevice = VulkanDevice::createDevice(physicalDevice);
+    mDevice = VulkanDevice::createVulkanDevice(physicalDevice);
 }
 
 void VulkanRHI::createSurface(const std::shared_ptr<IRHIWindow>& window)

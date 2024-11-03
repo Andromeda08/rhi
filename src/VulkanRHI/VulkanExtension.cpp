@@ -19,7 +19,8 @@ int32_t VulkanExtension::findExtension(const std::vector<vk::ExtensionProperties
 
 std::string VulkanExtension::toString() const
 {
-    return fmt::format("[Extension] {} (Active={}, Requested={}, Supported={})",
+    return fmt::format("[{}] {} (Active={}, Requested={}, Supported={})",
+        styled("Ext", fg(fmt::color::crimson)),
         styled(mExtensionName ? mExtensionName : "Vulkan Core Features", fg(fmt::color::cornflower_blue)),
         isActive() ? "y" : "n",
         isRequested() ? "y" : "n",

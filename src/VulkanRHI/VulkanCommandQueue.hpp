@@ -3,8 +3,6 @@
 #include "VulkanCore.hpp"
 #include "RHI/CommandQueue.hpp"
 
-class VulkanCommandList;
-
 struct QueueProperties
 {
     vk::QueueFamilyProperties queueFamilyProperties;

@@ -2,7 +2,6 @@
 
 #include "Core/Base.hpp"
 
-
 struct Size2D
 {
     uint32_t width;

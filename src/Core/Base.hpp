@@ -27,3 +27,5 @@ static std::shared_ptr<TYPE> create##TYPE(__VA_ARGS__);
 #define PRINT_PLACEHOLDER(MSG) \
 fmt::println("{}", styled(fmt::format("[Temp] {}", MSG), fg(fmt::color::light_yellow)))
 
+#define RHI_PRINTLN(MESSAGE) \
+fmt::println("[{}] {}", styled("RHI", fg(fmt::color::cornflower_blue)), MESSAGE)

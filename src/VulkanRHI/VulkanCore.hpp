@@ -16,6 +16,11 @@ static void addToPNext(Chain_t& existing, Struct_t& added)
     existing.setPNext((void*)(&added));
 }
 
+#define VK_PRINTLN(MESSAGE) \
+    fmt::println("[{}] {}", styled("VulkanRHI", fg(fmt::color::crimson)), MESSAGE)
+
+#pragma region "Vulkan -> RHI Type Conversion"
+
 inline auto toRHI(const vk::Format format)
 {
     switch (format)
@@ -50,3 +55,5 @@ inline auto toRHI(const vk::Viewport& vp)
 {
     return Viewport(vp.x, vp.y, vp.width, vp.height, vp.minDepth, vp.maxDepth);
 }
+
+#pragma endregion

@@ -20,6 +20,9 @@ class D3D12Swapchain;
 using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::WeakRef;
 
+#define D3D12_PRINTLN(MESSAGE) \
+    fmt::println("[{}] {}", styled("D3D12", fg(fmt::color::green_yellow)), MESSAGE)
+
 /**
  * String and converters
  */
