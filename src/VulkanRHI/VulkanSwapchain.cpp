@@ -109,11 +109,10 @@ void VulkanSwapchain::createSwapchain()
         .setQueueFamilyIndexCount(0)
         .setPQueueFamilyIndices(nullptr);
 
-    if (const vk::Result result = mDevice->handle().createSwapchainKHR(&createInfo, nullptr, &mSwapchain);
-        result != vk::Result::eSuccess)
-    {
-        throw std::runtime_error(fmt::format("Failed to create Swapchain ({})", to_string(result)));
-    }
+    mDevice->createSwapchain({
+        .createInfo = createInfo,
+        .pSwapchain = &mSwapchain
+    });
 }
 
 void VulkanSwapchain::acquireImages()
@@ -172,6 +171,7 @@ void VulkanSwapchain::createFrameSyncObjects()
 void VulkanSwapchain::makeDynamicState()
 {
     mCachedScissor = vk::Rect2D {{ 0, 0 }, mExtent};
+
     /**
      * Create a viewport object based on the current state of the Swapchain.
      * The viewport is flipped along the Y axis for GLM compatibility.
