@@ -24,11 +24,11 @@ public:
 
     void present() const override;
 
-    Rect2D   getScissor()           override { return mCachedScissor; }
-    Viewport getViewport()          override { return mCachedViewport; }
-    Size2D   getSize()        const override { return mExtent; }
+    Rect2D   getScissor()           override { return toRHI(mCachedScissor); }
+    Viewport getViewport()          override { return toRHI(mCachedViewport); }
+    Size2D   getSize()        const override { return toRHI(mExtent); }
     float    getAspectRatio() const override { return mAspectRatio; }
-    Format   getFormat()      const override { return mFormat; }
+    Format   getFormat()      const override { return toRHI(mFormat); }
     uint32_t getFrameCount()        override { return mImageCount; }
 
 private:
@@ -38,17 +38,17 @@ private:
     void createFrameSyncObjects();
     void makeDynamicState();
 
-    uint32_t                        mImageCount;
-    Size2D                          mExtent;
+    const uint32_t                  mImageCount;
+    vk::Extent2D                    mExtent;
     float                           mAspectRatio {};
-    Format                          mFormat {Format::B8G8R8A8Unorm};
-    ColorSpace                      mColorSpace {ColorSpace::SrgbNonLinear};
+    vk::Format                      mFormat {vk::Format::eB8G8R8A8Unorm};
+    vk::ColorSpaceKHR               mColorSpace {vk::ColorSpaceKHR::eSrgbNonlinear};
     vk::PresentModeKHR              mPresentMode {vk::PresentModeKHR::eFifo};
     vk::SurfaceTransformFlagBitsKHR mCurrentTransform;
     vk::SurfaceKHR                  mSurface;
     vk::SwapchainKHR                mSwapchain;
-    Rect2D                          mCachedScissor;
-    Viewport                        mCachedViewport;
+    vk::Rect2D                      mCachedScissor;
+    vk::Viewport                    mCachedViewport;
 
     std::vector<vk::Image>          mImages;
     std::vector<vk::ImageView>      mImageViews;

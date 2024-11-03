@@ -14,7 +14,7 @@ VulkanSwapchain::VulkanSwapchain(const VulkanSwapchainParams& params)
     createFrameSyncObjects();
     makeDynamicState();
 
-    mAspectRatio = mExtent.aspectRatio();
+    mAspectRatio = toRHI(mExtent).aspectRatio();
 }
 
 std::shared_ptr<VulkanSwapchain> VulkanSwapchain::createVulkanSwapchain(const VulkanSwapchainParams& params)
@@ -49,7 +49,7 @@ void VulkanSwapchain::checkSwapchainSupport()
 
     if (surfaceCaps.currentExtent.width != std::numeric_limits<uint32_t>::max())
     {
-        mExtent = Size2D()
+        mExtent = vk::Extent2D()
             .setWidth(surfaceCaps.currentExtent.width)
             .setHeight(surfaceCaps.currentExtent.height);
     }
@@ -69,8 +69,7 @@ void VulkanSwapchain::checkSwapchainSupport()
     bool formatOkay = false;
     for (const auto& format : surfaceFormats)
     {
-        if (format.format == toVulkan(mFormat) &&
-            format.colorSpace == toVulkan(mColorSpace))
+        if (format.format == mFormat && format.colorSpace == mColorSpace)
         {
             formatOkay = true;
         }
@@ -97,9 +96,9 @@ void VulkanSwapchain::createSwapchain()
     const auto createInfo = vk::SwapchainCreateInfoKHR()
         .setSurface(mSurface)
         .setMinImageCount(mImageCount)
-        .setImageFormat(toVulkan(mFormat))
-        .setImageColorSpace(toVulkan(mColorSpace))
-        .setImageExtent(toVulkan(mExtent))
+        .setImageFormat(mFormat)
+        .setImageColorSpace(mColorSpace)
+        .setImageExtent(mExtent)
         .setImageArrayLayers(1)
         .setImageUsage(vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst)
         .setPreTransform(mCurrentTransform)
@@ -129,7 +128,7 @@ void VulkanSwapchain::acquireImages()
 
     auto create_info = vk::ImageViewCreateInfo()
         .setComponents(componentMapping)
-        .setFormat(toVulkan(mFormat))
+        .setFormat(mFormat)
         .setSubresourceRange({ vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1 })
         .setViewType(vk::ImageViewType::e2D);
 
@@ -172,14 +171,14 @@ void VulkanSwapchain::createFrameSyncObjects()
 
 void VulkanSwapchain::makeDynamicState()
 {
-    mCachedScissor = Rect2D {{ 0, 0 }, { static_cast<int>(mExtent.width), static_cast<int>(mExtent.height) }};
+    mCachedScissor = vk::Rect2D {{ 0, 0 }, mExtent};
     /**
      * Create a viewport object based on the current state of the Swapchain.
      * The viewport is flipped along the Y axis for GLM compatibility.
      * This requires Maintenance1, which is core Vulkan since API version 1.1.
      * https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
      */
-    mCachedViewport = Viewport()
+    mCachedViewport = vk::Viewport()
         .setX(0.0f)
         .setWidth(static_cast<float>(mExtent.width))
         .setY(static_cast<float>(mExtent.height))
