@@ -20,7 +20,10 @@
 TYPE(const TYPE&) = delete;             \
 TYPE& operator=(const TYPE&) = delete;
 
-
 #define DEF_PRIMARY_CTOR(TYPE, ...)                         \
 TYPE(__VA_ARGS__);                                          \
 static std::shared_ptr<TYPE> create##TYPE(__VA_ARGS__);
+
+#define PRINT_PLACEHOLDER(MSG) \
+fmt::println("{}", styled(fmt::format("[Temp] {}", MSG), fg(fmt::color::light_yellow)))
+

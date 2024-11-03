@@ -12,7 +12,7 @@ std::shared_ptr<Window> gWindow;
 int main()
 {
     const auto windowCreateInfo = WindowCreateInfo {
-        .resolution = { 400, 400 },
+        .resolution = { 1280, 720 },
         .title = "RHI Example Window",
     };
     gWindow = Window::createWindow(windowCreateInfo);

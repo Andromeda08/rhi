@@ -49,6 +49,8 @@ if (WIN32)
         src/D3D12RHI/D3D12Device.hpp src/D3D12RHI/D3D12Device.cpp
         src/D3D12RHI/D3D12CommandQueue.hpp src/D3D12RHI/D3D12CommandQueue.cpp
         src/D3D12RHI/D3D12CommandList.hpp src/D3D12RHI/D3D12CommandList.cpp
+            src/D3D12RHI/D3D12Swapchain.hpp
+            src/D3D12RHI/D3D12Swapchain.cpp
     )
     target_include_directories(D3D12RHI PUBLIC ${D3D12_INCLUDE_DIRS} "src" "external/fmt/include")
     target_link_libraries(D3D12RHI PUBLIC ${D3D12_LIBRARIES} fmt::fmt)

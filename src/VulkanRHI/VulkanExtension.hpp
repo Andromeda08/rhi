@@ -64,11 +64,6 @@ public:
     // e.g. for setting pNext
     virtual void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) {}
 
-    bool isSupported() const override
-    {
-
-    }
-
     static VulkanDeviceExtensions getRHIDeviceExtensions();
     static std::vector<vk::ExtensionProperties> getDriverDeviceExtensions(vk::PhysicalDevice physicalDevice);
 

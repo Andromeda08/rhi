@@ -1,6 +1,8 @@
 #include "D3D12RHI.hpp"
 
 #include "D3D12Device.hpp"
+#include "D3D12CommandQueue.hpp"
+#include "D3D12Swapchain.hpp"
 
 D3D12RHI::D3D12RHI()
 : DynamicRHI()
@@ -18,10 +20,22 @@ void D3D12RHI::init(const std::shared_ptr<IRHIWindow>& window)
 
     createDevice();
 
+    mSwapchain = D3D12Swapchain::createD3D12Swapchain({
+        .window = window,
+        .device = mDevice,
+        .factory = mFactory,
+        .imageCount = 2,
+    });
+
     #ifdef D3D12_DEBUGGING_ENABLED
     fmt::println("[Info] RHI initialized, using API: {}",
         styled("D3D12", fg(fmt::color::green_yellow)));
     #endif
+}
+
+std::shared_ptr<RHICommandQueue> D3D12RHI::getGraphicsQueue()
+{
+    return mDevice->getDirectQueue();
 }
 
 void D3D12RHI::createFactory()

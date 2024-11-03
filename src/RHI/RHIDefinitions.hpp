@@ -24,6 +24,11 @@ struct Size2D
         height = value;
         return *this;
     }
+
+    float aspectRatio() const
+    {
+        return static_cast<float>(width) / static_cast<float>(height);
+    }
 };
 
 struct Size3D
@@ -87,6 +92,18 @@ struct Rect2D
     explicit Rect2D(const Size2D _size = {}, const Offset2D _offset = {})
     : size(_size), offset(_offset)
     {
+    }
+
+    auto setSize(const Size2D value)
+    {
+        size = value;
+        return *this;
+    }
+
+    auto setOffset(const Offset2D value)
+    {
+        offset = value;
+        return *this;
     }
 };
 

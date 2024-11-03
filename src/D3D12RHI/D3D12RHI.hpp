@@ -3,8 +3,7 @@
 #include "RHI/DynamicRHI.hpp"
 #include "RHI/IWindow.hpp"
 #include "D3D12Core.hpp"
-
-using D3D12DevicePtr = std::shared_ptr<class D3D12Device>;
+#include "D3D12Device.hpp"
 
 class D3D12RHI : public DynamicRHI
 {
@@ -15,12 +14,12 @@ public:
 
     void init(const std::shared_ptr<IRHIWindow>& window) override;
 
-    std::shared_ptr<RHICommandQueue> getGraphicsQueue() override { return nullptr; }
+    std::shared_ptr<RHICommandQueue> getGraphicsQueue() override;
 
     RHIInterfaceType getType() const override { return RHIInterfaceType::D3D12; }
 
-    ComPtr<IDXGIFactory4> getFactory() const { return mFactory; }
-    D3D12DevicePtr getDevice() const { return mDevice; }
+    ComPtr<IDXGIFactory4>        getFactory() const { return mFactory; }
+    std::shared_ptr<D3D12Device> getDevice()  const { return mDevice; }
 
 private:
     void createFactory();
@@ -30,8 +29,9 @@ private:
     void createDevice();
 
 private:
-    ComPtr<IDXGIFactory4> mFactory;
-    ComPtr<ID3D12Debug> mDebug;
+    ComPtr<IDXGIFactory4>           mFactory;
+    ComPtr<ID3D12Debug>             mDebug;
 
-    D3D12DevicePtr mDevice;
+    std::shared_ptr<D3D12Device>    mDevice;
+    std::shared_ptr<D3D12Swapchain> mSwapchain;
 };

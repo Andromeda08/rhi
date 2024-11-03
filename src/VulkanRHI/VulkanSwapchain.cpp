@@ -13,6 +13,8 @@ VulkanSwapchain::VulkanSwapchain(const VulkanSwapchainParams& params)
     acquireImages();
     createFrameSyncObjects();
     makeDynamicState();
+
+    mAspectRatio = mExtent.aspectRatio();
 }
 
 std::shared_ptr<VulkanSwapchain> VulkanSwapchain::createVulkanSwapchain(const VulkanSwapchainParams& params)

@@ -23,6 +23,8 @@ public:
 
     static D3D12_COMMAND_LIST_TYPE getD3D12QueueType(RHICommandQueueType queueType);
 
+    ComPtr<ID3D12CommandQueue> getQueueHandle() const { return mCommandQueue; }
+
 private:
     RHICommandQueueType        mType;
     ComPtr<ID3D12CommandQueue> mCommandQueue;
