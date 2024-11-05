@@ -21,8 +21,22 @@ class D3D12Swapchain;
 using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::WeakRef;
 
-#define D3D12_PRINTLN(MESSAGE) \
-    fmt::println("[{}] {}", styled("D3D12", fg(fmt::color::green_yellow)), MESSAGE)
+#define D3D12_PREFIX "D3D12"
+#define D3D12_STYLED_PREFIX styled(D3D12_PREFIX, fg(fmt::color::green_yellow))
+
+#ifdef D3D12_VERBOSE_LOGGING
+#define D3D12_VERBOSE(MESSAGE) fmt::println("[{}|{}] {}", D3D12_STYLED_PREFIX, styled("V", fg(fmt::color::medium_purple)), MESSAGE)
+#else
+#define D3D12_VERBOSE(MESSAGE)
+#endif
+
+#ifdef D3D12_DEBUGGING_ENABLED
+#define D3D12_DEBUG(MESSAGE) fmt::println("[{}|{}] {}", D3D12_STYLED_PREFIX, styled("D", fg(fmt::color::crimson)), MESSAGE)
+#else
+#define D3D12_DEBUG(MESSAGE)
+#endif
+
+#define D3D12_PRINTLN(MESSAGE) fmt::println("[{}] {}", D3D12_STYLED_PREFIX, MESSAGE)
 
 /**
  * String and converters

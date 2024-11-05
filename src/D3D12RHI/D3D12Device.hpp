@@ -28,7 +28,7 @@ public:
     /**
      * Command Queues
      */
-    std::shared_ptr<D3D12CommandQueue> getDirectQueue() const { return mDirectQueue; }
+    D3D12CommandQueue* getDirectQueue() const { return mDirectQueue.get(); }
 
     /**
      * Descriptor Heaps
@@ -42,7 +42,7 @@ private:
     ComPtr<IDXGIAdapter1> mAdapter;
     ComPtr<ID3D12Device> mDevice;
 
-    std::shared_ptr<D3D12CommandQueue> mDirectQueue;
+    std::unique_ptr<D3D12CommandQueue> mDirectQueue;
 
     std::string mAdapterName {"No Adapter"};
     DXGI_ADAPTER_DESC1 mAdapterDesc {};

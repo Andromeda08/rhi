@@ -53,7 +53,10 @@ if (WIN32)
     )
     target_include_directories(D3D12RHI PUBLIC ${D3D12_INCLUDE_DIRS} "src" "external/fmt/include")
     target_link_libraries(D3D12RHI PUBLIC ${D3D12_LIBRARIES} fmt::fmt)
-    target_compile_definitions(D3D12RHI PRIVATE D3D12_DEBUGGING_ENABLED)
+    target_compile_definitions(D3D12RHI
+        PRIVATE D3D12_DEBUGGING_ENABLED
+        PRIVATE D3D12_VERBOSE_LOGGING
+    )
 endif()
 
 # ============== #

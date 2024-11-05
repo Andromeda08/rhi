@@ -12,16 +12,15 @@ D3D12Device::D3D12Device(const ComPtr<IDXGIAdapter1>& adapter)
 
     D3D12_CHECK(mDevice->SetName(TO_LPCWSTR(mAdapterName)), "Failed to name D3D12Device");
 
-    #ifdef D3D12_DEBUGGING_ENABLED
-    fmt::println("[Info] Using Adapter: {}",
-        styled(mAdapterName, fg(fmt::color::honey_dew)));
-    #endif
+    D3D12_PRINTLN(fmt::format("Using Adapter: {}", mAdapterName));
 
     mDirectQueue = D3D12CommandQueue::createD3D12CommandQueue({
         .device = mDevice,
         .type = RHICommandQueueType::Graphics,
         .commandListCount = 2,
     });
+
+    D3D12_VERBOSE("Created D3D12Device");
 }
 
 std::unique_ptr<D3D12Device> D3D12Device::createD3D12Device(const ComPtr<IDXGIAdapter1>& adapter)

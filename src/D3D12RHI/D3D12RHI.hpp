@@ -21,12 +21,12 @@ public:
 
     void waitIdle() const override {}
 
-    std::shared_ptr<RHICommandQueue> getGraphicsQueue() override;
+    RHICommandQueue* getGraphicsQueue() override;
 
     RHIInterfaceType getType() const override { return RHIInterfaceType::D3D12; }
 
-    ComPtr<IDXGIFactory4>        getFactory() const { return mFactory; }
-    std::shared_ptr<D3D12Device> getDevice()  const { return mDevice; }
+    ComPtr<IDXGIFactory4> getFactory() const { return mFactory; }
+    D3D12Device*          getDevice()  const { return mDevice.get(); }
 
 private:
     void createFactory();
@@ -39,6 +39,6 @@ private:
     ComPtr<IDXGIFactory4>           mFactory;
     ComPtr<ID3D12Debug>             mDebug;
 
-    std::shared_ptr<D3D12Device>    mDevice;
-    std::shared_ptr<D3D12Swapchain> mSwapchain;
+    std::unique_ptr<D3D12Device>    mDevice;
+    std::unique_ptr<D3D12Swapchain> mSwapchain;
 };

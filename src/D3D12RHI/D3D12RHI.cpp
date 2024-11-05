@@ -13,15 +13,12 @@ D3D12RHI::D3D12RHI(const D3D12RHICreateInfo& createInfo)
 
     mSwapchain = D3D12Swapchain::createD3D12Swapchain({
         .window = createInfo.pWindow,
-        .device = mDevice,
+        .device = mDevice.get(),
         .factory = mFactory,
         .imageCount = 2,
     });
 
-    #ifdef D3D12_DEBUGGING_ENABLED
-    fmt::println("[Info] RHI initialized, using API: {}",
-        styled("D3D12", fg(fmt::color::green_yellow)));
-    #endif
+    D3D12_PRINTLN(fmt::format("{} RHI initialized", D3D12_STYLED_PREFIX));
 }
 
 std::unique_ptr<D3D12RHI> D3D12RHI::createD3D12RHI(const D3D12RHICreateInfo& createInfo)
@@ -29,7 +26,7 @@ std::unique_ptr<D3D12RHI> D3D12RHI::createD3D12RHI(const D3D12RHICreateInfo& cre
     return std::make_unique<D3D12RHI>(createInfo);
 }
 
-std::shared_ptr<RHICommandQueue> D3D12RHI::getGraphicsQueue()
+RHICommandQueue* D3D12RHI::getGraphicsQueue()
 {
     return mDevice->getDirectQueue();
 }

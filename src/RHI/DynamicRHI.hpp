@@ -20,7 +20,7 @@ public:
     // virtual std::shared_ptr<class RHITexture>  createTexture(const struct RHICreateTextureParams& params) = 0;
     // virtual std::shared_ptr<class RHIPipeline> createPipeline(const struct RHICreatePipelineParams& params) = 0;
 
-    virtual std::shared_ptr<RHICommandQueue> getGraphicsQueue() = 0;
+    virtual RHICommandQueue* getGraphicsQueue() = 0;
 
     virtual RHIInterfaceType getType() const { return RHIInterfaceType::None; }
 };
