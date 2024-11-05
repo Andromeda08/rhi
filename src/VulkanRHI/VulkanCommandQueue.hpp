@@ -1,47 +1,61 @@
 #pragma once
 
-#include "VulkanCore.hpp"
+#include "VulkanBase.hpp"
+#include "RHI/CommandList.hpp"
 #include "RHI/CommandQueue.hpp"
 
-struct QueueProperties
+struct VulkanCommandListCreateInfo
 {
-    vk::QueueFamilyProperties queueFamilyProperties;
-    uint32_t queueFamilyIndex;
+    vk::CommandBuffer commandBuffer;
+    uint32_t          id {};
 };
 
-struct VulkanCommandQueueParams
+class VulkanCommandList : public RHICommandList
 {
-    vk::Device          device;
-    RHICommandQueueType type = RHICommandQueueType::Graphics;
-    uint32_t            commandBufferCount = 2;
-    QueueProperties     queueProperties;
+public:
+    DISABLE_COPY_CTOR(VulkanCommandList);
+    explicit DEF_PRIMARY_CTOR(VulkanCommandList, const VulkanCommandListCreateInfo& createInfo);
+
+    ~VulkanCommandList() override = default;
+
+    void begin() override {}
+
+    void end() override {}
+
+private:
+    friend class VulkanCommandQueue;
+    vk::CommandBuffer getUnderlyingCommandBuffer() const;
+
+    vk::CommandBuffer mCommandList;
+    uint32_t          mId;
+};
+
+struct VulkanCommandQueueCreateInfo
+{
+    vk::Device                device;
+    uint32_t                  commandBufferCount;
+    vk::QueueFamilyProperties queueFamilyProperties;
+    uint32_t                  queueFamilyIndex;
+    const char*               debugName;
 };
 
 class VulkanCommandQueue : public RHICommandQueue
 {
 public:
-    explicit DEF_PRIMARY_CTOR(VulkanCommandQueue, const VulkanCommandQueueParams&);
+    DISABLE_COPY_CTOR(VulkanCommandQueue);
+    explicit DEF_PRIMARY_CTOR(VulkanCommandQueue, const VulkanCommandQueueCreateInfo& createInfo);
 
-    std::shared_ptr<RHICommandList> getCommandList(uint32_t index) override { return nullptr; }
+    ~VulkanCommandQueue() override;
 
-    RHICommandQueueType getType() override { return mType; }
+    [[nodiscard]] RHICommandList* getCommandList(uint32_t id) override;
 
-    ~VulkanCommandQueue() override = default;
-
-    /**
-     * Queue utility methods
-     */
-    static vk::QueueFlags getRequiredQueueFlags(RHICommandQueueType queueType);
-    static vk::QueueFlags getExcludedQueueFlags(RHICommandQueueType queueType);
-    static std::optional<QueueProperties> findQueue(vk::PhysicalDevice physicalDevice, RHICommandQueueType queueType);
-    static std::optional<QueueProperties> findQueue(vk::PhysicalDevice physicalDevice, vk::QueueFlags requiredFlags, vk::QueueFlags excludedFlags);
+    RHICommandQueueType getType() override { return RHICommandQueueType::Graphics; }
 
 private:
-    vk::Queue mQueue;
-    vk::CommandPool mCommandPool;
-    std::vector<std::shared_ptr<VulkanCommandList>> mCommandLists;
-    std::vector<vk::CommandBuffer> mRawCommandLists;
+    vk::Queue                                       mQueue;
 
-    vk::Device mDevice;
-    RHICommandQueueType mType;
+    vk::CommandPool                                 mCommandPool;
+    std::vector<std::unique_ptr<VulkanCommandList>> mCommandLists;
+
+    vk::Device                                      mDevice;
 };

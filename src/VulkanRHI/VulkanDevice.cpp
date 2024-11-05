@@ -1,56 +1,105 @@
 #include "VulkanDevice.hpp"
 
-#include "VulkanCommandQueue.hpp"
-
-#ifdef VULKAN_DEBUGGING_ENABLED
-#include <iostream>
-#endif
-
-VulkanDevice::VulkanDevice(const vk::PhysicalDevice physicalDevice): mPhysicalDevice(physicalDevice)
+fmt::color getVendorColor(const uint32_t vendorID)
 {
-    mExtensions = VulkanDeviceExtension::getRHIDeviceExtensions();
+    if (vendorID == 0x1002) return fmt::color::crimson;
+    if (vendorID == 0x10DE) return fmt::color::green_yellow;
+    if (vendorID == 0x8086) return fmt::color::cornflower_blue;
 
-    std::vector<const char*> supportedExtensionNames;
-    #pragma region "Extensions"
+    return fmt::color::medium_purple;
+}
 
-    const auto driverExtensions = VulkanDeviceExtension::getDriverDeviceExtensions(mPhysicalDevice);
-    for (const auto& extension : mExtensions)
-    {
-        if (VulkanExtension::findExtension(driverExtensions, extension->extensionName()))
+VulkanDevice::VulkanDevice(const VulkanDeviceCreateInfo& createInfo)
+: mInstance(createInfo.instance)
+{
+    selectPhysicalDevice();
+    VK_PRINTLN(fmt::format("Using PhysicalDevice: {}", styled(mDeviceName, fg(getVendorColor(mPhysicalDeviceProperties.vendorID)))));
+
+    createDevice();
+    VK_VERBOSE("Created Device");
+}
+
+std::unique_ptr<VulkanDevice> VulkanDevice::createVulkanDevice(const VulkanDeviceCreateInfo& createInfo)
+{
+    return std::make_unique<VulkanDevice>(createInfo);
+}
+
+void VulkanDevice::waitIdle() const
+{
+    mDevice.waitIdle();
+}
+
+void VulkanDevice::selectPhysicalDevice()
+{
+    const auto requestedExtensions = VulkanDeviceExtension::getRHIDeviceExtensions();
+
+    const auto physicalDevices = mInstance.enumeratePhysicalDevices();
+    const auto candidate = std::ranges::find_if(physicalDevices, [&](const vk::PhysicalDevice& physicalDevice) {
+        const vk::PhysicalDeviceProperties props = physicalDevice.getProperties();
+
+        const auto supportedExtensions = VulkanDeviceExtension::getDriverDeviceExtensions(physicalDevice);
+        bool requirementsPassed = true;
+
+        #ifndef __APPLE__
+        if (props.deviceType != vk::PhysicalDeviceType::eDiscreteGpu)
         {
-            extension->setSupported();
-            if (extension->isRequested())
+            return false;
+        }
+        #endif
+
+        for (const auto& extension : requestedExtensions)
+        {
+            if (!findExtension(extension->extensionName(), supportedExtensions) and extension->isRequested())
             {
-                extension->setEnabled();
+                requirementsPassed = false;
             }
         }
+
+        return requirementsPassed;
+    });
+
+    if (candidate == std::end(physicalDevices))
+    {
+        throw std::runtime_error("Failed to find a suitable PhysicalDevice");
     }
 
-    for (const auto& extension : mExtensions)
+    mPhysicalDevice = *candidate;
+    mPhysicalDeviceProperties = mPhysicalDevice.getProperties();
+    mDeviceName = std::string(mPhysicalDeviceProperties.deviceName.data());
+}
+
+void VulkanDevice::createDevice()
+{
+    #pragma region "Extensions"
+
+    mDeviceExtensions = VulkanDeviceExtension::getEvaluatedRHIDeviceExtensions(mPhysicalDevice);
+    for (auto& extension : mDeviceExtensions)
     {
         if (extension->shouldActivate())
         {
+            extension->postSupportCheck();
             if (extension->extensionName() != nullptr)
             {
-                supportedExtensionNames.push_back(extension->extensionName());
+                mDeviceExtensionNames.push_back(extension->extensionName());
             }
-            extension->postSupportCheck();
         }
-
-        #ifdef VULKAN_DEBUGGING_ENABLED
-        std::cout << extension->toString() << std::endl;
-        #endif
     }
 
     #pragma endregion
 
-    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
     #pragma region "Queues"
 
-    auto queueGraphics = VulkanCommandQueue::findQueue(mPhysicalDevice, RHICommandQueueType::Graphics);
+    std::set<uint32_t> uniqueQueueFamilies;
 
-    const float queuePriority = 1.0f;
-    std::set uniqueQueueFamilies = { queueGraphics->queueFamilyIndex };
+    const auto queueGraphics = findQueue(vk::QueueFlagBits::eGraphics);
+    if (queueGraphics.has_value())
+    {
+        uniqueQueueFamilies.insert(queueGraphics->queueFamilyIndex);
+    }
+
+    constexpr float queuePriority = 1.0f;
+
+    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos;
     for (const uint32_t familyIndex : uniqueQueueFamilies)
     {
         const auto queueCreateInfo = vk::DeviceQueueCreateInfo()
@@ -62,64 +111,57 @@ VulkanDevice::VulkanDevice(const vk::PhysicalDevice physicalDevice): mPhysicalDe
 
     #pragma endregion
 
-    auto deviceFeatures = vk::PhysicalDeviceFeatures()
-        .setFillModeNonSolid(true)
-        .setSamplerAnisotropy(true)
-        .setSampleRateShading(true)
-        .setShaderInt64(true);
+    const auto deviceFeatures = getBaseDeviceFeatures();
 
-    auto deviceCreateInfo = vk::DeviceCreateInfo()
-        .setEnabledExtensionCount(supportedExtensionNames.size())
-        .setPpEnabledExtensionNames(supportedExtensionNames.data())
+    auto createInfo = vk::DeviceCreateInfo()
+        .setEnabledExtensionCount(mDeviceExtensionNames.size())
+        .setPpEnabledExtensionNames(mDeviceExtensionNames.data())
         .setQueueCreateInfoCount(queueCreateInfos.size())
         .setPQueueCreateInfos(queueCreateInfos.data())
         .setPEnabledFeatures(&deviceFeatures);
 
-    for (const auto& extensions : mExtensions)
+    for (const auto& extensions : mDeviceExtensions)
     {
-        extensions->preCreateDevice(deviceCreateInfo);
+        extensions->preCreateDevice(createInfo);
     }
 
-    if (const auto result = mPhysicalDevice.createDevice(&deviceCreateInfo, nullptr, &mDevice);
-        result != vk::Result::eSuccess)
-    {
-        throw std::runtime_error(fmt::format("Failed to create Device ({})", to_string(result)));
-    }
+    VK_EX_CHECK(mDevice = mPhysicalDevice.createDevice(createInfo););
 
-    mPhysicalDeviceProps = mPhysicalDevice.getProperties();
-    mDeviceName = mPhysicalDeviceProps.deviceName.data();
+    mGraphicsCommandQueue = VulkanCommandQueue::createVulkanCommandQueue({
+        .device                = mDevice,
+        .commandBufferCount    = 2,
+        .queueFamilyProperties = queueGraphics->queueFamilyProperties,
+        .queueFamilyIndex      = queueGraphics->queueFamilyIndex,
+        .debugName             = "Graphics"
+    });
+}
 
-    #ifdef VULKAN_DEBUGGING_ENABLED
-    VK_PRINTLN(fmt::format("Using PhysicalDevice: {}", styled(mDeviceName, fg(fmt::color::honey_dew))));
-    #endif
-
-    #pragma region "Create Queues"
-
-    mGraphicsQueue = VulkanCommandQueue::createVulkanCommandQueue({
-        .device = mDevice,
-        .type = RHICommandQueueType::Graphics,
-        .commandBufferCount = 2,
-        .queueProperties = queueGraphics.value(),
+std::optional<VulkanQueueProperties> VulkanDevice::findQueue(vk::QueueFlags requiredFlags, vk::QueueFlags excludedFlags) const
+{
+    const std::vector<vk::QueueFamilyProperties> queueFamilies = mPhysicalDevice.getQueueFamilyProperties();
+    const auto it = std::ranges::find_if(queueFamilies,[requiredFlags, excludedFlags](const vk::QueueFamilyProperties& properties){
+        return (properties.queueCount > 0)
+           && (properties.queueFlags & requiredFlags)
+           && !(properties.queueFlags & excludedFlags);
     });
 
-    #pragma endregion
-}
-
-void VulkanDevice::createSwapchain(const VulkanCreateSwapchainParams& params) const
-{
-    if (const vk::Result result = mDevice.createSwapchainKHR(&params.createInfo, nullptr, params.pSwapchain);
-        result != vk::Result::eSuccess)
+    if (it == std::end(queueFamilies))
     {
-        throw std::runtime_error(fmt::format("Failed to create Swapchain ({})", to_string(result)));
+        return std::nullopt;
     }
+
+    const uint32_t familyIndex = static_cast<uint32_t>((it - std::begin(queueFamilies)));
+    VulkanQueueProperties queueProperties = { *it, familyIndex };
+    return std::make_optional(queueProperties);
 }
 
-std::shared_ptr<VulkanDevice> VulkanDevice::createVulkanDevice(vk::PhysicalDevice physicalDevice)
+vk::PhysicalDeviceFeatures VulkanDevice::getBaseDeviceFeatures()
 {
-    return std::make_shared<VulkanDevice>(physicalDevice);
-}
-
-void VulkanDevice::waitIdle() const
-{
-    mDevice.waitIdle();
+    return vk::PhysicalDeviceFeatures()
+        .setGeometryShader(true)
+        .setTessellationShader(true)
+        .setFillModeNonSolid(true)
+        .setSamplerAnisotropy(true)
+        .setSampleRateShading(true)
+        .setShaderInt64(true);
 }

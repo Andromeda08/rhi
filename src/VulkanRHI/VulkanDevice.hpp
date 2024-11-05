@@ -1,68 +1,54 @@
 #pragma once
 
-#include "VulkanCore.hpp"
-#include "VulkanExtension.hpp"
+#include "VulkanBase.hpp"
+#include "VulkanDeviceExtension.hpp"
+#include "VulkanCommandQueue.hpp"
 
-struct VulkanCreateSwapchainParams
+struct VulkanDeviceCreateInfo
 {
-    const vk::SwapchainCreateInfoKHR& createInfo;
-    vk::SwapchainKHR*                 pSwapchain {nullptr};
+    vk::Instance instance;
+};
+
+struct VulkanQueueProperties
+{
+    vk::QueueFamilyProperties queueFamilyProperties;
+    uint32_t                  queueFamilyIndex;
 };
 
 class VulkanDevice
 {
 public:
     DISABLE_COPY_CTOR(VulkanDevice);
-    explicit DEF_PRIMARY_CTOR(VulkanDevice, vk::PhysicalDevice physicalDevice);
+    explicit DEF_PRIMARY_CTOR(VulkanDevice, const VulkanDeviceCreateInfo& createInfo);
 
+    ~VulkanDevice() { fmt::println("VulkanDevice DTOR"); }
 
     void waitIdle() const;
 
-    void createSwapchain(const VulkanCreateSwapchainParams& params) const;
+    VulkanCommandQueue*              getGraphicsQueue()  const { return mGraphicsCommandQueue.get(); }
 
-    template <typename T>
-    void nameObject(const T& handle, const std::string& name, vk::ObjectType objectType) const;
-
-
-    std::shared_ptr<VulkanCommandQueue> getGraphicsQueue() const { return mGraphicsQueue; }
-
-    vk::PhysicalDevice  physicalDevice()        const { return mPhysicalDevice; }
-    vk::Device          handle()                const { return mDevice; }
-    const std::string&  getPhysicalDeviceName() const { return mDeviceName; }
+    [[nodiscard]] vk::Device         handle()            const { return mDevice; }
+    [[nodisacrd]] vk::PhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
 
 private:
-    std::shared_ptr<VulkanCommandQueue> mGraphicsQueue;
+    void selectPhysicalDevice();
 
-    vk::Device                          mDevice;
-    VulkanDeviceExtensions              mExtensions;
+    void createDevice();
 
-    vk::PhysicalDevice                  mPhysicalDevice;
-    vk::PhysicalDeviceProperties        mPhysicalDeviceProps;
-    std::string                         mDeviceName;
+    std::optional<VulkanQueueProperties> findQueue(vk::QueueFlags requiredFlags, vk::QueueFlags excludedFlags = {}) const;
+
+    static vk::PhysicalDeviceFeatures getBaseDeviceFeatures();
+
+private:
+    vk::Instance                                        mInstance;
+
+    vk::PhysicalDevice                                  mPhysicalDevice;
+    vk::PhysicalDeviceProperties                        mPhysicalDeviceProperties;
+    std::string                                         mDeviceName;
+
+    vk::Device                                          mDevice;
+    std::vector<std::unique_ptr<VulkanDeviceExtension>> mDeviceExtensions;
+    std::vector<const char*>                            mDeviceExtensionNames;
+
+    std::unique_ptr<VulkanCommandQueue>                 mGraphicsCommandQueue;
 };
-
-template<typename T>
-void VulkanDevice::nameObject(const T& handle, const std::string& name, const vk::ObjectType objectType) const
-{
-#ifdef VULKAN_DEBUGGING_ENABLED
-
-    const std::string nameStr = name.empty() ? "Unknown" : name;
-    const auto handleU64 = uint64_t(static_cast<typename T::CType>(handle));
-    const auto name_info = vk::DebugUtilsObjectNameInfoEXT()
-            .setPObjectName(nameStr.c_str())
-            .setObjectHandle(handleU64)
-            .setObjectType(objectType);
-
-    if (const vk::Result result = mDevice.setDebugUtilsObjectNameEXT(&name_info);
-        result != vk::Result::eSuccess)
-    {
-        fmt::println("[{}] {}",
-            styled("VulkanRHI", fg(fmt::color::crimson)),
-            fmt::format("Failed to name Vulkan Object {} of type {} as \"{}\"",
-                styled(handleU64, fg(fmt::color::light_yellow)),
-                styled(to_string(objectType), fg(fmt::color::crimson)),
-                name));
-    }
-
-#endif
-}

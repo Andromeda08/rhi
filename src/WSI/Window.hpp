@@ -15,6 +15,7 @@
 #endif
 
 #include "RHI/IWindow.hpp"
+#include "RHI/Macros.hpp"
 
 struct WindowCreateInfo
 {
@@ -25,7 +26,7 @@ struct WindowCreateInfo
 class Window : public IRHIWindow
 {
 public:
-    explicit DEF_PRIMARY_CTOR(Window, const WindowCreateInfo&);
+    explicit DEF_PRIMARY_CTOR(Window, const WindowCreateInfo& createInfo);
 
     ~Window() override;
 
@@ -40,11 +41,12 @@ public:
 #ifdef VULKAN_RHI_ENABLED
     void createVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* pSurface) override;
 
-    std::vector<std::shared_ptr<VulkanInstanceExtension>> getVulkanInstanceExtensions() override;
+    std::vector<const char*> getVulkanInstanceExtensions() override;
 #endif
 
 private:
     static void exitKeyHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+private:
     GLFWwindow* mWindow {nullptr};
 };

@@ -26,7 +26,7 @@ public:
 
 #ifdef VULKAN_RHI_ENABLED
     virtual void createVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* pSurface) = 0;
-    virtual std::vector<std::shared_ptr<class VulkanInstanceExtension>> getVulkanInstanceExtensions() = 0;
+    virtual std::vector<const char*> getVulkanInstanceExtensions() = 0;
 #endif
 
 #ifdef D3D12_RHI_ENABLED

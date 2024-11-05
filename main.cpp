@@ -7,7 +7,7 @@
     #include "D3D12RHI/D3D12RHI.hpp"
 #endif
 
-std::shared_ptr<Window> gWindow;
+std::unique_ptr<Window> gWindow;
 
 int main()
 {
@@ -15,17 +15,18 @@ int main()
         .resolution = { 1280, 720 },
         .title = "RHI Example Window",
     };
-    gWindow = Window::createWindow(windowCreateInfo);
 
-    gRHI = VulkanRHI::createVulkanRHI();
-    gRHI->init(gWindow);
+    gWindow = std::make_unique<Window>(windowCreateInfo);
+    gRHI = VulkanRHI::createVulkanRHI({
+        .pWindow = gWindow.get(),
+    });
 
-    std::cout << std::string(48, '=') << std::endl;
+    gWindow = std::make_unique<Window>(windowCreateInfo);
+    gRHI = D3D12RHI::createD3D12RHI({
+        .pWindow = gWindow.get(),
+    });
 
-#ifdef D3D12_RHI_ENABLED
-    gRHI = D3D12RHI::createD3D12RHI();
-    gRHI->init(gWindow);
-#endif
+    //std::cout << std::string(48, '=') << std::endl;
 
     return 0;
 }

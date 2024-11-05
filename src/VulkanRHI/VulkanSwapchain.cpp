@@ -1,25 +1,41 @@
 #include "VulkanSwapchain.hpp"
 
-#include "VulkanDevice.hpp"
-
-VulkanSwapchain::VulkanSwapchain(const VulkanSwapchainParams& params)
-: mImageCount(params.imageCount)
-, mSurface(params.surface)
-, mWindow(params.window)
-, mDevice(params.device)
+VulkanSwapchain::VulkanSwapchain(const VulkanSwapchainCreateInfo& params)
+: RHISwapchain()
+, mImageCount(params.imageCount)
+, mWindow(params.pWindow)
+, mDevice(params.pDevice)
+, mInstance(params.instance)
 {
+    createSurface();
     checkSwapchainSupport();
     createSwapchain();
     acquireImages();
-    createFrameSyncObjects();
     makeDynamicState();
 
     mAspectRatio = toRHI(mExtent).aspectRatio();
+
+    VK_VERBOSE("Created Swapchain");
 }
 
-std::shared_ptr<VulkanSwapchain> VulkanSwapchain::createVulkanSwapchain(const VulkanSwapchainParams& params)
+std::unique_ptr<VulkanSwapchain> VulkanSwapchain::createVulkanSwapchain(const VulkanSwapchainCreateInfo& params)
 {
-    return std::make_shared<VulkanSwapchain>(params);
+    return std::make_unique<VulkanSwapchain>(params);
+}
+
+VulkanSwapchain::~VulkanSwapchain()
+{
+    for (const auto& imageView : mImageViews)
+    {
+        mDevice->handle().destroyImageView(imageView);
+    }
+    mImageViews.clear();
+
+    mDevice->handle().destroySwapchainKHR(mSwapchain);
+
+    mInstance.destroySurfaceKHR(mSurface);
+
+    fmt::println("VulkanSwapchain DTOR");
 }
 
 uint32_t VulkanSwapchain::getNextFrameIndex(uint32_t currentFrame) const
@@ -29,11 +45,19 @@ uint32_t VulkanSwapchain::getNextFrameIndex(uint32_t currentFrame) const
 
 void VulkanSwapchain::present() const
 {
+    // TODO: Swapchain present implementation
+    fmt::println("VulkanSwapchain::present()");
 }
+
+void VulkanSwapchain::createSurface()
+{
+    mWindow->createVulkanSurface(mInstance, &mSurface);
+}
+
 
 void VulkanSwapchain::checkSwapchainSupport()
 {
-    const auto physicalDevice = mDevice->physicalDevice();
+    const auto physicalDevice = mDevice->getPhysicalDevice();
     vk::SurfaceCapabilitiesKHR surfaceCaps = physicalDevice.getSurfaceCapabilitiesKHR(mSurface);
     std::vector<vk::SurfaceFormatKHR> surfaceFormats = physicalDevice.getSurfaceFormatsKHR(mSurface);
     std::vector<vk::PresentModeKHR> presentModes = physicalDevice.getSurfacePresentModesKHR(mSurface);
@@ -109,10 +133,7 @@ void VulkanSwapchain::createSwapchain()
         .setQueueFamilyIndexCount(0)
         .setPQueueFamilyIndices(nullptr);
 
-    mDevice->createSwapchain({
-        .createInfo = createInfo,
-        .pSwapchain = &mSwapchain
-    });
+    VK_EX_CHECK(mSwapchain = mDevice->handle().createSwapchainKHR(createInfo););
 }
 
 void VulkanSwapchain::acquireImages()
@@ -141,30 +162,8 @@ void VulkanSwapchain::acquireImages()
             throw std::runtime_error(fmt::format("Failed to create vk::ImageView #{} for Swapchain", i));
         }
 
-        mDevice->nameObject(mImages[i], fmt::format("Swapchain #{}", i), vk::ObjectType::eImage);
-        mDevice->nameObject(mImageViews[i], fmt::format("Swapchain ImageView #{}", i), vk::ObjectType::eImageView);
-    }
-}
-
-void VulkanSwapchain::createFrameSyncObjects()
-{
-    mImageReady.resize(mImageCount);
-    mRenderingFinished.resize(mImageCount);
-    mFrameInFLight.resize(mImageCount);
-
-    for (size_t i = 0; i < mImageCount; i++)
-    {
-        auto sci = vk::SemaphoreCreateInfo();
-        auto fci = vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
-
-        vk::Result result = mDevice->handle().createSemaphore(&sci, nullptr, &mImageReady[i]);
-        mDevice->nameObject(mImageReady[i], fmt::format("ImageReady {}", i), vk::ObjectType::eSemaphore);
-
-        result = mDevice->handle().createSemaphore(&sci, nullptr, &mRenderingFinished[i]);
-        mDevice->nameObject(mRenderingFinished[i], fmt::format("RenderingFinished {}", i), vk::ObjectType::eSemaphore);
-
-        result = mDevice->handle().createFence(&fci, nullptr, &mFrameInFLight[i]);
-        mDevice->nameObject(mFrameInFLight[i], fmt::format("FrameInFlight {}", i), vk::ObjectType::eFence);
+        // mDevice->nameObject(mImages[i], fmt::format("Swapchain #{}", i), vk::ObjectType::eImage);
+        // mDevice->nameObject(mImageViews[i], fmt::format("Swapchain ImageView #{}", i), vk::ObjectType::eImageView);
     }
 }
 

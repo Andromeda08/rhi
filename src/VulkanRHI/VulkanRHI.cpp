@@ -1,23 +1,11 @@
 #include "VulkanRHI.hpp"
-#include "VulkanCommandQueue.hpp"
-#include "VulkanDevice.hpp"
-#include "VulkanSwapchain.hpp"
-
-#ifdef VULKAN_DEBUGGING_ENABLED
-#include <iostream>
-#endif
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 
-VulkanRHI::VulkanRHI()
+VulkanRHI::VulkanRHI(const VulkanRHICreateInfo& createInfo)
 : DynamicRHI()
+, mWindow(createInfo.pWindow)
 {
-}
-
-void VulkanRHI::init(const std::shared_ptr<IRHIWindow>& window)
-{
-    mWindow = window;
-
     const vk::DynamicLoader dynamicLoader;
     const auto vkGetInstanceProcAddr = dynamicLoader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
@@ -25,207 +13,101 @@ void VulkanRHI::init(const std::shared_ptr<IRHIWindow>& window)
     createInstance();
     VULKAN_HPP_DEFAULT_DISPATCHER.init(mInstance);
 
+    createDebugContext();
+
     createDevice();
     VULKAN_HPP_DEFAULT_DISPATCHER.init(mDevice->handle());
 
-    createSurface(mWindow);
-    if (mSurface)
-    {
-        const auto swapchainParams = VulkanSwapchainParams({
-            .window  = mWindow,
-            .device  = mDevice,
-            .surface = mSurface,
-        });
-        mSwapchain = VulkanSwapchain::createVulkanSwapchain(swapchainParams);
-    }
-    else
-    {
-        fmt::println("[{}] {}",
-            styled("VulkanRHI", fg(fmt::color::crimson)),
-            styled("No Surface was created, creation of Swapchain skipped.", fg(fmt::color::light_yellow)));
-    }
+    mSwapchain = VulkanSwapchain::createVulkanSwapchain({
+        .pWindow = mWindow,
+        .pDevice = mDevice.get(),
+        .instance = mInstance,
+        .imageCount = createInfo.backBufferCount,
+    });
 
-    #ifdef VULKAN_DEBUGGING_ENABLED
-    RHI_PRINTLN(fmt::format("RHI Initialized, using API: {}", styled("Vulkan", fg(fmt::color::crimson))));
-    #endif
+    VK_PRINTLN("Vulkan-based RHI initialized");
 }
 
-void VulkanRHI::waitIdle()
+std::unique_ptr<VulkanRHI> VulkanRHI::createVulkanRHI(const VulkanRHICreateInfo& createInfo)
 {
-    mDevice->waitIdle();
+    return std::make_unique<VulkanRHI>(createInfo);
 }
 
 void VulkanRHI::createInstance()
 {
-    constexpr auto appInfo = vk::ApplicationInfo()
-        .setPApplicationName("RHI")
-        .setApiVersion(VK_API_VERSION_1_3);
+    constexpr auto applicationInfo = vk::ApplicationInfo()
+        .setApiVersion(VK_API_VERSION_1_3)
+        .setPApplicationName("Vulkan RHI");
 
-    #pragma region "Layer and Extension setup"
-
-    mInstanceLayers = VulkanInstanceLayer::getRHIInstanceLayers();
-    const auto driverLayers = VulkanInstanceLayer::getDriverInstanceLayers();
-    for (auto& rhiLayer : mInstanceLayers)
-    {
-        if (VulkanInstanceLayer::findLayer(driverLayers, rhiLayer->layerName()))
-        {
-            rhiLayer->setEnabled();
-        }
-    }
-
-    std::vector<const char*> layers;
-    for (const auto& layer : mInstanceLayers)
-    {
-        if (layer->isActive())
-        {
-            layers.push_back(layer->layerName());
-        }
-        #if VULKAN_DEBUGGING_ENABLED
-        std::cout << layer->toString() << std::endl;
-        #endif
-    }
-
-    mInstanceExtensions = VulkanInstanceExtension::getRHIInstanceExtensions();
-    const auto driverExtensions = VulkanInstanceExtension::getDriverInstanceExtensions();
-
-    if (mWindow)
-    {
-        for (auto glfw = mWindow->getVulkanInstanceExtensions();
-             const auto& glfwExtension : glfw)
-        {
-            mInstanceExtensions.push_back(glfwExtension);
-        }
-    }
-
-    for (auto& rhiExtension : mInstanceExtensions)
-    {
-        if (VulkanInstanceLayer::findLayer(driverLayers, rhiExtension->extensionName()))
-        {
-            rhiExtension->setSupported();
-            if (rhiExtension->isRequested())
-            {
-                rhiExtension->setEnabled();
-            }
-        }
-    }
-
-    std::vector<const char*> extensions;
-    for (const auto& extension : mInstanceExtensions)
-    {
-        if (extension->isActive())
-        {
-            extensions.push_back(extension->extensionName());
-        }
-        #if VULKAN_DEBUGGING_ENABLED
-        std::cout << extension->toString() << std::endl;
-        #endif
-    }
-
-    #pragma endregion
-
-    auto createInfo = vk::InstanceCreateInfo()
-        .setEnabledLayerCount(layers.size())
-        .setPpEnabledLayerNames(layers.data())
-        .setEnabledExtensionCount(extensions.size())
-        .setPpEnabledExtensionNames(extensions.data())
-        .setPApplicationInfo(&appInfo);
+    mInstanceLayers = getSupportedInstanceLayers();
+    mInstanceExtensions = getSupportedInstanceExtensions(mWindow->getVulkanInstanceExtensions());
+    const auto instanceCreateInfo = vk::InstanceCreateInfo()
+        .setEnabledExtensionCount(mInstanceExtensions.size())
+        .setPpEnabledExtensionNames(mInstanceExtensions.data())
+        .setEnabledLayerCount(mInstanceLayers.size())
+        .setPpEnabledLayerNames(mInstanceLayers.data())
+        .setPApplicationInfo(&applicationInfo);
 
     #ifdef __APPLE__
     createInfo.setFlags(vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR);
     #endif
 
-    if (const auto result = vk::createInstance(&createInfo, nullptr, &mInstance);
-        result != vk::Result::eSuccess) {
-        throw std::runtime_error("[RHI] Failed to create Vulkan Instance");
+    try {
+        mInstance = vk::createInstance(instanceCreateInfo);
+    } catch(const vk::SystemError& error) {
+        fmt::println("Failed to create Vulkan Instance: {}", error.what());
+        throw;
     }
+
+    VK_VERBOSE("Created Instance");
 }
 
-vk::PhysicalDevice VulkanRHI::selectPhysicalDevice() const
+std::vector<const char*> VulkanRHI::getSupportedInstanceLayers(const std::vector<const char*>& additionalLayers)
 {
-    const auto requestedExtensions = VulkanDeviceExtension::getRHIDeviceExtensions();
+    std::vector<const char*> rhiLayers = {};
+    const std::vector driverLayers = vk::enumerateInstanceLayerProperties();
 
-    const auto physicalDevices = mInstance.enumeratePhysicalDevices();
-    const auto candidate = std::ranges::find_if(physicalDevices, [&](const vk::PhysicalDevice& physicalDevice) {
-        const vk::PhysicalDeviceProperties props = physicalDevice.getProperties();
+    #ifdef VULKAN_DEBUGGING_ENABLED
+    rhiLayers.push_back("VK_LAYER_KHRONOS_validation");
+    #endif
 
-        const auto supportedExtensions = VulkanDeviceExtension::getDriverDeviceExtensions(physicalDevice);
-        bool requirementsPassed = true;
-        for (const auto& extension : requestedExtensions)
-        {
-            if (!VulkanExtension::findExtension(supportedExtensions, extension->extensionName())
-                && extension->isRequested())
-            {
-                requirementsPassed = false;
-            }
-        }
-
-        if (const auto queueGraphics = VulkanCommandQueue::findQueue(physicalDevice, RHICommandQueueType::Graphics);
-            not queueGraphics.has_value())
-        {
-            requirementsPassed = false;
-        }
-
-        return requirementsPassed;
-    });
-
-    if (candidate == std::end(physicalDevices))
+    if (!additionalLayers.empty())
     {
-        throw std::runtime_error("Failed to find a suitable PhysicalDevice");
+        std::ranges::copy(additionalLayers, std::inserter(rhiLayers, std::end(rhiLayers)));
     }
 
-    return *candidate;
+    return getSupportedLayers(rhiLayers, driverLayers);
+}
+
+std::vector<const char*> VulkanRHI::getSupportedInstanceExtensions(const std::vector<const char*>& additionalExtensions)
+{
+    std::vector rhiExtensions = {VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
+    const std::vector driverExtensions = vk::enumerateInstanceExtensionProperties();
+
+    #ifdef __APPLE_
+    rhiExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    #endif
+
+    if (!additionalExtensions.empty())
+    {
+        std::ranges::copy(additionalExtensions, std::inserter(rhiExtensions, std::end(rhiExtensions)));
+    }
+
+    return getSupportedExtensions(rhiExtensions, driverExtensions);
+}
+
+void VulkanRHI::createDebugContext()
+{
+    #ifdef VULKAN_DEBUGGING_ENABLED
+    mDebugContext = VulkanDebugContext::createVulkanDebugContext({
+        .instance = mInstance,
+    });
+    #endif
 }
 
 void VulkanRHI::createDevice()
 {
-    const auto physicalDevice = selectPhysicalDevice();
-    mDevice = VulkanDevice::createVulkanDevice(physicalDevice);
-}
-
-void VulkanRHI::createSurface(const std::shared_ptr<IRHIWindow>& window)
-{
-    if (!window)
-    {
-        fmt::println("[{}] {}",
-            styled("VulkanRHI", fg(fmt::color::crimson)),
-            styled("No Window specified, creation of Surface skipped.", fg(fmt::color::light_yellow)));
-        return;
-    }
-    window->createVulkanSurface(mInstance, &mSurface);
-}
-
-void VulkanRHI::initializeDebugFeatures()
-{
-    using Severity = vk::DebugUtilsMessageSeverityFlagBitsEXT;
-    auto severity = Severity::eInfo | Severity::eWarning | Severity::eError | Severity::eVerbose;
-
-    using Type = vk::DebugUtilsMessageTypeFlagBitsEXT;
-    auto type = Type::eGeneral | Type::ePerformance | Type::eValidation;
-
-    auto create_info = vk::DebugUtilsMessengerCreateInfoEXT()
-        .setMessageSeverity(severity)
-        .setMessageType(type)
-        .setPfnUserCallback(debugMessageCallback);
-
-    if (const vk::Result result = mInstance.createDebugUtilsMessengerEXT(&create_info, nullptr, &mMessenger);
-        result != vk::Result::eSuccess)
-    {
-        throw std::runtime_error(fmt::format("Failed to initialize Vulkan debug features. ({})", to_string(result)));
-    }
-}
-
-VkBool32 VulkanRHI::debugMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
-    VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT *p_data, void *p_user)
-{
-    if (!p_data) return vk::False;
-    if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-    {
-        fmt::println("{}", p_data->pMessage);
-    }
-    return vk::False;
-}
-
-std::shared_ptr<VulkanRHI> VulkanRHI::createVulkanRHI()
-{
-    return std::make_shared<VulkanRHI>();
+    mDevice = VulkanDevice::createVulkanDevice({
+        .instance = mInstance,
+    });
 }

@@ -11,12 +11,10 @@ class DynamicRHI
 public:
     virtual ~DynamicRHI() = default;
 
-    virtual void init(const std::shared_ptr<IRHIWindow>& window) = 0;
-
     /**
      * RHI Commands
      */
-    virtual void waitIdle() = 0;
+    virtual void waitIdle() const = 0;
     // virtual void syncNextFrame() = 0;
     // virtual std::shared_ptr<class RHIBuffer>   createBuffer(const struct RHICreateBufferParams& params) = 0;
     // virtual std::shared_ptr<class RHITexture>  createTexture(const struct RHICreateTextureParams& params) = 0;

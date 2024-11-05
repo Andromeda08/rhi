@@ -1,24 +1,25 @@
 #pragma once
 
-#include "VulkanCore.hpp"
 #include "RHI/RHISwapchain.hpp"
 #include "RHI/IWindow.hpp"
+#include "VulkanBase.hpp"
+#include "VulkanDevice.hpp"
 
-struct VulkanSwapchainParams
+struct VulkanSwapchainCreateInfo
 {
-    std::shared_ptr<IRHIWindow>   window;
-    std::shared_ptr<VulkanDevice> device;
-    vk::SurfaceKHR                surface;
-    uint32_t                      imageCount {2};
+    IRHIWindow*    pWindow = nullptr;
+    VulkanDevice*  pDevice = nullptr;
+    vk::Instance   instance;
+    uint32_t       imageCount {};
 };
 
 class VulkanSwapchain : public RHISwapchain
 {
 public:
     DISABLE_COPY_CTOR(VulkanSwapchain);
-    explicit DEF_PRIMARY_CTOR(VulkanSwapchain, const VulkanSwapchainParams& params);
+    explicit DEF_PRIMARY_CTOR(VulkanSwapchain, const VulkanSwapchainCreateInfo& params);
 
-    ~VulkanSwapchain() override = default;
+    ~VulkanSwapchain() override;
 
     uint32_t getNextFrameIndex(uint32_t currentFrame) const override;
 
@@ -32,19 +33,20 @@ public:
     uint32_t getFrameCount()        override { return mImageCount; }
 
 private:
+    void createSurface();
     void checkSwapchainSupport();
     void createSwapchain();
     void acquireImages();
-    void createFrameSyncObjects();
     void makeDynamicState();
 
+private:
     const uint32_t                  mImageCount;
     vk::Extent2D                    mExtent;
-    float                           mAspectRatio {};
+    float                           mAspectRatio;
     vk::Format                      mFormat {vk::Format::eB8G8R8A8Unorm};
     vk::ColorSpaceKHR               mColorSpace {vk::ColorSpaceKHR::eSrgbNonlinear};
     vk::PresentModeKHR              mPresentMode {vk::PresentModeKHR::eFifo};
-    vk::SurfaceTransformFlagBitsKHR mCurrentTransform;
+    vk::SurfaceTransformFlagBitsKHR mCurrentTransform {};
     vk::SurfaceKHR                  mSurface;
     vk::SwapchainKHR                mSwapchain;
     vk::Rect2D                      mCachedScissor;
@@ -53,11 +55,7 @@ private:
     std::vector<vk::Image>          mImages;
     std::vector<vk::ImageView>      mImageViews;
 
-    std::shared_ptr<IRHIWindow>     mWindow;
-    std::shared_ptr<VulkanDevice>   mDevice;
-
-    // Frame Sync
-    std::vector<vk::Semaphore>      mImageReady;
-    std::vector<vk::Semaphore>      mRenderingFinished;
-    std::vector<vk::Fence>          mFrameInFLight;
+    IRHIWindow*                     mWindow;
+    VulkanDevice*                   mDevice;
+    vk::Instance                    mInstance;
 };

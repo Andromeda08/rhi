@@ -1,67 +1,6 @@
-#include "VulkanExtension.hpp"
+#include "VulkanDeviceExtension.hpp"
 
-int32_t VulkanExtension::findExtension(const std::vector<vk::ExtensionProperties>& extensionProperties, const char* extensionName)
-{
-    if (extensionName == nullptr)
-    {
-        return -1;
-    }
-
-    for (int32_t i = 0; i < extensionProperties.size(); i++)
-    {
-        if (!std::strcmp(extensionProperties[i].extensionName.operator const char*(), extensionName))
-        {
-            return i;
-        }
-    }
-    return -1;
-}
-
-std::string VulkanExtension::toString() const
-{
-    return fmt::format("[{}] {} (Active={}, Requested={}, Supported={})",
-        styled("Ext", fg(fmt::color::crimson)),
-        styled(mExtensionName ? mExtensionName : "Vulkan Core Features", fg(fmt::color::cornflower_blue)),
-        isActive() ? "y" : "n",
-        isRequested() ? "y" : "n",
-        isSupported() ? "y" : "n");
-}
-
-#pragma region "Instance"
-
-VulkanInstanceExtensions VulkanInstanceExtension::getRHIInstanceExtensions()
-{
-    VulkanInstanceExtensions instanceExtensions;
-
-    #define ADD_EXTENSION(EXT_NAME, REQUESTED) \
-        instanceExtensions.push_back(std::make_shared<VulkanInstanceExtension>(EXT_NAME, REQUESTED));
-
-    #if __APPLE__
-        ADD_EXTENSION(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, true);
-    #else
-        ADD_EXTENSION(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, false);
-    #endif
-
-    ADD_EXTENSION(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, true)
-
-    #undef ADD_EXTENSION
-
-    return instanceExtensions;
-}
-
-std::vector<vk::ExtensionProperties> VulkanInstanceExtension::getDriverInstanceExtensions()
-{
-    return vk::enumerateInstanceExtensionProperties();
-}
-
-#pragma endregion
-
-#pragma region "Device"
-
-std::vector<vk::ExtensionProperties> VulkanDeviceExtension::getDriverDeviceExtensions(vk::PhysicalDevice physicalDevice)
-{
-    return physicalDevice.enumerateDeviceExtensionProperties();
-}
+#pragma region "Vulkan Device Extensions"
 
 class VulkanCore11 final : public VulkanDeviceExtension
 {
@@ -175,24 +114,54 @@ public:
     void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) override {}
 
     // For now this method assumes that only Apple devices require this...
-    static std::shared_ptr<VulkanPortabilitySubsetExtension> makePlatformSpecific()
+    static std::unique_ptr<VulkanPortabilitySubsetExtension> makePlatformSpecific()
     {
         bool required = false;
         #ifdef __APPLE__
             required = true;
         #endif
-        return std::make_shared<VulkanPortabilitySubsetExtension>(required);
+        return std::make_unique<VulkanPortabilitySubsetExtension>(required);
     }
 };
 
-VulkanDeviceExtensions VulkanDeviceExtension::getRHIDeviceExtensions()
-{
-    VulkanDeviceExtensions deviceExtensions;
+#pragma endregion
 
-    #define ADD_CORE(TYPE) \
-        deviceExtensions.push_back(std::make_shared<TYPE>());
-    #define ADD_BASIC(TYPE) \
-        deviceExtensions.push_back(std::make_shared<TYPE>());
+VulkanDeviceExtension::VulkanDeviceExtension(const char* extensionName, const bool requested)
+: mExtensionName(extensionName), mIsRequested(requested)
+{
+}
+
+std::unique_ptr<VulkanDeviceExtension> VulkanDeviceExtension::createVulkanDeviceExtension(const char* extensionName,const bool requested)
+{
+    return std::make_unique<VulkanDeviceExtension>(extensionName, requested);
+}
+
+std::vector<std::unique_ptr<VulkanDeviceExtension>> VulkanDeviceExtension::getEvaluatedRHIDeviceExtensions(const vk::PhysicalDevice physicalDevice)
+{
+    auto rhiExtensions = getRHIDeviceExtensions();
+    const auto driverExtensions = getDriverDeviceExtensions(physicalDevice);
+
+    for (const auto& extension : rhiExtensions)
+    {
+        if (findExtension(extension->extensionName(), driverExtensions))
+        {
+            extension->setSupported();
+            if (extension->isRequested())
+            {
+                extension->setEnabled();
+            }
+        }
+    }
+
+    return rhiExtensions;
+}
+
+std::vector<std::unique_ptr<VulkanDeviceExtension>> VulkanDeviceExtension::getRHIDeviceExtensions()
+{
+    std::vector<std::unique_ptr<VulkanDeviceExtension>> deviceExtensions;
+
+    #define ADD_CORE(TYPE)  deviceExtensions.push_back(std::make_unique<TYPE>());
+    #define ADD_BASIC(TYPE) deviceExtensions.push_back(std::make_unique<TYPE>());
 
     ADD_CORE(VulkanCore11);
     ADD_CORE(VulkanCore12);
@@ -208,4 +177,7 @@ VulkanDeviceExtensions VulkanDeviceExtension::getRHIDeviceExtensions()
     return deviceExtensions;
 }
 
-#pragma endregion
+std::vector<vk::ExtensionProperties> VulkanDeviceExtension::getDriverDeviceExtensions(const vk::PhysicalDevice physicalDevice)
+{
+    return  physicalDevice.enumerateDeviceExtensionProperties();
+}

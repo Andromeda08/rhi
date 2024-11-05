@@ -1,56 +1,59 @@
 #pragma once
 
+#include "VulkanBase.hpp"
 #include "RHI/DynamicRHI.hpp"
-#include "VulkanCore.hpp"
-#include "VulkanLayer.hpp"
-#include "VulkanExtension.hpp"
-#include "VulkanCommandQueue.hpp"
-#include "VulkanDevice.hpp"
 
-class VulkanRHI : public DynamicRHI
+#include "VulkanDebugContext.hpp"
+#include "VulkanDevice.hpp"
+#include "VulkanSwapchain.hpp"
+
+struct VulkanRHICreateInfo
+{
+    IRHIWindow* pWindow         = nullptr;
+    uint32_t    backBufferCount = 2;
+};
+
+class VulkanRHI final : public DynamicRHI
 {
 public:
     DISABLE_COPY_CTOR(VulkanRHI);
-    DEF_PRIMARY_CTOR(VulkanRHI);
+    explicit DEF_PRIMARY_CTOR(VulkanRHI, const VulkanRHICreateInfo& createInfo);
 
-    ~VulkanRHI() override = default;
+    ~VulkanRHI() override
+    {
+        waitIdle();
+        fmt::println("VulkanRHI DTOR");
+    };
 
-    /**
-     * Public API
-     */
-    void init(const std::shared_ptr<IRHIWindow>& window) override
+    #pragma region "DynamicRHI"
 
-    void waitIdle() override;
+    void                             waitIdle()         const override { mDevice->waitIdle(); }
 
-    std::shared_ptr<RHICommandQueue> getGraphicsQueue()       override { return mDevice->getGraphicsQueue(); }
+    std::shared_ptr<RHICommandQueue> getGraphicsQueue()       override { return nullptr; }
     RHIInterfaceType                 getType()          const override { return RHIInterfaceType::Vulkan; }
 
-    /**
-     * Internal API
-     */
-    vk::Instance                  getInstance() const { return mInstance; }
-    std::shared_ptr<VulkanDevice> getDevice()   const { return mDevice; }
+    #pragma endregion
 
 private:
-    void                createInstance();
-    vk::PhysicalDevice  selectPhysicalDevice() const;
-    void                createDevice();
-    void                createSurface(const std::shared_ptr<IRHIWindow>& window);
+    void createInstance();
 
-    vk::Instance                     mInstance;
-    VulkanInstanceLayers             mInstanceLayers;
-    VulkanInstanceExtensions         mInstanceExtensions;
+    static std::vector<const char*> getSupportedInstanceLayers(const std::vector<const char*>& additionalLayers = {});
+    static std::vector<const char*> getSupportedInstanceExtensions(const std::vector<const char*>& additionalExtensions = {});
 
-    std::shared_ptr<VulkanDevice>    mDevice;
+    void createDebugContext();
 
-    vk::SurfaceKHR                   mSurface;
-    std::shared_ptr<VulkanSwapchain> mSwapchain;
-    std::shared_ptr<IRHIWindow>      mWindow;
+    void createDevice();
 
-    vk::DebugUtilsMessengerEXT       mMessenger {};
-    void initializeDebugFeatures();
+private:
+    vk::Instance                        mInstance;
+    std::vector<const char*>            mInstanceLayers;
+    std::vector<const char*>            mInstanceExtensions;
 
-    static VkBool32 VKAPI_CALL debugMessageCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type,
-        const VkDebugUtilsMessengerCallbackDataEXT* p_data, void* p_user);
+    std::unique_ptr<VulkanDebugContext> mDebugContext;
+
+    std::shared_ptr<VulkanDevice>       mDevice;
+
+    std::unique_ptr<VulkanSwapchain>    mSwapchain;
+
+    IRHIWindow*                         mWindow;
 };

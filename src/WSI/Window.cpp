@@ -1,6 +1,6 @@
 #include "Window.hpp"
 
-#include "VulkanRHI/VulkanExtension.hpp"
+#include <vulkan/vulkan.hpp>
 
 Window::Window(const WindowCreateInfo& createInfo)
 {
@@ -22,9 +22,9 @@ Window::Window(const WindowCreateInfo& createInfo)
     glfwSetKeyCallback(mWindow, Window::exitKeyHandler);
 }
 
-std::shared_ptr<Window> Window::createWindow(const WindowCreateInfo& createInfo)
+std::unique_ptr<Window> Window::createWindow(const WindowCreateInfo& createInfo)
 {
-    return std::make_shared<Window>(createInfo);
+    return std::make_unique<Window>(createInfo);
 }
 
 Window::~Window()
@@ -75,20 +75,11 @@ void Window::createVulkanSurface(const vk::Instance& instance, vk::SurfaceKHR* p
     }
 }
 
-std::vector<std::shared_ptr<VulkanInstanceExtension>> Window::getVulkanInstanceExtensions()
+std::vector<const char*> Window::getVulkanInstanceExtensions()
 {
     uint32_t extension_count = 0;
     const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&extension_count);
-    const auto extensionNames = std::vector<const char*>(glfwExtensions, glfwExtensions + extension_count);
-
-    std::vector<std::shared_ptr<VulkanInstanceExtension>> extensions;
-
-    for (const auto& name : extensionNames)
-    {
-        extensions.push_back(std::make_unique<VulkanInstanceExtension>(name, true));
-    }
-
-    return extensions;
+    return {glfwExtensions, glfwExtensions + extension_count};
 }
 
 #endif
