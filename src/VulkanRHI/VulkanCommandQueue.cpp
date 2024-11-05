@@ -61,8 +61,6 @@ VulkanCommandQueue::~VulkanCommandQueue()
     mCommandLists.clear();
 
     mDevice.destroyCommandPool(mCommandPool);
-
-    fmt::println("VulkanCommandQueue DTOR");
 }
 
 RHICommandList* VulkanCommandQueue::getCommandList(uint32_t id)

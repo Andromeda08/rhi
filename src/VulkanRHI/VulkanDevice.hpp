@@ -21,7 +21,7 @@ public:
     DISABLE_COPY_CTOR(VulkanDevice);
     explicit DEF_PRIMARY_CTOR(VulkanDevice, const VulkanDeviceCreateInfo& createInfo);
 
-    ~VulkanDevice() { fmt::println("VulkanDevice DTOR"); }
+    ~VulkanDevice() { waitIdle(); }
 
     void waitIdle() const;
 

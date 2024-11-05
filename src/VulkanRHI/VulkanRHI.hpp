@@ -19,18 +19,14 @@ public:
     DISABLE_COPY_CTOR(VulkanRHI);
     explicit DEF_PRIMARY_CTOR(VulkanRHI, const VulkanRHICreateInfo& createInfo);
 
-    ~VulkanRHI() override
-    {
-        waitIdle();
-        fmt::println("VulkanRHI DTOR");
-    };
+    ~VulkanRHI() override = default;
 
     #pragma region "DynamicRHI"
 
-    void                             waitIdle()         const override { mDevice->waitIdle(); }
+    void              waitIdle()         const override { mDevice->waitIdle(); }
 
-    std::shared_ptr<RHICommandQueue> getGraphicsQueue()       override { return nullptr; }
-    RHIInterfaceType                 getType()          const override { return RHIInterfaceType::Vulkan; }
+    RHICommandQueue*  getGraphicsQueue()       override { return mDevice->getGraphicsQueue(); }
+    RHIInterfaceType  getType()          const override { return RHIInterfaceType::Vulkan; }
 
     #pragma endregion
 
@@ -51,7 +47,7 @@ private:
 
     std::unique_ptr<VulkanDebugContext> mDebugContext;
 
-    std::shared_ptr<VulkanDevice>       mDevice;
+    std::unique_ptr<VulkanDevice>       mDevice;
 
     std::unique_ptr<VulkanSwapchain>    mSwapchain;
 

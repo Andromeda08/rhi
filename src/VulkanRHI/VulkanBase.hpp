@@ -14,7 +14,7 @@
 
 #include "RHI/Macros.hpp"
 
-#define VK_PREFIX "VulkanRHI"
+#define VK_PREFIX "Vulkan"
 #define VK_STYLED_PREFIX styled(VK_PREFIX, fg(fmt::color::crimson))
 #define STYLED_DEBUG styled("D", fg(fmt::color::crimson))
 #define STYLED_VERBOSE styled("V", fg(fmt::color::medium_purple))

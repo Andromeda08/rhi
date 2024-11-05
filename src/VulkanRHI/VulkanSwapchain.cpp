@@ -34,8 +34,6 @@ VulkanSwapchain::~VulkanSwapchain()
     mDevice->handle().destroySwapchainKHR(mSwapchain);
 
     mInstance.destroySurfaceKHR(mSurface);
-
-    fmt::println("VulkanSwapchain DTOR");
 }
 
 uint32_t VulkanSwapchain::getNextFrameIndex(uint32_t currentFrame) const

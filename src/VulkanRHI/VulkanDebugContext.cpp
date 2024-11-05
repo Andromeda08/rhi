@@ -27,7 +27,6 @@ std::unique_ptr<VulkanDebugContext> VulkanDebugContext::createVulkanDebugContext
 VulkanDebugContext::~VulkanDebugContext()
 {
     mInstance.destroyDebugUtilsMessengerEXT(mMessenger);
-    fmt::println("VulkanDebugContext DTOR");
 }
 
 VkBool32 VulkanDebugContext::debugMessageCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* p_data, void* p_user)

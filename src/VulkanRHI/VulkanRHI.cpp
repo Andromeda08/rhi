@@ -25,7 +25,7 @@ VulkanRHI::VulkanRHI(const VulkanRHICreateInfo& createInfo)
         .imageCount = createInfo.backBufferCount,
     });
 
-    VK_PRINTLN("Vulkan-based RHI initialized");
+    VK_PRINTLN(fmt::format("{} RHI initialized", VK_STYLED_PREFIX));
 }
 
 std::unique_ptr<VulkanRHI> VulkanRHI::createVulkanRHI(const VulkanRHICreateInfo& createInfo)

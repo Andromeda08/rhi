@@ -34,6 +34,8 @@ public:
 
     Size2D framebufferSize() const override;
 
+    bool shouldClose() const { return glfwWindowShouldClose(mWindow); }
+
 #ifdef D3D12_RHI_ENABLED
     HWND getWin32Handle() const override { return glfwGetWin32Window(mWindow); }
 #endif
