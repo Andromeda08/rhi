@@ -11,9 +11,9 @@ D3D12CommandQueue::D3D12CommandQueue(const D3D12CommandQueueParams& params)
         "Failed to create CommandQueue.");
 }
 
-std::shared_ptr<D3D12CommandQueue> D3D12CommandQueue::createD3D12CommandQueue(const D3D12CommandQueueParams& params)
+std::unique_ptr<D3D12CommandQueue> D3D12CommandQueue::createD3D12CommandQueue(const D3D12CommandQueueParams& params)
 {
-    return std::make_shared<D3D12CommandQueue>(params);
+    return std::make_unique<D3D12CommandQueue>(params);
 }
 
 D3D12_COMMAND_LIST_TYPE D3D12CommandQueue::getD3D12QueueType(RHICommandQueueType queueType)

@@ -24,9 +24,9 @@ D3D12Device::D3D12Device(const ComPtr<IDXGIAdapter1>& adapter)
     });
 }
 
-std::shared_ptr<D3D12Device> D3D12Device::createD3D12Device(const ComPtr<IDXGIAdapter1>& adapter)
+std::unique_ptr<D3D12Device> D3D12Device::createD3D12Device(const ComPtr<IDXGIAdapter1>& adapter)
 {
-    return std::make_shared<D3D12Device>(adapter);
+    return std::make_unique<D3D12Device>(adapter);
 }
 
 void D3D12Device::createDescriptorHeap(const D3D12CreateDescriptorHeapParams& params) const

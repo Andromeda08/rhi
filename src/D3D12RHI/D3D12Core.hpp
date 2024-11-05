@@ -2,6 +2,7 @@
 
 #include "Core/Base.hpp"
 #include "RHI/RHIDefinitions.hpp"
+#include "RHI/Macros.hpp"
 
 // Forward Declarations
 class D3D12Device;

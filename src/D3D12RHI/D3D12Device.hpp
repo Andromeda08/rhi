@@ -22,6 +22,7 @@ struct D3D12CreateRenderTargetViewParams
 class D3D12Device
 {
 public:
+    DISABLE_COPY_CTOR(D3D12Device);
     explicit DEF_PRIMARY_CTOR(D3D12Device, const ComPtr<IDXGIAdapter1>& adapter);
 
     /**

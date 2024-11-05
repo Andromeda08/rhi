@@ -3,8 +3,8 @@
 D3D12Swapchain::D3D12Swapchain(const D3D12SwapchainParams& params)
 : mSize(params.window->framebufferSize())
 , mImageCount(params.imageCount)
-, mDevice(params.device)
 , mWindow(params.window)
+, mDevice(params.device)
 {
     DXGI_SWAP_CHAIN_DESC1 swapchainDesc {};
     swapchainDesc.BufferCount       = mImageCount;
@@ -58,9 +58,9 @@ D3D12Swapchain::D3D12Swapchain(const D3D12SwapchainParams& params)
     mScissor  = CD3DX12_RECT(0, 0, mSize.width, mSize.height);
 }
 
-std::shared_ptr<D3D12Swapchain> D3D12Swapchain::createD3D12Swapchain(const D3D12SwapchainParams& params)
+std::unique_ptr<D3D12Swapchain> D3D12Swapchain::createD3D12Swapchain(const D3D12SwapchainParams& params)
 {
-    return std::make_shared<D3D12Swapchain>(params);
+    return std::make_unique<D3D12Swapchain>(params);
 }
 
 

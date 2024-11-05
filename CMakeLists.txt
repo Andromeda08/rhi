@@ -21,13 +21,12 @@ add_subdirectory(external/glfw)
 add_compile_definitions(VULKAN_RHI_ENABLED)
 
 add_library(VulkanRHI
-    src/VulkanRHI/VulkanCore.hpp
-    src/VulkanRHI/VulkanRHI.hpp src/VulkanRHI/VulkanRHI.cpp
-    src/VulkanRHI/VulkanLayer.hpp src/VulkanRHI/VulkanLayer.cpp
-    src/VulkanRHI/VulkanExtension.hpp src/VulkanRHI/VulkanExtension.cpp
-    src/VulkanRHI/VulkanDevice.hpp src/VulkanRHI/VulkanDevice.cpp
+    src/VulkanRHI/VulkanBase.hpp
     src/VulkanRHI/VulkanCommandQueue.hpp src/VulkanRHI/VulkanCommandQueue.cpp
-    src/VulkanRHI/VulkanCommandList.hpp src/VulkanRHI/VulkanCommandList.cpp
+    src/VulkanRHI/VulkanDebugContext.hpp src/VulkanRHI/VulkanDebugContext.cpp
+    src/VulkanRHI/VulkanDevice.hpp src/VulkanRHI/VulkanDevice.cpp
+    src/VulkanRHI/VulkanDeviceExtension.hpp src/VulkanRHI/VulkanDeviceExtension.cpp
+    src/VulkanRHI/VulkanRHI.hpp src/VulkanRHI/VulkanRHI.cpp
     src/VulkanRHI/VulkanSwapchain.hpp src/VulkanRHI/VulkanSwapchain.cpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
@@ -35,6 +34,7 @@ target_link_libraries(VulkanRHI PUBLIC ${Vulkan_LIBRARIES} fmt::fmt)
 target_compile_definitions(VulkanRHI
     PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
     PRIVATE VULKAN_DEBUGGING_ENABLED
+    PRIVATE VULKAN_VERBOSE_LOGGING
 )
 
 # ============== #
@@ -49,8 +49,7 @@ if (WIN32)
         src/D3D12RHI/D3D12Device.hpp src/D3D12RHI/D3D12Device.cpp
         src/D3D12RHI/D3D12CommandQueue.hpp src/D3D12RHI/D3D12CommandQueue.cpp
         src/D3D12RHI/D3D12CommandList.hpp src/D3D12RHI/D3D12CommandList.cpp
-            src/D3D12RHI/D3D12Swapchain.hpp
-            src/D3D12RHI/D3D12Swapchain.cpp
+        src/D3D12RHI/D3D12Swapchain.hpp src/D3D12RHI/D3D12Swapchain.cpp
     )
     target_include_directories(D3D12RHI PUBLIC ${D3D12_INCLUDE_DIRS} "src" "external/fmt/include")
     target_link_libraries(D3D12RHI PUBLIC ${D3D12_LIBRARIES} fmt::fmt)
@@ -71,6 +70,7 @@ add_executable(${PROJECT_NAME}
     src/RHI/CommandQueue.hpp
     src/RHI/CommandList.hpp
     src/RHI/RHISwapchain.hpp
+    src/RHI/Macros.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw)

@@ -2,17 +2,24 @@
 
 #include "RHI/DynamicRHI.hpp"
 #include "RHI/IWindow.hpp"
+#include "RHI/Macros.hpp"
 #include "D3D12Core.hpp"
 #include "D3D12Device.hpp"
+
+struct D3D12RHICreateInfo
+{
+    IRHIWindow* pWindow;
+};
 
 class D3D12RHI : public DynamicRHI
 {
 public:
-    DEF_PRIMARY_CTOR(D3D12RHI);
+    DISABLE_COPY_CTOR(D3D12RHI);
+    explicit DEF_PRIMARY_CTOR(D3D12RHI, const D3D12RHICreateInfo& createInfo);
 
     ~D3D12RHI() override = default;
 
-    void init(const std::shared_ptr<IRHIWindow>& window) override;
+    void waitIdle() const override {}
 
     std::shared_ptr<RHICommandQueue> getGraphicsQueue() override;
 

@@ -4,24 +4,15 @@
 #include "D3D12CommandQueue.hpp"
 #include "D3D12Swapchain.hpp"
 
-D3D12RHI::D3D12RHI()
+D3D12RHI::D3D12RHI(const D3D12RHICreateInfo& createInfo)
 : DynamicRHI()
-{
-}
-
-std::shared_ptr<D3D12RHI> D3D12RHI::createD3D12RHI()
-{
-    return std::make_shared<D3D12RHI>();
-}
-
-void D3D12RHI::init(const std::shared_ptr<IRHIWindow>& window)
 {
     createFactory();
 
     createDevice();
 
     mSwapchain = D3D12Swapchain::createD3D12Swapchain({
-        .window = window,
+        .window = createInfo.pWindow,
         .device = mDevice,
         .factory = mFactory,
         .imageCount = 2,
@@ -31,6 +22,11 @@ void D3D12RHI::init(const std::shared_ptr<IRHIWindow>& window)
     fmt::println("[Info] RHI initialized, using API: {}",
         styled("D3D12", fg(fmt::color::green_yellow)));
     #endif
+}
+
+std::unique_ptr<D3D12RHI> D3D12RHI::createD3D12RHI(const D3D12RHICreateInfo& createInfo)
+{
+    return std::make_unique<D3D12RHI>(createInfo);
 }
 
 std::shared_ptr<RHICommandQueue> D3D12RHI::getGraphicsQueue()
@@ -87,10 +83,12 @@ ComPtr<IDXGIAdapter1> D3D12RHI::selectAdapter() const
             continue;
         }
 
-        if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, _uuidof(ID3D12Device), nullptr)))
+        auto result = D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, _uuidof(ID3D12Device), nullptr);
+        if (SUCCEEDED(result))
         {
             break;
         }
+        D3D12_PRINTLN(std::system_category().message(result));
     }
 
     if (adapter.Get() == nullptr)

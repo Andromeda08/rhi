@@ -8,7 +8,7 @@
 
 struct D3D12SwapchainParams
 {
-    std::shared_ptr<IRHIWindow>         window;
+    IRHIWindow*                         window;
     std::shared_ptr<D3D12Device>        device;
     ComPtr<IDXGIFactory4>&              factory;
     uint32_t                            imageCount {2};
@@ -46,6 +46,6 @@ private:
     ComPtr<ID3D12DescriptorHeap>        mRTVDescriptorHeap;
     std::vector<ComPtr<ID3D12Resource>> mRTVs;
 
-    std::shared_ptr<IRHIWindow>         mWindow;
+    IRHIWindow*                         mWindow;
     std::shared_ptr<D3D12Device>        mDevice;
 };

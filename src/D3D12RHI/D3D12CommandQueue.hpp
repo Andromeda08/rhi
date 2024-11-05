@@ -17,7 +17,7 @@ class D3D12CommandQueue : public RHICommandQueue
 public:
     explicit DEF_PRIMARY_CTOR(D3D12CommandQueue, const D3D12CommandQueueParams& params);
 
-    std::shared_ptr<RHICommandList> getCommandList(uint32_t index) override { return nullptr; }
+    RHICommandList* getCommandList(uint32_t index) override { return nullptr; }
 
     RHICommandQueueType getType() override { return mType; }
 
