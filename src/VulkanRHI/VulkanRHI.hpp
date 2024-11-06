@@ -1,11 +1,10 @@
 #pragma once
 
 #include "VulkanBase.hpp"
-#include "RHI/DynamicRHI.hpp"
-
 #include "VulkanDebugContext.hpp"
 #include "VulkanDevice.hpp"
 #include "VulkanSwapchain.hpp"
+#include "RHI/DynamicRHI.hpp"
 
 struct VulkanRHICreateInfo
 {
@@ -22,6 +21,11 @@ public:
     ~VulkanRHI() override = default;
 
     #pragma region "DynamicRHI"
+
+    std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override
+    {
+        return mDevice->createBuffer(createInfo);
+    }
 
     void              waitIdle()         const override { mDevice->waitIdle(); }
 

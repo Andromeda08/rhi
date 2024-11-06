@@ -10,7 +10,7 @@ struct VulkanCommandListCreateInfo
     uint32_t          id {};
 };
 
-class VulkanCommandList : public RHICommandList
+class VulkanCommandList final : public RHICommandList
 {
 public:
     DISABLE_COPY_CTOR(VulkanCommandList);
@@ -18,9 +18,18 @@ public:
 
     ~VulkanCommandList() override = default;
 
-    void begin() override {}
+    void begin() override
+    {
+        constexpr auto beginInfo = vk::CommandBufferBeginInfo();
+        VK_EX_CHECK(mCommandList.begin(beginInfo););
+        mIsRecording = true;
+    }
 
-    void end() override {}
+    void end() override
+    {
+        mCommandList.end();
+        mIsRecording = false;
+    }
 
 private:
     friend class VulkanCommandQueue;
@@ -28,6 +37,8 @@ private:
 
     vk::CommandBuffer mCommandList;
     uint32_t          mId;
+
+    bool              mIsRecording = false;
 };
 
 struct VulkanCommandQueueCreateInfo
@@ -39,7 +50,7 @@ struct VulkanCommandQueueCreateInfo
     const char*               debugName;
 };
 
-class VulkanCommandQueue : public RHICommandQueue
+class VulkanCommandQueue final : public RHICommandQueue
 {
 public:
     DISABLE_COPY_CTOR(VulkanCommandQueue);

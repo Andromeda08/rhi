@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RHIDefinitions.hpp"
+#include "Definitions.hpp"
 
 class RHICommandList;
 

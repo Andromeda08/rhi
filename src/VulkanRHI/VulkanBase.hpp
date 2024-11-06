@@ -91,7 +91,7 @@ inline std::vector<const char*> getSupportedExtensions(const std::vector<const c
 
 #pragma endregion
 
-#include "RHI/RHIDefinitions.hpp"
+#include "RHI/Definitions.hpp"
 #pragma region "Vulkan to RHI Type Conversion"
 
 inline auto toRHI(const vk::Format format)

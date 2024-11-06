@@ -28,6 +28,7 @@ add_library(VulkanRHI
     src/VulkanRHI/VulkanDeviceExtension.hpp src/VulkanRHI/VulkanDeviceExtension.cpp
     src/VulkanRHI/VulkanRHI.hpp src/VulkanRHI/VulkanRHI.cpp
     src/VulkanRHI/VulkanSwapchain.hpp src/VulkanRHI/VulkanSwapchain.cpp
+        src/VulkanRHI/VulkanBuffer.hpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
 target_link_libraries(VulkanRHI PUBLIC ${Vulkan_LIBRARIES} fmt::fmt)
@@ -69,11 +70,13 @@ add_executable(${PROJECT_NAME}
     src/WSI/Window.hpp src/WSI/Window.cpp
     src/RHI/DynamicRHI.hpp src/RHI/DynamicRHI.cpp
     src/RHI/IWindow.hpp
-    src/RHI/RHIDefinitions.hpp
+        src/RHI/Definitions.hpp
     src/RHI/CommandQueue.hpp
     src/RHI/CommandList.hpp
     src/RHI/RHISwapchain.hpp
     src/RHI/Macros.hpp
+        src/RHI/Buffer.hpp
+        src/RHI/Definitions.cpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Base.hpp"
-#include "RHI/RHIDefinitions.hpp"
+#include "RHI/Definitions.hpp"
 #include "RHI/Macros.hpp"
 
 // Forward Declarations
@@ -10,9 +10,7 @@ class D3D12CommandQueue;
 class D3D12CommandList;
 class D3D12Swapchain;
 
-/**
- * DirectX 12, Windows and related headers
- */
+// DirectX 12, Windows and related headers
 #include <d3d12.h>
 #include <d3dx12.h>
 #include <dxgi1_6.h>
@@ -20,6 +18,13 @@ class D3D12Swapchain;
 
 using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::WeakRef;
+
+#define D3D12_CHECK(FN, ERROR_MSG)       \
+if (auto result = FN; FAILED(result)) {  \
+    throw std::runtime_error(ERROR_MSG); \
+}
+
+#pragma region "Logging"
 
 #define D3D12_PREFIX "D3D12"
 #define D3D12_STYLED_PREFIX styled(D3D12_PREFIX, fg(fmt::color::green_yellow))
@@ -38,41 +43,38 @@ using Microsoft::WRL::WeakRef;
 
 #define D3D12_PRINTLN(MESSAGE) fmt::println("[{}] {}", D3D12_STYLED_PREFIX, MESSAGE)
 
-/**
- * String and converters
- */
+#pragma endregion
+
+#pragma region "wstring utilities"
+
 #define TO_WSTR(STRING) std::wstring(std::begin(STRING), std::end(STRING))
 
 #define TO_LPCWSTR(STRING) TO_WSTR(STRING).c_str()
 
 std::string to_string(const std::wstring& wstring);
 
-/**
- * Macros
- */
-#define D3D12_CHECK(FN, ERROR_MSG)       \
-if (auto result = FN; FAILED(result)) {  \
-    throw std::runtime_error(ERROR_MSG); \
-}
+#pragma endregion
 
-/**
- * D3D12 -> RHI Conversion
- */
+#pragma region "D3D12 to RHI type conversion"
+
 inline Rect2D toRHI(const CD3DX12_RECT& rect)
 {
-    return Rect2D(
-        Size2D(rect.bottom, rect.right),
-        Offset2D(rect.top, rect.left)
-    );
+    return {
+        .size = Size2D(rect.bottom, rect.right),
+        .offset = Offset2D(rect.top, rect.left),
+    };
 }
 
 inline Viewport toRHI(const CD3DX12_VIEWPORT& viewport)
 {
-    return Viewport(
-        viewport.TopLeftX, viewport.TopLeftY,
-        viewport.Width, viewport.Height,
-        viewport.MinDepth, viewport.MaxDepth
-    );
+    return {
+        .x = viewport.TopLeftX,
+        .y = viewport.TopLeftY,
+        .width = viewport.Width,
+        .height = viewport.Height,
+        .minDepth = viewport.MinDepth,
+        .maxDepth = viewport.MaxDepth,
+    };
 }
 
 inline Format toRHI(const DXGI_FORMAT format)
@@ -93,3 +95,5 @@ inline Format toRHI(const DXGI_FORMAT format)
             throw std::runtime_error("Unsupported Format");
     }
 }
+
+#pragma endregion

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Base.hpp"
-#include "RHIDefinitions.hpp"
+#include "Definitions.hpp"
 
 class RHISwapchain
 {

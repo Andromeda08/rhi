@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RHIDefinitions.hpp"
+#include "Definitions.hpp"
 
 #ifdef D3D12_RHI_ENABLED
 #include <windef.h>

@@ -1,8 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "RHIDefinitions.hpp"
-#include "IWindow.hpp"
+#include "Definitions.hpp"
 
 class RHICommandQueue;
 
@@ -15,8 +14,9 @@ public:
      * RHI Commands
      */
     virtual void waitIdle() const = 0;
-    // virtual void syncNextFrame() = 0;
-    // virtual std::shared_ptr<class RHIBuffer>   createBuffer(const struct RHICreateBufferParams& params) = 0;
+
+    virtual std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) = 0;
+
     // virtual std::shared_ptr<class RHITexture>  createTexture(const struct RHICreateTextureParams& params) = 0;
     // virtual std::shared_ptr<class RHIPipeline> createPipeline(const struct RHICreatePipelineParams& params) = 0;
 

@@ -29,6 +29,11 @@ void VulkanDevice::waitIdle() const
     mDevice.waitIdle();
 }
 
+std::unique_ptr<VulkanBuffer> VulkanDevice::createBuffer(const RHIBufferCreateInfo& createInfo)
+{
+    return std::make_unique<VulkanBuffer>(createInfo);
+}
+
 void VulkanDevice::selectPhysicalDevice()
 {
     const auto requestedExtensions = VulkanDeviceExtension::getRHIDeviceExtensions();

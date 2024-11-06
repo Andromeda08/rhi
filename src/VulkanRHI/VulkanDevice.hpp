@@ -1,8 +1,9 @@
 #pragma once
 
 #include "VulkanBase.hpp"
-#include "VulkanDeviceExtension.hpp"
+#include "VulkanBuffer.hpp"
 #include "VulkanCommandQueue.hpp"
+#include "VulkanDeviceExtension.hpp"
 
 struct VulkanDeviceCreateInfo
 {
@@ -24,6 +25,8 @@ public:
     ~VulkanDevice() { waitIdle(); }
 
     void waitIdle() const;
+
+    std::unique_ptr<VulkanBuffer>    createBuffer(const RHIBufferCreateInfo& createInfo);
 
     VulkanCommandQueue*              getGraphicsQueue()  const { return mGraphicsCommandQueue.get(); }
 
