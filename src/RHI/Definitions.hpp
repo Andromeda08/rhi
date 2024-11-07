@@ -97,11 +97,11 @@ enum class PrimitiveType
 
 enum RHIBufferType
 {
-    eIndex,
-    eStaging,
-    eStorage,
-    eUniform,
-    eVertex,
+    Index,
+    Staging,
+    Storage,
+    Uniform,
+    Vertex,
 };
 
 struct RHIBufferCreateInfo
