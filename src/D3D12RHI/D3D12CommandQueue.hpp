@@ -25,6 +25,8 @@ public:
 
     ComPtr<ID3D12CommandQueue> getQueueHandle() const { return mCommandQueue; }
 
+    void executeSingleTimeCommand(const std::function<void(RHICommandList*)>& lambda) override {}
+
 private:
     RHICommandQueueType        mType;
     ComPtr<ID3D12CommandQueue> mCommandQueue;

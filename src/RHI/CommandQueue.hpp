@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include "Definitions.hpp"
 
 class RHICommandList;
@@ -11,4 +12,6 @@ public:
 
     virtual RHICommandList*     getCommandList(uint32_t index) = 0;
     virtual RHICommandQueueType getType() = 0;
+
+    virtual void executeSingleTimeCommand(const std::function<void(RHICommandList*)>& lambda) = 0;
 };
