@@ -24,7 +24,12 @@ public:
 
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override
     {
-        return mDevice->createBuffer(createInfo);
+        return VulkanBuffer::createVulkanBuffer({
+            .bufferSize = createInfo.bufferSize,
+            .bufferType = createInfo.bufferType,
+            .debugName  = createInfo.debugName,
+            .pDevice    = mDevice.get(),
+        });
     }
 
     void              waitIdle()         const override { mDevice->waitIdle(); }

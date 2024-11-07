@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "Buffer.hpp"
 #include "Definitions.hpp"
 
 class RHICommandQueue;

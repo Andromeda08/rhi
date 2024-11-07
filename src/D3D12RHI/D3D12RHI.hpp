@@ -21,6 +21,8 @@ public:
 
     void waitIdle() const override {}
 
+    std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override { return nullptr; }
+
     RHICommandQueue* getGraphicsQueue() override;
 
     RHIInterfaceType getType() const override { return RHIInterfaceType::D3D12; }

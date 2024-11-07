@@ -1,5 +1,6 @@
 #include "Window.hpp"
 
+#include <fmt/format.h>
 #include <vulkan/vulkan.hpp>
 
 Window::Window(const WindowCreateInfo& createInfo)

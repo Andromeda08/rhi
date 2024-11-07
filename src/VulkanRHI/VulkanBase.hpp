@@ -6,6 +6,7 @@
 #include <string>
 #include <ranges>
 #include <set>
+#include <variant>
 #include <vector>
 #include <vulkan/vulkan.hpp>
 
@@ -20,13 +21,13 @@
 #define STYLED_VERBOSE styled("V", fg(fmt::color::medium_purple))
 
 #ifdef VULKAN_VERBOSE_LOGGING
-    #define VK_VERBOSE(MESSAGE) fmt::println("[{}|{}] {}", VK_STYLED_PREFIX, STYLED_VERBOSE, MESSAGE)
+    #define VK_VERBOSE(MESSAGE) fmt::println("[{}] {}", VK_STYLED_PREFIX, MESSAGE)
 #else
     #define VK_VERBOSE(MESSAGE)
 #endif
 
 #ifdef VULKAN_DEBUGGING_ENABLED
-    #define VK_DEBUG(MESSAGE) fmt::println("[{}|{}] {}", VK_STYLED_PREFIX, STYLED_DEBUG, MESSAGE)
+    #define VK_DEBUG(MESSAGE) fmt::println("[{}] {}", VK_STYLED_PREFIX, MESSAGE)
 #else
     #define VK_DEBUG(MESSAGE)
 #endif
@@ -34,6 +35,13 @@
 #define VK_PRINTLN(MESSAGE) fmt::println("[{}] {}", VK_STYLED_PREFIX, MESSAGE)
 
 #define VK_EX_CHECK(C) try { C } catch (const vk::SystemError& error) { VK_DEBUG(error.what()); throw; }
+#define VK_CHECK(C) VK_EX_CHECK(C)
+
+#ifdef VULKAN_DEBUGGING_ENABLED
+    #define VK_CHECK_DEBUG(C) VK_EX_CHECK(C)
+#else
+    #define VK_CHECK_DEBUG(C) C
+#endif
 
 #pragma region "Vulkan utility functions"
 

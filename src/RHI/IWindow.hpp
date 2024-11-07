@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "Definitions.hpp"
 
 #ifdef D3D12_RHI_ENABLED

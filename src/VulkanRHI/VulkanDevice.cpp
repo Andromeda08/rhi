@@ -29,7 +29,42 @@ void VulkanDevice::waitIdle() const
     mDevice.waitIdle();
 }
 
-std::unique_ptr<VulkanBuffer> VulkanDevice::createBuffer(const RHIBufferCreateInfo& createInfo)
+VulkanAllocation* VulkanDevice::allocateMemory(const VulkanAllocationInfo& allocationInfo)
+{
+    vk::MemoryRequirements memoryRequirements;
+    if(std::holds_alternative<vk::Buffer>(allocationInfo.target))
+    {
+        const auto buffer = std::get<vk::Buffer>(allocationInfo.target);
+        memoryRequirements = mDevice.getBufferMemoryRequirements(buffer);
+    }
+    if(std::holds_alternative<vk::Image>(allocationInfo.target))
+    {
+        const auto image = std::get<vk::Image>(allocationInfo.target);
+        memoryRequirements = mDevice.getImageMemoryRequirements(image);
+    }
+
+    constexpr auto allocateFlags = vk::MemoryAllocateFlagsInfo().setFlags(vk::MemoryAllocateFlagBits::eDeviceAddress);
+    const auto allocateInfo = vk::MemoryAllocateInfo()
+        .setAllocationSize(memoryRequirements.size)
+        .setMemoryTypeIndex(findMemoryHeapIndex(memoryRequirements.memoryTypeBits, allocationInfo.propertyFlags))
+        .setPNext(&allocateFlags);
+
+    vk::DeviceMemory memory;
+    VK_CHECK_DEBUG(
+        memory = mDevice.allocateMemory(allocateInfo);
+    );
+
+    mMemoryAllocations.push_back(VulkanAllocation::createVulkanAllocation({
+        .device        = mDevice,
+        .memory        = memory,
+        .size          = memoryRequirements.size,
+        .target        = allocationInfo.target,
+    }));
+
+    return mMemoryAllocations.back().get();
+}
+
+std::unique_ptr<VulkanBuffer> VulkanDevice::createBuffer(const VulkanBufferCreateInfo& createInfo)
 {
     return std::make_unique<VulkanBuffer>(createInfo);
 }
@@ -158,6 +193,19 @@ std::optional<VulkanQueueProperties> VulkanDevice::findQueue(vk::QueueFlags requ
     const uint32_t familyIndex = static_cast<uint32_t>((it - std::begin(queueFamilies)));
     VulkanQueueProperties queueProperties = { *it, familyIndex };
     return std::make_optional(queueProperties);
+}
+
+uint32_t VulkanDevice::findMemoryHeapIndex(uint32_t filter, vk::MemoryPropertyFlags propertyFlags) const
+{
+    const auto memoryProperties = mPhysicalDevice.getMemoryProperties();
+    for (auto i = 0; i < memoryProperties.memoryTypeCount; i++)
+    {
+        if ((filter & (1 << i)) and (memoryProperties.memoryTypes[i].propertyFlags & propertyFlags) == propertyFlags)
+        {
+            return i;
+        }
+    }
+    throw std::runtime_error("Failed to find suitable memory heap");
 }
 
 vk::PhysicalDeviceFeatures VulkanDevice::getBaseDeviceFeatures()

@@ -9,15 +9,15 @@
 
 std::unique_ptr<Window> gWindow;
 
-int main(int argc, char** argv)
+int main(const int argc, char** argv)
 {
     auto api = RHIInterfaceType::Vulkan;
     if (argc >= 2)
     {
         const std::string apiArg = argv[1];
 
-        if (apiArg == "D3D12")  api = RHIInterfaceType::D3D12;
-        else                    api = RHIInterfaceType::Vulkan;
+        if   (apiArg == "D3D12") api = RHIInterfaceType::D3D12;
+        else                     api = RHIInterfaceType::Vulkan;
     }
 
     const auto windowCreateInfo = WindowCreateInfo {
@@ -43,6 +43,12 @@ int main(int argc, char** argv)
         default:
             return 0;
     }
+
+    auto testBuffer = gRHI->createBuffer({
+        .bufferSize = 128,
+        .bufferType = RHIBufferType::eUniform,
+        .debugName  = "Test Buffer",
+    });
 
     while (!gWindow->shouldClose())
     {

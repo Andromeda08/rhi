@@ -111,8 +111,6 @@ struct RHIBufferCreateInfo
     const char*     debugName;
 };
 
-class RHIBuffer;
-
 #pragma endregion
 
 struct Size2D
@@ -132,9 +130,9 @@ struct Size3D
     uint32_t height;
     uint32_t depth;
 
-    auto setWidth(uint32_t value);
-    auto setHeight(uint32_t value);
-    auto setDepth(uint32_t value);
+    Size3D& setWidth(uint32_t value);
+    Size3D& setHeight(uint32_t value);
+    Size3D& setDepth(uint32_t value);
 };
 
 struct Offset2D
@@ -164,10 +162,10 @@ struct Viewport
     float minDepth;
     float maxDepth;
 
-    auto setX(float value);
-    auto setY(float value);
-    auto setWidth(float value);
-    auto setHeight(float value);
-    auto setMinDepth(float value);
-    auto setMaxDepth(float value);
+    Viewport& setX(float value);
+    Viewport& setY(float value);
+    Viewport& setWidth(float value);
+    Viewport& setHeight(float value);
+    Viewport& setMinDepth(float value);
+    Viewport& setMaxDepth(float value);
 };
