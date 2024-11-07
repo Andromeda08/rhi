@@ -1,5 +1,29 @@
 #include "VulkanCommandQueue.hpp"
 
+#include "VulkanBuffer.hpp"
+
+#pragma region "Specific command implementations"
+
+void VulkanCommandList::copyBuffer(RHIBuffer* src, RHIBuffer* dst)
+{
+    auto* vkSrc = src->as<VulkanBuffer>();
+    auto* vkDst = dst->as<VulkanBuffer>();
+
+    const auto bufferCopy = vk::BufferCopy()
+        .setSize(vkSrc->getSize())
+        .setSrcOffset(vkSrc->getOffset())
+        .setDstOffset(vkDst->getOffset());
+
+    // TODO: uncomment after command submission is supported
+    // mCommandList.copyBuffer(vkSrc->handle(), vkDst->handle(), 1, &bufferCopy);
+
+    fmt::println("VulkanCommandList::copyBuffer()");
+}
+
+#pragma endregion
+
+#pragma region "CommandList"
+
 VulkanCommandList::VulkanCommandList(const VulkanCommandListCreateInfo& createInfo)
 : mCommandList(createInfo.commandBuffer)
 , mId(createInfo.id)

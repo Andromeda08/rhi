@@ -31,6 +31,8 @@ public:
         mIsRecording = false;
     }
 
+    void copyBuffer(RHIBuffer* src, RHIBuffer* dst) override;
+
 private:
     friend class VulkanCommandQueue;
     vk::CommandBuffer getUnderlyingCommandBuffer() const;

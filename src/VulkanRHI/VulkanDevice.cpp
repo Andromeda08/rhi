@@ -64,11 +64,6 @@ VulkanAllocation* VulkanDevice::allocateMemory(const VulkanAllocationInfo& alloc
     return mMemoryAllocations.back().get();
 }
 
-std::unique_ptr<VulkanBuffer> VulkanDevice::createBuffer(const VulkanBufferCreateInfo& createInfo)
-{
-    return std::make_unique<VulkanBuffer>(createInfo);
-}
-
 void VulkanDevice::selectPhysicalDevice()
 {
     const auto requestedExtensions = VulkanDeviceExtension::getRHIDeviceExtensions();

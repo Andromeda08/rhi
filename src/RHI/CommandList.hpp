@@ -1,5 +1,7 @@
 #pragma once
 
+class RHIBuffer;
+
 class RHICommandList
 {
 public:
@@ -23,7 +25,7 @@ public:
     /**
      * Transfer operations
      */
-    // virtual void copyBuffer() = 0;
+    virtual void copyBuffer(RHIBuffer* src, RHIBuffer* dst) = 0;
     // virtual void copyImage() = 0;
 
     /**

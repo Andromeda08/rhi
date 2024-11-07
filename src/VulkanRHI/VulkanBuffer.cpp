@@ -1,29 +1,94 @@
 #include "VulkanBuffer.hpp"
 
+struct BufferTypeFlags
+{
+    vk::MemoryPropertyFlags memoryFlags;
+    vk::BufferUsageFlags    usageFlags;
+
+    static BufferTypeFlags forType(RHIBufferType bufferType);
+};
+
+BufferTypeFlags BufferTypeFlags::forType(const RHIBufferType bufferType)
+{
+    BufferTypeFlags result = {
+        .memoryFlags = {},
+        .usageFlags = vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eTransferSrc,
+    };
+
+    switch (bufferType)
+    {
+        using enum RHIBufferType;
+        using enum vk::BufferUsageFlagBits;
+        using enum vk::MemoryPropertyFlagBits;
+
+        case Index: {
+            result.usageFlags  |= eIndexBuffer | eStorageBuffer | eAccelerationStructureBuildInputReadOnlyKHR;
+            result.memoryFlags |= eDeviceLocal;
+            break;
+        }
+        case Staging: {
+            result.usageFlags  |= eTransferSrc;
+            result.memoryFlags |= eHostVisible | eHostCoherent;
+            break;
+        }
+        case Storage: {
+            result.usageFlags  |= eStorageBuffer;
+            result.memoryFlags |= eHostVisible | eHostCoherent;
+            break;
+        }
+        case Uniform: {
+            result.usageFlags  |= eUniformBuffer;
+            result.memoryFlags |= eHostVisible | eHostCoherent;
+            break;
+        }
+        case Vertex: {
+            result.usageFlags  |= eVertexBuffer | eStorageBuffer | eAccelerationStructureBuildInputReadOnlyKHR;
+            result.memoryFlags |= eDeviceLocal;
+            break;
+        }
+        default:
+            break;
+    }
+    return result;
+}
+
 VulkanBuffer::VulkanBuffer(const VulkanBufferCreateInfo& createInfo)
 : RHIBuffer()
 , mDevice(createInfo.pDevice)
 {
-    const auto baseUsageFlags = vk::BufferUsageFlags();
+    const auto [memoryFlags, usageFlags] = BufferTypeFlags::forType(createInfo.bufferType);
     const auto bufferCreateInfo = vk::BufferCreateInfo()
         .setSharingMode(vk::SharingMode::eExclusive)
         .setSize(createInfo.bufferSize)
-        .setUsage(baseUsageFlags);
+        .setUsage(usageFlags);
 
     VK_CHECK(mBuffer = mDevice->handle().createBuffer(bufferCreateInfo););
 
-    const auto basePropertyFlags = vk::MemoryPropertyFlags();
     const auto allocationInfo = VulkanAllocationInfo()
         .setTarget(mBuffer)
-        .setPropertyFlags(basePropertyFlags);
+        .setPropertyFlags(memoryFlags);
 
     mMemory  = mDevice->allocateMemory(allocationInfo);
+    mMemory->bind();
+
     mAddress = mMemory->getAddress().value();
+    mSize    = createInfo.bufferSize;
 
     mDevice->nameObject<vk::Buffer>({
         .debugName  = createInfo.debugName,
         .handle     = mBuffer,
     });
 
-    VK_VERBOSE(fmt::format("Created Buffer ({})", createInfo.debugName));
+    VK_VERBOSE(fmt::format("Created Buffer (debugName: {})", createInfo.debugName ? createInfo.debugName : "-"));
+}
+
+std::unique_ptr<VulkanBuffer> VulkanBuffer::createVulkanBuffer(const VulkanBufferCreateInfo& createInfo)
+{
+    return std::make_unique<VulkanBuffer>(createInfo);
+}
+
+VulkanBuffer::~VulkanBuffer()
+{
+    mDevice->handle().destroyBuffer(mBuffer);
+    mMemory->free();
 }

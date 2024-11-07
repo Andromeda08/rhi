@@ -33,6 +33,33 @@ std::unique_ptr<VulkanRHI> VulkanRHI::createVulkanRHI(const VulkanRHICreateInfo&
     return std::make_unique<VulkanRHI>(createInfo);
 }
 
+std::unique_ptr<RHIBuffer> VulkanRHI::createBuffer(const RHIBufferCreateInfo& createInfo)
+{
+    if (createInfo.pData)
+    {
+        std::unique_ptr<VulkanBuffer> result;
+        getGraphicsQueue()->executeSingleTimeCommand([&](RHICommandList* commandList) {
+            result = VulkanBuffer::createVulkanBufferWithData({
+                    .bufferSize = createInfo.bufferSize,
+                    .bufferType = createInfo.bufferType,
+                    .pDevice    = mDevice.get(),
+                    .debugName  = createInfo.debugName,
+                },
+                createInfo.pData,
+                commandList
+            );
+        });
+        return result;
+    }
+
+    return VulkanBuffer::createVulkanBuffer({
+        .bufferSize = createInfo.bufferSize,
+        .bufferType = createInfo.bufferType,
+        .pDevice    = mDevice.get(),
+        .debugName  = createInfo.debugName,
+    });
+}
+
 void VulkanRHI::createInstance()
 {
     constexpr auto applicationInfo = vk::ApplicationInfo()

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VulkanBase.hpp"
+#include "VulkanBuffer.hpp"
 #include "VulkanDebugContext.hpp"
 #include "VulkanDevice.hpp"
 #include "VulkanSwapchain.hpp"
@@ -22,15 +23,7 @@ public:
 
     #pragma region "DynamicRHI"
 
-    std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override
-    {
-        return VulkanBuffer::createVulkanBuffer({
-            .bufferSize = createInfo.bufferSize,
-            .bufferType = createInfo.bufferType,
-            .debugName  = createInfo.debugName,
-            .pDevice    = mDevice.get(),
-        });
-    }
+    std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override;
 
     void              waitIdle()         const override { mDevice->waitIdle(); }
 

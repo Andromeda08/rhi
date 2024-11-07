@@ -108,6 +108,7 @@ struct RHIBufferCreateInfo
 {
     uint64_t        bufferSize;
     RHIBufferType   bufferType;
+    void*           pData {nullptr};
     const char*     debugName;
 };
 
