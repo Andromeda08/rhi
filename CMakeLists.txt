@@ -31,6 +31,7 @@ add_library(VulkanRHI
         src/VulkanRHI/VulkanBuffer.hpp
         src/VulkanRHI/VulkanBuffer.cpp
         src/VulkanRHI/VulkanAllocator.hpp
+    src/VulkanRHI/VulkanAllocator.cpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
 target_link_libraries(VulkanRHI PUBLIC ${Vulkan_LIBRARIES} fmt::fmt)
