@@ -60,7 +60,8 @@ public:
 
     ~VulkanCommandQueue() override;
 
-    [[nodiscard]] RHICommandList* getCommandList(uint32_t id) override;
+    RHICommandList* getCommandList(uint32_t id)                                                  override;
+    void            executeSingleTimeCommand(const std::function<void(RHICommandList*)>& lambda) override;
 
     RHICommandQueueType getType() override { return RHICommandQueueType::Graphics; }
 
@@ -69,6 +70,7 @@ private:
 
     vk::CommandPool                                 mCommandPool;
     std::vector<std::unique_ptr<VulkanCommandList>> mCommandLists;
+    std::unique_ptr<VulkanCommandList>              mSingleTimeCommandList;
 
     vk::Device                                      mDevice;
 };

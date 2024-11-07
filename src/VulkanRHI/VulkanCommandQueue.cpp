@@ -40,6 +40,10 @@ vk::CommandBuffer VulkanCommandList::getUnderlyingCommandBuffer() const
     return mCommandList;
 }
 
+#pragma endregion "CommandList"
+
+#pragma region "CommandQueue"
+
 VulkanCommandQueue::VulkanCommandQueue(const VulkanCommandQueueCreateInfo& createInfo)
 : mDevice(createInfo.device)
 {
@@ -66,6 +70,17 @@ VulkanCommandQueue::VulkanCommandQueue(const VulkanCommandQueueCreateInfo& creat
         }));
         id++;
     }
+
+    const auto singleTimeBufferAllocateInfo = vk::CommandBufferAllocateInfo()
+        .setCommandBufferCount(1)
+        .setCommandPool(mCommandPool)
+        .setLevel(vk::CommandBufferLevel::ePrimary);
+
+    const std::vector<vk::CommandBuffer> commandBuffers = mDevice.allocateCommandBuffers(singleTimeBufferAllocateInfo);
+    mSingleTimeCommandList = VulkanCommandList::createVulkanCommandList({
+        .commandBuffer = commandBuffers[0],
+        .id            = id,
+    });
 }
 
 std::unique_ptr<VulkanCommandQueue> VulkanCommandQueue::createVulkanCommandQueue(const VulkanCommandQueueCreateInfo& createInfo)
@@ -96,3 +111,12 @@ RHICommandList* VulkanCommandQueue::getCommandList(uint32_t id)
 
     return mCommandLists[id].get();
 }
+
+void VulkanCommandQueue::executeSingleTimeCommand(const std::function<void(RHICommandList*)>& lambda)
+{
+    // TODO: implement
+    fmt::println("VulkanCommandQueue::executeSingleTimeCommand()");
+    lambda(mSingleTimeCommandList.get());
+}
+
+#pragma endregion "CommandQueue"
