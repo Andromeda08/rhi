@@ -44,9 +44,12 @@ int main(const int argc, char** argv)
             return 0;
     }
 
+    std::vector testData = { 0.0f, 0.25f, 0.5f, 0.75f, 1.0f };
+
     auto testBuffer = gRHI->createBuffer({
         .bufferSize = 128,
-        .bufferType = RHIBufferType::eUniform,
+        .bufferType = Uniform,
+        .pData      = testData.data(),
         .debugName  = "Test Buffer",
     });
 
