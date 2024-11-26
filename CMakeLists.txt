@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(RHI)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 # ============== #
 #  Dependencies  #
@@ -80,6 +80,7 @@ add_executable(${PROJECT_NAME}
     src/RHI/Macros.hpp
         src/RHI/Buffer.hpp
         src/RHI/Definitions.cpp
+    src/RHI/IPipeline.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw)

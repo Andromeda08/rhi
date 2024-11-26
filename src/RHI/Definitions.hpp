@@ -88,6 +88,13 @@ enum class PrimitiveType
     TriangleStrip
 };
 
+enum class PipelineType
+{
+    Graphics,
+    RayTracing,
+    Compute,
+};
+
 #pragma endregion
 
 /**

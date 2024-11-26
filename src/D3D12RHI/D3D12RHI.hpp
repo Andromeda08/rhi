@@ -23,6 +23,11 @@ public:
 
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override { return nullptr; }
 
+    std::unique_ptr<IPipeline> createTestPipeline() override
+    {
+        return nullptr;
+    }
+
     RHICommandQueue* getGraphicsQueue() override;
 
     RHIInterfaceType getType() const override { return RHIInterfaceType::D3D12; }

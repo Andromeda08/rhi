@@ -3,6 +3,7 @@
 #include <memory>
 #include "Buffer.hpp"
 #include "Definitions.hpp"
+#include "IPipeline.hpp"
 
 class RHICommandQueue;
 
@@ -17,6 +18,8 @@ public:
     virtual void waitIdle() const = 0;
 
     virtual std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) = 0;
+
+    virtual std::unique_ptr<IPipeline> createTestPipeline() = 0;
 
     // virtual std::shared_ptr<class RHITexture>  createTexture(const struct RHICreateTextureParams& params) = 0;
     // virtual std::shared_ptr<class RHIPipeline> createPipeline(const struct RHICreatePipelineParams& params) = 0;
