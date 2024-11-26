@@ -4,6 +4,7 @@
 #include "VulkanBuffer.hpp"
 #include "VulkanDebugContext.hpp"
 #include "VulkanDevice.hpp"
+#include "VulkanPipeline.hpp"
 #include "VulkanSwapchain.hpp"
 #include "RHI/DynamicRHI.hpp"
 
@@ -24,6 +25,11 @@ public:
     #pragma region "DynamicRHI"
 
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override;
+
+    std::unique_ptr<IPipeline> createTestPipeline() override
+    {
+        return VulkanPipeline::createTestPipeline(mDevice.get());
+    }
 
     void              waitIdle()         const override { mDevice->waitIdle(); }
 

@@ -53,6 +53,8 @@ int main(const int argc, char** argv)
         .debugName  = "Test Buffer",
     });
 
+    auto testPipeline = gRHI->createTestPipeline();
+
     while (!gWindow->shouldClose())
     {
         glfwPollEvents();

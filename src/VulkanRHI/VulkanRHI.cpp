@@ -98,6 +98,10 @@ std::vector<const char*> VulkanRHI::getSupportedInstanceLayers(const std::vector
     rhiLayers.push_back("VK_LAYER_KHRONOS_validation");
     #endif
 
+    #ifdef VULKAN_API_DUMP
+    rhiLayers.push_back("VK_LAYER_LUNARG_api_dump");
+    #endif
+
     if (!additionalLayers.empty())
     {
         std::ranges::copy(additionalLayers, std::inserter(rhiLayers, std::end(rhiLayers)));

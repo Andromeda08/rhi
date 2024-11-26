@@ -32,6 +32,8 @@ add_library(VulkanRHI
         src/VulkanRHI/VulkanBuffer.cpp
         src/VulkanRHI/VulkanAllocator.hpp
     src/VulkanRHI/VulkanAllocator.cpp
+    src/VulkanRHI/VulkanPipeline.hpp
+    src/VulkanRHI/VulkanPipeline.cpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
 target_link_libraries(VulkanRHI PUBLIC ${Vulkan_LIBRARIES} fmt::fmt)
@@ -39,6 +41,7 @@ target_compile_definitions(VulkanRHI
     PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
     PRIVATE VULKAN_DEBUGGING_ENABLED
     PRIVATE VULKAN_VERBOSE_LOGGING
+    # PRIVATE VULKAN_API_DUMP
 )
 
 # ============== #
