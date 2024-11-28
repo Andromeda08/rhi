@@ -1,8 +1,8 @@
 #pragma once
 
 #include "VulkanBase.hpp"
-#include "RHI/CommandList.hpp"
-#include "RHI/CommandQueue.hpp"
+#include "RHI/RHICommandList.hpp"
+#include "RHI/RHICommandQueue.hpp"
 
 struct VulkanCommandListCreateInfo
 {

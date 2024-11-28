@@ -5,7 +5,10 @@ class RHIBuffer;
 class RHICommandList
 {
 public:
+    RHICommandList() = default;
     virtual ~RHICommandList() = default;
+
+    DEF_AS_CONVERT(RHICommandList);
 
     // Begin recording of CommandList
     virtual void begin() = 0;
@@ -32,8 +35,6 @@ public:
      * Synchronization
      */
     // virtual void synchronize() = 0;
-
-    DEF_AS_CONVERT(RHICommandList);
 
 protected:
     bool mIsRecording = false;

@@ -77,18 +77,18 @@ add_executable(${PROJECT_NAME}
     src/Core/EnumFlags.hpp
     src/WSI/Window.hpp src/WSI/Window.cpp
     src/RHI/DynamicRHI.hpp src/RHI/DynamicRHI.cpp
-    src/RHI/IWindow.hpp
+        src/RHI/RHIWindow.hpp
         src/RHI/Definitions.hpp
-    src/RHI/CommandQueue.hpp
-    src/RHI/CommandList.hpp
+        src/RHI/RHICommandQueue.hpp
+        src/RHI/RHICommandList.hpp
     src/RHI/RHISwapchain.hpp
     src/RHI/Macros.hpp
-        src/RHI/Buffer.hpp
+        src/RHI/RHIBuffer.hpp
         src/RHI/Definitions.cpp
-    src/RHI/IPipeline.hpp
+        src/RHI/RHIPipeline.hpp
     src/RHI/Frame.hpp
-        src/RHI/Framebuffer.hpp
-        src/RHI/RenderPass.hpp
+        src/RHI/RHIFramebuffer.hpp
+        src/RHI/RHIRenderPass.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw)

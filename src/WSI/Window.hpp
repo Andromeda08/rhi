@@ -14,7 +14,7 @@
     #include <GLFW/glfw3native.h>
 #endif
 
-#include "RHI/IWindow.hpp"
+#include "RHI/RHIWindow.hpp"
 #include "RHI/Macros.hpp"
 
 struct WindowCreateInfo
@@ -23,9 +23,10 @@ struct WindowCreateInfo
     std::string title;
 };
 
-class Window : public IRHIWindow
+class Window : public RHIWindow
 {
 public:
+    DISABLE_COPY_CTOR(Window);
     explicit DEF_PRIMARY_CTOR(Window, const WindowCreateInfo& createInfo);
 
     ~Window() override;

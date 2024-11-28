@@ -1,12 +1,12 @@
 #pragma once
 
 #include <memory>
-#include "Buffer.hpp"
+#include "RHIBuffer.hpp"
 #include "Definitions.hpp"
 #include "Frame.hpp"
-#include "Framebuffer.hpp"
-#include "IPipeline.hpp"
-#include "RenderPass.hpp"
+#include "RHIFramebuffer.hpp"
+#include "RHIPipeline.hpp"
+#include "RHIRenderPass.hpp"
 
 class  RHICommandQueue;
 class  RHISwapchain;
@@ -15,6 +15,21 @@ struct Frame;
 struct RHIFrameBeginInfo
 {
     bool useSwapchain = true;
+};
+
+struct RHIFramebuffersCreateInfo
+{
+    RHIRenderPass* renderPass;
+};
+
+struct RHIRenderPassCreateInfo
+{
+
+};
+
+struct RHIPipelineCreateInfo
+{
+    RHIRenderPass* renderPass;
 };
 
 class DynamicRHI
@@ -32,11 +47,11 @@ public:
 
     virtual std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) = 0;
 
-    virtual std::unique_ptr<RHIFramebuffers> createFramebuffers(RHIRenderPass* renderPass) = 0;
+    virtual std::unique_ptr<RHIFramebuffers> createFramebuffers(const RHIFramebuffersCreateInfo& createInfo) = 0;
 
-    virtual std::unique_ptr<RHIRenderPass> createRenderPass() = 0;
+    virtual std::unique_ptr<RHIRenderPass> createRenderPass(const RHIRenderPassCreateInfo& createInfo) = 0;
 
-    virtual std::unique_ptr<IPipeline> createTestPipeline(RHIRenderPass* renderPass) = 0;
+    virtual std::unique_ptr<RHIPipeline> createPipeline(const RHIPipelineCreateInfo& createInfo) = 0;
 
     // virtual std::shared_ptr<class RHITexture>  createTexture(const struct RHICreateTextureParams& params) = 0;
     // virtual std::shared_ptr<class RHIPipeline> createPipeline(const struct RHICreatePipelineParams& params) = 0;

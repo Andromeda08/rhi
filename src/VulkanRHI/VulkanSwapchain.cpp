@@ -41,13 +41,7 @@ uint32_t VulkanSwapchain::getNextFrameIndex(uint32_t currentFrame) const
     return -1;
 }
 
-void VulkanSwapchain::present() const
-{
-    // TODO: Swapchain present implementation
-    fmt::println("VulkanSwapchain::present()");
-}
-
-void VulkanSwapchain::presentVk(const vk::Semaphore waitSemaphore, const uint32_t imageIndex) const
+void VulkanSwapchain::present(const vk::Semaphore waitSemaphore, const uint32_t imageIndex) const
 {
     const auto presentInfo = vk::PresentInfoKHR()
         .setPWaitSemaphores(&waitSemaphore)
@@ -69,6 +63,15 @@ void VulkanSwapchain::setScissorViewport(RHICommandList* commandList) const
     const auto commandBuffer = commandList->as<VulkanCommandList>()->handle();
     commandBuffer.setScissor(0, 1, &mCachedScissor);
     commandBuffer.setViewport(0, 1, &mCachedViewport);
+}
+
+vk::ImageView VulkanSwapchain::getImageView(const size_t i) const
+{
+    if (i >= mImageViews.size())
+    {
+        throw std::runtime_error("Index out of range");
+    }
+    return mImageViews[i];
 }
 
 void VulkanSwapchain::createSurface()

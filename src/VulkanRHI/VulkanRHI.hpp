@@ -10,8 +10,8 @@
 
 struct VulkanRHICreateInfo
 {
-    IRHIWindow* pWindow         = nullptr;
-    uint32_t    backBufferCount = 2;
+    RHIWindow* pWindow         = nullptr;
+    uint32_t   backBufferCount = 2;
 };
 
 class VulkanRHI final : public DynamicRHI
@@ -30,14 +30,11 @@ public:
 
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override;
 
-    std::unique_ptr<RHIFramebuffers> createFramebuffers(RHIRenderPass* renderPass) override;
+    std::unique_ptr<RHIRenderPass> createRenderPass(const RHIRenderPassCreateInfo& createInfo) override;
 
-    std::unique_ptr<RHIRenderPass> createRenderPass() override;
+    std::unique_ptr<RHIFramebuffers> createFramebuffers(const RHIFramebuffersCreateInfo& createInfo) override;
 
-    std::unique_ptr<IPipeline> createTestPipeline(RHIRenderPass* renderPass) override
-    {
-        return VulkanPipeline::createTestPipeline(mDevice.get(), renderPass);
-    }
+    std::unique_ptr<RHIPipeline> createPipeline(const RHIPipelineCreateInfo& createInfo) override;
 
     void              waitIdle()         const override { mDevice->waitIdle(); }
 
@@ -68,7 +65,7 @@ private:
 
     std::unique_ptr<VulkanSwapchain>    mSwapchain;
 
-    IRHIWindow*                         mWindow;
+    RHIWindow*                          mWindow;
 
     uint32_t                            mFramesInFlight {2};
     uint32_t                            mCurrentFrame {0};

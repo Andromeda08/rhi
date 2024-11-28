@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "Macros.hpp"
 
 class RHIResource
 {
@@ -13,12 +14,8 @@ class RHIBuffer : public RHIResource
 public:
     ~RHIBuffer() override = default;
 
+    DEF_AS_CONVERT(RHIBuffer);
+
     virtual uint64_t getSize()   = 0;
     virtual uint64_t getOffset() = 0;
-
-    template <class T>
-    T* as()
-    {
-        return dynamic_cast<T*>(this);
-    }
 };

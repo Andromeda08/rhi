@@ -1,10 +1,10 @@
 #pragma once
 
-#include "RHI/IPipeline.hpp"
+#include "RHI/RHIPipeline.hpp"
 #include "VulkanBase.hpp"
 #include "VulkanDevice.hpp"
 #include "VulkanRenderPass.hpp"
-#include "RHI/RenderPass.hpp"
+#include "RHI/RHIRenderPass.hpp"
 
 struct VulkanPipelineUtils
 {
@@ -198,7 +198,7 @@ struct VulkanPipelineCreateInfo
     const char*                          debugName;
 };
 
-class VulkanPipeline : public IPipeline
+class VulkanPipeline : public RHIPipeline
 {
 public:
     DISABLE_COPY_CTOR(VulkanPipeline);

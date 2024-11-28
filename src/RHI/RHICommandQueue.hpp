@@ -8,7 +8,10 @@ class RHICommandList;
 class RHICommandQueue
 {
 public:
+    RHICommandQueue() = default;
     virtual ~RHICommandQueue() = default;
+
+    DEF_AS_CONVERT(RHICommandQueue);
 
     virtual RHICommandList*     getCommandList(uint32_t index) = 0;
     virtual RHICommandQueueType getType() = 0;

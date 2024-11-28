@@ -1,19 +1,19 @@
 #pragma once
 
-#include "RHI/RHISwapchain.hpp"
-#include "RHI/IWindow.hpp"
 #include "VulkanBase.hpp"
 #include "VulkanDevice.hpp"
+#include "RHI/RHISwapchain.hpp"
+#include "RHI/RHIWindow.hpp"
 
 struct VulkanSwapchainCreateInfo
 {
-    IRHIWindow*    pWindow = nullptr;
+    RHIWindow*    pWindow = nullptr;
     VulkanDevice*  pDevice = nullptr;
     vk::Instance   instance;
     uint32_t       imageCount {};
 };
 
-class VulkanSwapchain : public RHISwapchain
+class VulkanSwapchain final : public RHISwapchain
 {
 public:
     DISABLE_COPY_CTOR(VulkanSwapchain);
@@ -23,9 +23,7 @@ public:
 
     uint32_t getNextFrameIndex(uint32_t currentFrame) const override;
 
-    void present() const override;
-
-    void presentVk(vk::Semaphore waitSemaphore, uint32_t imageIndex) const;
+    void present(vk::Semaphore waitSemaphore, uint32_t imageIndex) const;
 
     void setScissorViewport(RHICommandList* commandList) const override;
 
@@ -42,14 +40,7 @@ public:
     vk::Extent2D getExtent()   const { return mExtent; }
     vk::Format   getFormatVk() const { return mFormat; }
 
-    inline vk::ImageView getImageView(const size_t i) const
-    {
-        if (i >= mImageViews.size())
-        {
-            throw std::runtime_error("Index out of range");
-        }
-        return mImageViews[i];
-    }
+    vk::ImageView getImageView(size_t i) const;
 
 private:
     void createSurface();
@@ -74,7 +65,7 @@ private:
     std::vector<vk::Image>          mImages;
     std::vector<vk::ImageView>      mImageViews;
 
-    IRHIWindow*                     mWindow;
+    RHIWindow*                      mWindow;
     VulkanDevice*                   mDevice;
     vk::Instance                    mInstance;
 };

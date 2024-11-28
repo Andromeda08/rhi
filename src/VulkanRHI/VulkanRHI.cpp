@@ -125,7 +125,7 @@ void VulkanRHI::submitFrame(const Frame& frame)
         throw std::runtime_error("big bad");
     }
 
-    mSwapchain->presentVk(mImageReady[frameIndex], frame.getAcquiredFrameIndex());
+    mSwapchain->present(mImageReady[frameIndex], frame.getAcquiredFrameIndex());
 
     mDevice->waitIdle();
     mCurrentFrame = (mCurrentFrame + 1) % mFramesInFlight;
@@ -158,11 +158,11 @@ std::unique_ptr<RHIBuffer> VulkanRHI::createBuffer(const RHIBufferCreateInfo& cr
     });
 }
 
-std::unique_ptr<RHIFramebuffers> VulkanRHI::createFramebuffers(RHIRenderPass* renderPass)
+std::unique_ptr<RHIFramebuffers> VulkanRHI::createFramebuffers(const RHIFramebuffersCreateInfo& createInfo)
 {
     auto framebuffersInfo = VulkanFramebuffersInfo({
         .framebufferCount = 2,
-        .renderPass = renderPass->as<VulkanRenderPass>()->handle(),
+        .renderPass = createInfo.renderPass->as<VulkanRenderPass>()->handle(),
         .extent = mSwapchain->getExtent(),
         .device = mDevice.get(),
         .debugName = "Test Framebuffer"
@@ -173,7 +173,7 @@ std::unique_ptr<RHIFramebuffers> VulkanRHI::createFramebuffers(RHIRenderPass* re
     return VulkanFramebuffers::createVulkanFramebuffers(framebuffersInfo);
 }
 
-std::unique_ptr<RHIRenderPass> VulkanRHI::createRenderPass()
+std::unique_ptr<RHIRenderPass> VulkanRHI::createRenderPass(const RHIRenderPassCreateInfo& createInfo)
 {
     const auto renderPassInfo = VulkanRenderPassInfo({
         .renderArea = {{0, 0}, mSwapchain->getExtent()},
@@ -182,6 +182,11 @@ std::unique_ptr<RHIRenderPass> VulkanRHI::createRenderPass()
     })
     .addColorAttachment(mSwapchain->getFormatVk(), vk::ImageLayout::ePresentSrcKHR);
     return VulkanRenderPass::createVulkanRenderPass(renderPassInfo);
+}
+
+std::unique_ptr<RHIPipeline> VulkanRHI::createPipeline(const RHIPipelineCreateInfo& createInfo)
+{
+    return VulkanPipeline::createTestPipeline(mDevice.get(), createInfo.renderPass);
 }
 
 void VulkanRHI::createInstance()

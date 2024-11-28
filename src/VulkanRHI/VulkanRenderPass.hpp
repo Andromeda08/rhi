@@ -3,7 +3,7 @@
 #include "VulkanBase.hpp"
 #include "VulkanDevice.hpp"
 #include "VulkanFramebuffer.hpp"
-#include "RHI/RenderPass.hpp"
+#include "RHI/RHIRenderPass.hpp"
 
 struct VulkanRenderPassInfo
 {

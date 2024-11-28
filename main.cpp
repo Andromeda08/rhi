@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "WSI/Window.hpp"
 #include "RHI/DynamicRHI.hpp"
 #include "VulkanRHI/VulkanRHI.hpp"
@@ -53,10 +51,14 @@ int main(const int argc, char** argv)
         .debugName  = "Test Buffer",
     });
 
-    const auto testRenderPass = gRHI->createRenderPass();
-    const auto testFramebuffers = gRHI->createFramebuffers(testRenderPass.get());
+    const auto testRenderPass = gRHI->createRenderPass({});
+    const auto testFramebuffers = gRHI->createFramebuffers({
+        .renderPass = testRenderPass.get(),
+    });
 
-    const auto testPipeline = gRHI->createTestPipeline(testRenderPass.get());
+    const auto testPipeline = gRHI->createPipeline({
+        .renderPass = testRenderPass.get(),
+    });
 
     while (!gWindow->shouldClose())
     {

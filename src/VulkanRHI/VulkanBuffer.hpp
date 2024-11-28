@@ -3,7 +3,7 @@
 #include "VulkanAllocator.hpp"
 #include "VulkanBase.hpp"
 #include "VulkanDevice.hpp"
-#include "RHI/Buffer.hpp"
+#include "RHI/RHIBuffer.hpp"
 
 struct VulkanBufferCreateInfo
 {

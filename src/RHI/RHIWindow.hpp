@@ -15,12 +15,11 @@ namespace vk
 }
 #endif
 
-class IRHIWindow
+class RHIWindow
 {
 public:
-    IRHIWindow() = default;
-
-    virtual ~IRHIWindow() = default;
+    RHIWindow() = default;
+    virtual ~RHIWindow() = default;
 
     virtual Size2D windowSize() const = 0;
     virtual Size2D framebufferSize() const = 0;

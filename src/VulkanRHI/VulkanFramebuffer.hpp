@@ -2,7 +2,7 @@
 
 #include "VulkanBase.hpp"
 #include "VulkanDevice.hpp"
-#include "RHI/Framebuffer.hpp"
+#include "RHI/RHIFramebuffer.hpp"
 
 struct VulkanFramebuffer final : public RHIFramebuffer
 {
