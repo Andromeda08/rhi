@@ -38,6 +38,19 @@ public:
     Format   getFormat()      const override { return toRHI(mFormat); }
     uint32_t getFrameCount()        override { return mImageCount; }
 
+
+    vk::Extent2D getExtent()   const { return mExtent; }
+    vk::Format   getFormatVk() const { return mFormat; }
+
+    inline vk::ImageView getImageView(const size_t i) const
+    {
+        if (i >= mImageViews.size())
+        {
+            throw std::runtime_error("Index out of range");
+        }
+        return mImageViews[i];
+    }
+
 private:
     void createSurface();
     void checkSwapchainSupport();

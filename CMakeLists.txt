@@ -34,6 +34,8 @@ add_library(VulkanRHI
     src/VulkanRHI/VulkanAllocator.cpp
     src/VulkanRHI/VulkanPipeline.hpp
     src/VulkanRHI/VulkanPipeline.cpp
+        src/VulkanRHI/VulkanRenderpass.hpp
+        src/VulkanRHI/VulkanFramebuffer.hpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
 target_link_libraries(VulkanRHI PUBLIC ${Vulkan_LIBRARIES} fmt::fmt)
@@ -47,7 +49,7 @@ target_compile_definitions(VulkanRHI
 # ============== #
 #   D3D12 RHI    #
 # ============== #
-if (WIN32)
+if (__APPLE__)
     add_compile_definitions(D3D12_RHI_ENABLED WIN32_LEAN_AND_MEAN NOMINMAX _AMD64_=1)
 
     add_library(D3D12RHI
@@ -85,6 +87,8 @@ add_executable(${PROJECT_NAME}
         src/RHI/Definitions.cpp
     src/RHI/IPipeline.hpp
     src/RHI/Frame.hpp
+        src/RHI/Framebuffer.hpp
+        src/RHI/RenderPass.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw)

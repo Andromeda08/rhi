@@ -34,12 +34,12 @@ int main(const int argc, char** argv)
             });
             break;
         }
-        case RHIInterfaceType::D3D12: {
-            gRHI = D3D12RHI::createD3D12RHI({
-                .pWindow = gWindow.get(),
-            });
-            break;
-        }
+        // case RHIInterfaceType::D3D12: {
+        //     gRHI = D3D12RHI::createD3D12RHI({
+        //         .pWindow = gWindow.get(),
+        //     });
+        //     break;
+        // }
         default:
             return 0;
     }
@@ -53,7 +53,10 @@ int main(const int argc, char** argv)
         .debugName  = "Test Buffer",
     });
 
-    auto testPipeline = gRHI->createTestPipeline();
+    const auto testRenderPass = gRHI->createRenderPass();
+    const auto testFramebuffers = gRHI->createFramebuffers(testRenderPass.get());
+
+    const auto testPipeline = gRHI->createTestPipeline(testRenderPass.get());
 
     while (!gWindow->shouldClose())
     {
@@ -62,12 +65,17 @@ int main(const int argc, char** argv)
         auto frameInfo = gRHI->beginFrame({
             .useSwapchain = true
         });
+
         auto* commandList = gRHI->getGraphicsQueue()->getCommandList(frameInfo.getCurrentFrame());
+        commandList->begin();
+        testRenderPass->execute(commandList, testFramebuffers->getFramebuffer(frameInfo.getCurrentFrame()), [&](RHICommandList* cmd)
+        {
+            gRHI->getSwapchain()->setScissorViewport(cmd);
 
-        gRHI->getSwapchain()->setScissorViewport(commandList);
-
-        testPipeline->bind(commandList);
-        commandList->draw(3, 1, 0, 0);
+            testPipeline->bind(commandList);
+            cmd->draw(3, 1, 0, 0);
+        });
+        commandList->end();
 
         frameInfo.addCommandLists({ commandList });
         gRHI->submitFrame(frameInfo);

@@ -33,12 +33,7 @@ public:
      */
     // virtual void synchronize() = 0;
 
-    template <typename T>
-    T& as()
-    {
-        static_assert(std::is_base_of_v<RHICommandList, T>, "Template parameter T must be type of RHICommandList");
-        return dynamic_cast<T&>(*this);
-    }
+    DEF_AS_CONVERT(RHICommandList);
 
 protected:
     bool mIsRecording = false;

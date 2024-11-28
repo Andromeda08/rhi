@@ -4,7 +4,9 @@
 #include "Buffer.hpp"
 #include "Definitions.hpp"
 #include "Frame.hpp"
+#include "Framebuffer.hpp"
 #include "IPipeline.hpp"
+#include "RenderPass.hpp"
 
 class  RHICommandQueue;
 class  RHISwapchain;
@@ -30,7 +32,11 @@ public:
 
     virtual std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) = 0;
 
-    virtual std::unique_ptr<IPipeline> createTestPipeline() = 0;
+    virtual std::unique_ptr<RHIFramebuffers> createFramebuffers(RHIRenderPass* renderPass) = 0;
+
+    virtual std::unique_ptr<RHIRenderPass> createRenderPass() = 0;
+
+    virtual std::unique_ptr<IPipeline> createTestPipeline(RHIRenderPass* renderPass) = 0;
 
     // virtual std::shared_ptr<class RHITexture>  createTexture(const struct RHICreateTextureParams& params) = 0;
     // virtual std::shared_ptr<class RHIPipeline> createPipeline(const struct RHICreatePipelineParams& params) = 0;

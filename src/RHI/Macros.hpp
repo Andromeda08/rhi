@@ -14,6 +14,18 @@ static std::unique_ptr<TYPE> create##TYPE(__VA_ARGS__);
 TYPE(__VA_ARGS__);                                          \
 static std::shared_ptr<TYPE> create##TYPE(__VA_ARGS__);
 
+#define XSTR(A) #A
+#define STR(A) XSTR(A)
+
+#define DEF_AS_CONVERT(TYPE)                                \
+template <typename T>                                       \
+T* as() {                                                   \
+    static_assert(                                          \
+        std::is_base_of_v<TYPE, T>,                         \
+        "Template parameter T must be a type of " #TYPE);   \
+    return dynamic_cast<T*>(this);                          \
+}
+
 #define ENUM_FLAGS(Enum) \
     inline           Enum& operator|=(Enum& Lhs, Enum Rhs) { return Lhs = (Enum)((__underlying_type(Enum))Lhs | (__underlying_type(Enum))Rhs); } \
     inline           Enum& operator&=(Enum& Lhs, Enum Rhs) { return Lhs = (Enum)((__underlying_type(Enum))Lhs & (__underlying_type(Enum))Rhs); } \

@@ -30,16 +30,20 @@ public:
 
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override;
 
-    std::unique_ptr<IPipeline> createTestPipeline() override
+    std::unique_ptr<RHIFramebuffers> createFramebuffers(RHIRenderPass* renderPass) override;
+
+    std::unique_ptr<RHIRenderPass> createRenderPass() override;
+
+    std::unique_ptr<IPipeline> createTestPipeline(RHIRenderPass* renderPass) override
     {
-        return VulkanPipeline::createTestPipeline(mDevice.get());
+        return VulkanPipeline::createTestPipeline(mDevice.get(), renderPass);
     }
 
     void              waitIdle()         const override { mDevice->waitIdle(); }
 
     RHICommandQueue*  getGraphicsQueue()       override { return mDevice->getGraphicsQueue(); }
     RHIInterfaceType  getType()          const override { return RHIInterfaceType::Vulkan; }
-    RHISwapchain*     getSwapchain()     const override { return mSwapchain; }
+    RHISwapchain*     getSwapchain()     const override { return mSwapchain.get(); }
 
     #pragma endregion
 
@@ -66,8 +70,8 @@ private:
 
     IRHIWindow*                         mWindow;
 
-    uint32_t                            mFramesInFlight;
-    uint32_t                            mCurrentFrame;
+    uint32_t                            mFramesInFlight {2};
+    uint32_t                            mCurrentFrame {0};
 
     std::vector<vk::Fence>              mFrameInFlight;
     std::vector<vk::Semaphore>          mImageReady;

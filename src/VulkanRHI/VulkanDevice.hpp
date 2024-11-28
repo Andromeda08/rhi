@@ -40,7 +40,6 @@ struct VulkanNameObjectInfo
 {
     const char*    debugName;
     T              handle;
-    vk::ObjectType objectType;
 };
 
 class VulkanDevice

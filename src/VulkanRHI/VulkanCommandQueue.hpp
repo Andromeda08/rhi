@@ -33,6 +33,11 @@ public:
 
     void copyBuffer(RHIBuffer* src, RHIBuffer* dst) override;
 
+    void draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override
+    {
+        mCommandList.draw(vertexCount, instanceCount, firstVertex, firstInstance);
+    }
+
     vk::CommandBuffer handle() const { return mCommandList; }
 
 private:

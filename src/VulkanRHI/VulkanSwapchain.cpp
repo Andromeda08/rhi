@@ -66,7 +66,7 @@ void VulkanSwapchain::presentVk(const vk::Semaphore waitSemaphore, const uint32_
 
 void VulkanSwapchain::setScissorViewport(RHICommandList* commandList) const
 {
-    const auto commandBuffer = commandList->as<VulkanCommandList*>()->handle();
+    const auto commandBuffer = commandList->as<VulkanCommandList>()->handle();
     commandBuffer.setScissor(0, 1, &mCachedScissor);
     commandBuffer.setViewport(0, 1, &mCachedViewport);
 }

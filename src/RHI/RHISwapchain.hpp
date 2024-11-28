@@ -3,6 +3,8 @@
 #include "Core/Base.hpp"
 #include "Definitions.hpp"
 
+class RHICommandList;
+
 class RHISwapchain
 {
 public:

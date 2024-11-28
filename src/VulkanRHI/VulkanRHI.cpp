@@ -1,5 +1,8 @@
 #include "VulkanRHI.hpp"
 
+#include "VulkanFramebuffer.hpp"
+#include "VulkanRenderPass.hpp"
+
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 
 VulkanRHI::VulkanRHI(const VulkanRHICreateInfo& createInfo)
@@ -25,6 +28,21 @@ VulkanRHI::VulkanRHI(const VulkanRHICreateInfo& createInfo)
         .imageCount = createInfo.backBufferCount,
     });
 
+    vk::Result result;
+    mImageReady.resize(mFramesInFlight);
+    mRenderingFinished.resize(mFramesInFlight);
+    mFrameInFlight.resize(mFramesInFlight);
+
+    for (uint32_t i = 0; i < mFramesInFlight; i++)
+    {
+        auto sci = vk::SemaphoreCreateInfo();
+        auto fci = vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
+
+        result = mDevice->handle().createSemaphore(&sci, nullptr, &mImageReady[i]);
+        result = mDevice->handle().createSemaphore(&sci, nullptr, &mRenderingFinished[i]);
+        result = mDevice->handle().createFence(&fci, nullptr, &mFrameInFlight[i]);
+    }
+
     VK_PRINTLN(fmt::format("{} RHI initialized", VK_STYLED_PREFIX));
 }
 
@@ -35,28 +53,35 @@ std::unique_ptr<VulkanRHI> VulkanRHI::createVulkanRHI(const VulkanRHICreateInfo&
 
 Frame VulkanRHI::beginFrame(const RHIFrameBeginInfo& frameBeginInfo)
 {
-    auto acquireNextImageInfo = vk::AcquireNextImageInfoKHR()
-        .setFence(mFrameInFlight[mCurrentFrame])
-        .setSemaphore(mImageReady[mCurrentFrame])
-        .setSwapchain(mSwapchain->handle())
-        .setTimeout(std::numeric_limits<uint64_t>::max());
+    // auto acquireNextImageInfo = vk::AcquireNextImageInfoKHR()
+    //     .setFence(mFrameInFlight[mCurrentFrame])
+    //     .setSemaphore(mImageReady[mCurrentFrame])
+    //     .setSwapchain(mSwapchain->handle())
+    //     .setTimeout(std::numeric_limits<uint64_t>::max());
+    //
+    // uint32_t nextImage;
+    // try {
+    //     nextImage = mDevice->handle().acquireNextImage2KHR(acquireNextImageInfo).value;
+    // }
+    // catch (const vk::OutOfDateKHRError& err)
+    // {
+    //     const auto msg = "Swapchain Out of Date and it should be recreated";
+    //     VK_PRINTLN(styled(msg, fg(fmt::color::yellow)));
+    //     throw std::runtime_error(msg);
+    // }
+    // catch (const vk::SystemError& err)
+    // {
+    //     const auto msg = fmt::format("Failed to acquire next Swapchain image: {}", err.what());
+    //     VK_PRINTLN(styled(msg, fg(fmt::color::yellow)));
+    //     throw std::runtime_error(msg);
+    // }
 
-    uint32_t nextImage;
-    try {
-        auto result = mDevice->handle().acquireNextImage2KHR(acquireNextImageInfo, &nextImage);
-    }
-    catch (const vk::OutOfDateKHRError& err)
-    {
-        const auto msg = "Swapchain Out of Date and it should be recreated";
-        VK_PRINTLN(styled(msg, fg(fmt::color::yellow)));
-        throw std::runtime_error(msg);
-    }
-    catch (const vk::SystemError& err)
-    {
-        const auto msg = fmt::format("Failed to acquire next Swapchain image: {}", err.what());
-        VK_PRINTLN(styled(msg, fg(fmt::color::yellow)));
-        throw std::runtime_error(msg);
-    }
+    vk::Result result;
+    vk::Fence fence = mFrameInFlight[mCurrentFrame];
+    result = mDevice->handle().waitForFences(1, &fence, true, std::numeric_limits<uint64_t>::max());
+    result = mDevice->handle().resetFences(1, &fence);
+    auto nextImage = mDevice->handle().acquireNextImageKHR(mSwapchain->handle(), std::numeric_limits<uint64_t>::max(),
+                                                  mImageReady[mCurrentFrame], nullptr).value;
 
     return {
         .mCurrentFrame = mCurrentFrame,
@@ -69,9 +94,9 @@ void VulkanRHI::submitFrame(const Frame& frame)
     std::vector<vk::CommandBufferSubmitInfo> commandBufferSubmitInfos;
     for (const auto commandBuffer : frame.mCommandLists)
     {
-        commandBufferSubmitInfos.emplace_back(vk::CommandBufferSubmitInfo {
-            .commandBuffer = commandBuffer->as<VulkanCommandList*>()->handle(),
-        });
+        const auto info = vk::CommandBufferSubmitInfo()
+            .setCommandBuffer(commandBuffer->as<VulkanCommandList>()->handle());
+        commandBufferSubmitInfos.push_back(info);
     }
 
     const auto frameIndex = frame.getCurrentFrame();
@@ -94,14 +119,16 @@ void VulkanRHI::submitFrame(const Frame& frame)
         .setSignalSemaphoreInfos(signalSemaphoreInfos)
         .setSignalSemaphoreInfoCount(signalSemaphoreInfos.size());
 
-    try {
-        auto result = mDevice->getGraphicsQueue()->getQueue().submit2(1, &submitInfo, mFrameInFlight[frameIndex]);
-    } catch (const vk::SystemError& err) {
-        fmt::println(err.what());
-        throw;
+    if (auto result = mDevice->getGraphicsQueue()->getQueue().submit2(1, &submitInfo, mFrameInFlight[frameIndex]);
+        result != vk::Result::eSuccess)
+    {
+        throw std::runtime_error("big bad");
     }
 
     mSwapchain->presentVk(mImageReady[frameIndex], frame.getAcquiredFrameIndex());
+
+    mDevice->waitIdle();
+    mCurrentFrame = (mCurrentFrame + 1) % mFramesInFlight;
 }
 
 std::unique_ptr<RHIBuffer> VulkanRHI::createBuffer(const RHIBufferCreateInfo& createInfo)
@@ -129,6 +156,32 @@ std::unique_ptr<RHIBuffer> VulkanRHI::createBuffer(const RHIBufferCreateInfo& cr
         .pDevice    = mDevice.get(),
         .debugName  = createInfo.debugName,
     });
+}
+
+std::unique_ptr<RHIFramebuffers> VulkanRHI::createFramebuffers(RHIRenderPass* renderPass)
+{
+    auto framebuffersInfo = VulkanFramebuffersInfo({
+        .framebufferCount = 2,
+        .renderPass = renderPass->as<VulkanRenderPass>()->handle(),
+        .extent = mSwapchain->getExtent(),
+        .device = mDevice.get(),
+        .debugName = "Test Framebuffer"
+    })
+    .addAttachment(mSwapchain->getImageView(0), 0, 0)
+    .addAttachment(mSwapchain->getImageView(1), 0, 1);
+
+    return VulkanFramebuffers::createVulkanFramebuffers(framebuffersInfo);
+}
+
+std::unique_ptr<RHIRenderPass> VulkanRHI::createRenderPass()
+{
+    const auto renderPassInfo = VulkanRenderPassInfo({
+        .renderArea = {{0, 0}, mSwapchain->getExtent()},
+        .device     = mDevice.get(),
+        .debugName  = "Test RenderPass",
+    })
+    .addColorAttachment(mSwapchain->getFormatVk(), vk::ImageLayout::ePresentSrcKHR);
+    return VulkanRenderPass::createVulkanRenderPass(renderPassInfo);
 }
 
 void VulkanRHI::createInstance()

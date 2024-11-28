@@ -3,6 +3,8 @@
 #include "RHI/IPipeline.hpp"
 #include "VulkanBase.hpp"
 #include "VulkanDevice.hpp"
+#include "VulkanRenderPass.hpp"
+#include "RHI/RenderPass.hpp"
 
 struct VulkanPipelineUtils
 {
@@ -204,7 +206,11 @@ public:
 
     ~VulkanPipeline() override = default;
 
-    void bind(const vk::CommandBuffer& commandBuffer) {}
+    void bind(RHICommandList* commandList) override
+    {
+        commandList->as<VulkanCommandList>()->handle().bindPipeline(mBindPoint, mPipeline);
+    }
+
     void bindDescriptorSet(const vk::CommandBuffer& commandBuffer, const vk::DescriptorSet& descriptorSet) {}
 
     template <typename T>
@@ -216,7 +222,7 @@ public:
     const vk::Pipeline&       handle() const { return mPipeline; }
     const vk::PipelineLayout& layout() const { return mPipelineLayout; }
 
-    static std::unique_ptr<VulkanPipeline> createTestPipeline(VulkanDevice* pDevice)
+    static std::unique_ptr<VulkanPipeline> createTestPipeline(VulkanDevice* pDevice, RHIRenderPass* renderPass)
     {
         VulkanPipelineCreateInfo createInfo = {
             .pushConstantRanges = {},
@@ -231,7 +237,7 @@ public:
                     .shaderStage = vk::ShaderStageFlagBits::eFragment,
                 }
             },
-            .renderPass = nullptr,
+            .renderPass = renderPass->as<VulkanRenderPass>()->handle(),
             .graphicsPipelineState = VulkanGraphicsPipelineStateInfo({
                 .attributeDescriptions = {},
                 .bindingDescriptions = {},
