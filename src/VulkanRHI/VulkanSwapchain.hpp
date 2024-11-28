@@ -25,6 +25,12 @@ public:
 
     void present() const override;
 
+    void presentVk(vk::Semaphore waitSemaphore, uint32_t imageIndex) const;
+
+    void setScissorViewport(RHICommandList* commandList) const override;
+
+    vk::SwapchainKHR handle() const { return mSwapchain; }
+
     Rect2D   getScissor()           override { return toRHI(mCachedScissor); }
     Viewport getViewport()          override { return toRHI(mCachedViewport); }
     Size2D   getSize()        const override { return toRHI(mExtent); }

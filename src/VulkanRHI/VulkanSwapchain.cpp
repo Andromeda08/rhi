@@ -47,6 +47,30 @@ void VulkanSwapchain::present() const
     fmt::println("VulkanSwapchain::present()");
 }
 
+void VulkanSwapchain::presentVk(const vk::Semaphore waitSemaphore, const uint32_t imageIndex) const
+{
+    const auto presentInfo = vk::PresentInfoKHR()
+        .setPWaitSemaphores(&waitSemaphore)
+        .setWaitSemaphoreCount(1)
+        .setPSwapchains(&mSwapchain)
+        .setSwapchainCount(1)
+        .setImageIndices(imageIndex)
+        .setPResults(nullptr);
+
+    if (const auto result = mDevice->getGraphicsQueue()->getQueue().presentKHR(&presentInfo);
+        result != vk::Result::eSuccess)
+    {
+        throw std::runtime_error("Failed to present to swapchain");
+    }
+}
+
+void VulkanSwapchain::setScissorViewport(RHICommandList* commandList) const
+{
+    const auto commandBuffer = commandList->as<VulkanCommandList*>()->handle();
+    commandBuffer.setScissor(0, 1, &mCachedScissor);
+    commandBuffer.setViewport(0, 1, &mCachedViewport);
+}
+
 void VulkanSwapchain::createSurface()
 {
     mWindow->createVulkanSurface(mInstance, &mSurface);

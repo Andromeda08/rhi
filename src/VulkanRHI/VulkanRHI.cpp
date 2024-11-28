@@ -33,6 +33,77 @@ std::unique_ptr<VulkanRHI> VulkanRHI::createVulkanRHI(const VulkanRHICreateInfo&
     return std::make_unique<VulkanRHI>(createInfo);
 }
 
+Frame VulkanRHI::beginFrame(const RHIFrameBeginInfo& frameBeginInfo)
+{
+    auto acquireNextImageInfo = vk::AcquireNextImageInfoKHR()
+        .setFence(mFrameInFlight[mCurrentFrame])
+        .setSemaphore(mImageReady[mCurrentFrame])
+        .setSwapchain(mSwapchain->handle())
+        .setTimeout(std::numeric_limits<uint64_t>::max());
+
+    uint32_t nextImage;
+    try {
+        auto result = mDevice->handle().acquireNextImage2KHR(acquireNextImageInfo, &nextImage);
+    }
+    catch (const vk::OutOfDateKHRError& err)
+    {
+        const auto msg = "Swapchain Out of Date and it should be recreated";
+        VK_PRINTLN(styled(msg, fg(fmt::color::yellow)));
+        throw std::runtime_error(msg);
+    }
+    catch (const vk::SystemError& err)
+    {
+        const auto msg = fmt::format("Failed to acquire next Swapchain image: {}", err.what());
+        VK_PRINTLN(styled(msg, fg(fmt::color::yellow)));
+        throw std::runtime_error(msg);
+    }
+
+    return {
+        .mCurrentFrame = mCurrentFrame,
+        .mAcquiredFrameIndex = nextImage,
+    };
+}
+
+void VulkanRHI::submitFrame(const Frame& frame)
+{
+    std::vector<vk::CommandBufferSubmitInfo> commandBufferSubmitInfos;
+    for (const auto commandBuffer : frame.mCommandLists)
+    {
+        commandBufferSubmitInfos.emplace_back(vk::CommandBufferSubmitInfo {
+            .commandBuffer = commandBuffer->as<VulkanCommandList*>()->handle(),
+        });
+    }
+
+    const auto frameIndex = frame.getCurrentFrame();
+
+    const auto waitSemaphoreInfo = vk::SemaphoreSubmitInfo()
+        .setSemaphore(mImageReady[frameIndex])
+        .setStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput);
+    std::vector waitSemaphoreInfos = { waitSemaphoreInfo };
+
+    const auto signalSemaphoreInfo = vk::SemaphoreSubmitInfo()
+        .setSemaphore(mImageReady[frameIndex])
+        .setStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput);
+    std::vector signalSemaphoreInfos = { signalSemaphoreInfo };
+
+    const auto submitInfo = vk::SubmitInfo2()
+        .setCommandBufferInfos(commandBufferSubmitInfos)
+        .setCommandBufferInfoCount(commandBufferSubmitInfos.size())
+        .setWaitSemaphoreInfos(waitSemaphoreInfos)
+        .setWaitSemaphoreInfoCount(waitSemaphoreInfos.size())
+        .setSignalSemaphoreInfos(signalSemaphoreInfos)
+        .setSignalSemaphoreInfoCount(signalSemaphoreInfos.size());
+
+    try {
+        auto result = mDevice->getGraphicsQueue()->getQueue().submit2(1, &submitInfo, mFrameInFlight[frameIndex]);
+    } catch (const vk::SystemError& err) {
+        fmt::println(err.what());
+        throw;
+    }
+
+    mSwapchain->presentVk(mImageReady[frameIndex], frame.getAcquiredFrameIndex());
+}
+
 std::unique_ptr<RHIBuffer> VulkanRHI::createBuffer(const RHIBufferCreateInfo& createInfo)
 {
     if (createInfo.pData)

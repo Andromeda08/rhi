@@ -3,9 +3,17 @@
 #include <memory>
 #include "Buffer.hpp"
 #include "Definitions.hpp"
+#include "Frame.hpp"
 #include "IPipeline.hpp"
 
-class RHICommandQueue;
+class  RHICommandQueue;
+class  RHISwapchain;
+struct Frame;
+
+struct RHIFrameBeginInfo
+{
+    bool useSwapchain = true;
+};
 
 class DynamicRHI
 {
@@ -17,6 +25,9 @@ public:
      */
     virtual void waitIdle() const = 0;
 
+    virtual Frame beginFrame(const RHIFrameBeginInfo& frameBeginInfo) = 0;
+    virtual void  submitFrame(const Frame& frame) = 0;
+
     virtual std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) = 0;
 
     virtual std::unique_ptr<IPipeline> createTestPipeline() = 0;
@@ -25,6 +36,8 @@ public:
     // virtual std::shared_ptr<class RHIPipeline> createPipeline(const struct RHICreatePipelineParams& params) = 0;
 
     virtual RHICommandQueue* getGraphicsQueue() = 0;
+
+    virtual RHISwapchain* getSwapchain() const = 0;
 
     virtual RHIInterfaceType getType() const { return RHIInterfaceType::None; }
 };

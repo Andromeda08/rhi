@@ -58,6 +58,19 @@ int main(const int argc, char** argv)
     while (!gWindow->shouldClose())
     {
         glfwPollEvents();
+
+        auto frameInfo = gRHI->beginFrame({
+            .useSwapchain = true
+        });
+        auto* commandList = gRHI->getGraphicsQueue()->getCommandList(frameInfo.getCurrentFrame());
+
+        gRHI->getSwapchain()->setScissorViewport(commandList);
+
+        testPipeline->bind(commandList);
+        commandList->draw(3, 1, 0, 0);
+
+        frameInfo.addCommandLists({ commandList });
+        gRHI->submitFrame(frameInfo);
     }
 
     return 0;

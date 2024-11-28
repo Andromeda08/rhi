@@ -20,7 +20,7 @@ public:
     // virtual void bindPipeline() = 0;
     // virtual void bindDescriptorSet() = 0;
     // virtual void pushConstants() = 0;
-    // virtual void draw() = 0;
+    virtual void draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) = 0;
 
     /**
      * Transfer operations
@@ -32,6 +32,13 @@ public:
      * Synchronization
      */
     // virtual void synchronize() = 0;
+
+    template <typename T>
+    T& as()
+    {
+        static_assert(std::is_base_of_v<RHICommandList, T>, "Template parameter T must be type of RHICommandList");
+        return dynamic_cast<T&>(*this);
+    }
 
 protected:
     bool mIsRecording = false;

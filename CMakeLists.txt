@@ -84,6 +84,7 @@ add_executable(${PROJECT_NAME}
         src/RHI/Buffer.hpp
         src/RHI/Definitions.cpp
     src/RHI/IPipeline.hpp
+    src/RHI/Frame.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw)

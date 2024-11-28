@@ -24,6 +24,10 @@ public:
 
     #pragma region "DynamicRHI"
 
+    Frame beginFrame(const RHIFrameBeginInfo& frameBeginInfo) override;
+
+    void submitFrame(const Frame& frame) override;
+
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override;
 
     std::unique_ptr<IPipeline> createTestPipeline() override
@@ -35,6 +39,7 @@ public:
 
     RHICommandQueue*  getGraphicsQueue()       override { return mDevice->getGraphicsQueue(); }
     RHIInterfaceType  getType()          const override { return RHIInterfaceType::Vulkan; }
+    RHISwapchain*     getSwapchain()     const override { return mSwapchain; }
 
     #pragma endregion
 
@@ -60,4 +65,11 @@ private:
     std::unique_ptr<VulkanSwapchain>    mSwapchain;
 
     IRHIWindow*                         mWindow;
+
+    uint32_t                            mFramesInFlight;
+    uint32_t                            mCurrentFrame;
+
+    std::vector<vk::Fence>              mFrameInFlight;
+    std::vector<vk::Semaphore>          mImageReady;
+    std::vector<vk::Semaphore>          mRenderingFinished;
 };

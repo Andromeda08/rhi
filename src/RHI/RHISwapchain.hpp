@@ -14,6 +14,8 @@ public:
 
     virtual void present() const = 0;
 
+    virtual void setScissorViewport(RHICommandList* commandList) const = 0;
+
     virtual Rect2D getScissor() = 0;
     virtual Viewport getViewport() = 0;
 

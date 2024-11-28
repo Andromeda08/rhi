@@ -33,6 +33,8 @@ public:
 
     void copyBuffer(RHIBuffer* src, RHIBuffer* dst) override;
 
+    vk::CommandBuffer handle() const { return mCommandList; }
+
 private:
     friend class VulkanCommandQueue;
     vk::CommandBuffer getUnderlyingCommandBuffer() const;
@@ -64,6 +66,8 @@ public:
     void            executeSingleTimeCommand(const std::function<void(RHICommandList*)>& lambda) override;
 
     RHICommandQueueType getType() override { return RHICommandQueueType::Graphics; }
+
+    vk::Queue getQueue() const { return mQueue; }
 
 private:
     vk::Queue                                       mQueue;
