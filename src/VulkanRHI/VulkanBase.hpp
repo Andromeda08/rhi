@@ -121,22 +121,38 @@ inline auto toRHI(const vk::Format format)
 
 inline auto toRHI(const vk::Extent2D extent)
 {
-    return Size2D(extent.width, extent.height);
+    return Size2D {
+        .width = extent.width,
+        .height = extent.height
+    };
 }
 
 inline auto toRHI(const vk::Offset2D offset)
 {
-    return Offset2D(offset.x, offset.y);
+    return Offset2D {
+        .x = offset.x,
+        .y = offset.y
+    };
 }
 
 inline auto toRHI(const vk::Rect2D rect)
 {
-    return Rect2D(toRHI(rect.extent), toRHI(rect.offset));
+    return Rect2D {
+        .size = toRHI(rect.extent),
+        .offset = toRHI(rect.offset)
+    };
 }
 
 inline auto toRHI(const vk::Viewport& vp)
 {
-    return Viewport(vp.x, vp.y, vp.width, vp.height, vp.minDepth, vp.maxDepth);
+    return Viewport {
+        .x = vp.x,
+        .y = vp.y,
+        .width = vp.width,
+        .height = vp.height,
+        .minDepth = vp.minDepth,
+        .maxDepth = vp.maxDepth
+    };
 }
 
 #pragma endregion
