@@ -158,7 +158,7 @@ void VulkanSwapchain::createSwapchain()
         .setQueueFamilyIndexCount(0)
         .setPQueueFamilyIndices(nullptr);
 
-    VK_EX_CHECK(mSwapchain = mDevice->handle().createSwapchainKHR(createInfo););
+    VK_CHECK(mSwapchain = mDevice->handle().createSwapchainKHR(createInfo););
 }
 
 void VulkanSwapchain::acquireImages()

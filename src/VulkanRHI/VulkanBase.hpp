@@ -36,11 +36,14 @@
 
 #define VK_PRINTLN(MESSAGE) fmt::println("[{}] {}", VK_STYLED_PREFIX, MESSAGE)
 
-#define VK_EX_CHECK(C) try { C } catch (const vk::SystemError& error) { VK_DEBUG(error.what()); throw; }
-#define VK_CHECK(C) VK_EX_CHECK(C)
+/**
+ * Wraps the given statement in a try/catch block for Vulkan specific errors.
+ * For debug mode only checks use `VK_CHECK_DEBUG`
+ */
+#define VK_CHECK(C) try { C } catch (const vk::SystemError& error) { VK_DEBUG(error.what()); throw; }
 
 #ifdef VULKAN_DEBUGGING_ENABLED
-    #define VK_CHECK_DEBUG(C) VK_EX_CHECK(C)
+    #define VK_CHECK_DEBUG(C) VK_CHECK(C)
 #else
     #define VK_CHECK_DEBUG(C) C
 #endif

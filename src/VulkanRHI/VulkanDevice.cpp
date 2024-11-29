@@ -160,7 +160,7 @@ void VulkanDevice::createDevice()
         extensions->preCreateDevice(createInfo);
     }
 
-    VK_EX_CHECK(mDevice = mPhysicalDevice.createDevice(createInfo););
+    VK_CHECK(mDevice = mPhysicalDevice.createDevice(createInfo););
 
     mGraphicsCommandQueue = VulkanCommandQueue::createVulkanCommandQueue({
         .device                = mDevice,

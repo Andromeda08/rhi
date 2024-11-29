@@ -21,7 +21,7 @@ public:
     void begin() override
     {
         constexpr auto beginInfo = vk::CommandBufferBeginInfo();
-        VK_EX_CHECK(mCommandList.begin(beginInfo););
+        VK_CHECK(mCommandList.begin(beginInfo););
         mIsRecording = true;
     }
 

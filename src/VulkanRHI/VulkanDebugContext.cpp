@@ -15,7 +15,7 @@ VulkanDebugContext::VulkanDebugContext(const VulkanDebugContextCreateInfo& creat
         .setMessageType(type)
         .setPfnUserCallback(debugMessageCallback);
 
-    VK_EX_CHECK(mMessenger = mInstance.createDebugUtilsMessengerEXT(messengerCreateInfo););
+    VK_CHECK(mMessenger = mInstance.createDebugUtilsMessengerEXT(messengerCreateInfo););
     VK_VERBOSE("DebugUtilsMessenger initialized");
 }
 

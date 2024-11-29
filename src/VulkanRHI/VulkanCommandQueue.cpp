@@ -47,13 +47,13 @@ vk::CommandBuffer VulkanCommandList::getUnderlyingCommandBuffer() const
 VulkanCommandQueue::VulkanCommandQueue(const VulkanCommandQueueCreateInfo& createInfo)
 : mDevice(createInfo.device)
 {
-    VK_EX_CHECK(mQueue = mDevice.getQueue(createInfo.queueFamilyIndex, 0););
+    VK_CHECK(mQueue = mDevice.getQueue(createInfo.queueFamilyIndex, 0););
 
     const auto poolCreateInfo = vk::CommandPoolCreateInfo()
         .setQueueFamilyIndex(createInfo.queueFamilyIndex)
         .setFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
 
-    VK_EX_CHECK(mCommandPool = mDevice.createCommandPool(poolCreateInfo););
+    VK_CHECK(mCommandPool = mDevice.createCommandPool(poolCreateInfo););
 
     const auto bufferAllocateInfo = vk::CommandBufferAllocateInfo()
         .setCommandBufferCount(createInfo.commandBufferCount)
