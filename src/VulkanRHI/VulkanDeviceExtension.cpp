@@ -99,6 +99,31 @@ public:
     void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) override {}
 };
 
+class VulkanSynchronization2Extension final : public VulkanDeviceExtension
+{
+public:
+    explicit VulkanSynchronization2Extension() : VulkanDeviceExtension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, true) {}
+
+    void postSupportCheck() override
+    {
+        if (!shouldActivate()) return;
+        mIsEnabled = true;
+        mSynchronization2 = vk::PhysicalDeviceSynchronization2Features()
+            .setSynchronization2(true);
+    }
+
+    void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) override
+    {
+        if (shouldActivate())
+        {
+            addToPNext(deviceCreateInfo, mSynchronization2);
+        }
+    }
+
+private:
+    vk::PhysicalDeviceSynchronization2Features mSynchronization2;
+};
+
 class VulkanPortabilitySubsetExtension final : public VulkanDeviceExtension
 {
 public:
@@ -156,6 +181,11 @@ std::vector<std::unique_ptr<VulkanDeviceExtension>> VulkanDeviceExtension::getEv
     return rhiExtensions;
 }
 
+bool VulkanDeviceExtension::shouldActivate() const
+{
+    return mIsRequested and mIsSupported;
+}
+
 std::vector<std::unique_ptr<VulkanDeviceExtension>> VulkanDeviceExtension::getRHIDeviceExtensions()
 {
     std::vector<std::unique_ptr<VulkanDeviceExtension>> deviceExtensions;
@@ -165,7 +195,12 @@ std::vector<std::unique_ptr<VulkanDeviceExtension>> VulkanDeviceExtension::getRH
 
     ADD_CORE(VulkanCore11);
     ADD_CORE(VulkanCore12);
+
+    #ifndef __APPLE__
     ADD_CORE(VulkanCore13);
+    #else
+    ADD_BASIC(VulkanSynchronization2Extension);
+    #endif
 
     ADD_BASIC(VulkanSwapchainExtension);
 

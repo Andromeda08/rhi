@@ -10,6 +10,7 @@ public:
 
     // e.g. for setting feature options
     virtual void postSupportCheck() {}
+
     // e.g. for setting pNext
     virtual void preCreateDevice(vk::DeviceCreateInfo& deviceCreateInfo) {}
 
@@ -17,7 +18,7 @@ public:
     bool        isRequested()    const { return mIsRequested; }
     bool        isSupported()    const { return mIsSupported; }
     bool        isActive()       const { return mIsRequested and mIsSupported and mIsEnabled; }
-    bool        shouldActivate() const { return mIsRequested and mIsSupported; }
+    bool        shouldActivate() const;
 
     void setSupported() { mIsSupported = true; }
     void setEnabled()   { mIsEnabled = true; }
