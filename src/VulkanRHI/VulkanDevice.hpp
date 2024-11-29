@@ -60,8 +60,8 @@ public:
 
     VulkanCommandQueue*              getGraphicsQueue()  const { return mGraphicsCommandQueue.get(); }
 
-    [[nodiscard]] vk::Device         handle()            const { return mDevice; }
-    [[nodisacrd]] vk::PhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
+    vk::Device         handle()            const { return mDevice; }
+    vk::PhysicalDevice getPhysicalDevice() const { return mPhysicalDevice; }
 
 private:
     void selectPhysicalDevice();

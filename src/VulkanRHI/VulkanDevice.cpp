@@ -206,8 +206,8 @@ uint32_t VulkanDevice::findMemoryHeapIndex(uint32_t filter, vk::MemoryPropertyFl
 vk::PhysicalDeviceFeatures VulkanDevice::getBaseDeviceFeatures()
 {
     return vk::PhysicalDeviceFeatures()
-        .setGeometryShader(true)
-        .setTessellationShader(true)
+        .setGeometryShader(false)
+        .setTessellationShader(false)
         .setFillModeNonSolid(true)
         .setSamplerAnisotropy(true)
         .setSampleRateShading(true)
