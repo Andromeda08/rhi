@@ -41,10 +41,10 @@ uint32_t VulkanSwapchain::getNextFrameIndex(uint32_t currentFrame) const
     return -1;
 }
 
-void VulkanSwapchain::present(const vk::Semaphore waitSemaphore, const uint32_t imageIndex) const
+void VulkanSwapchain::present(const vk::Semaphore signalSemaphore, const uint32_t imageIndex) const
 {
     const auto presentInfo = vk::PresentInfoKHR()
-        .setPWaitSemaphores(&waitSemaphore)
+        .setPWaitSemaphores(&signalSemaphore)
         .setWaitSemaphoreCount(1)
         .setPSwapchains(&mSwapchain)
         .setSwapchainCount(1)

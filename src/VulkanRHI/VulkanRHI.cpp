@@ -35,12 +35,12 @@ VulkanRHI::VulkanRHI(const VulkanRHICreateInfo& createInfo)
 
     for (uint32_t i = 0; i < mFramesInFlight; i++)
     {
-        auto sci = vk::SemaphoreCreateInfo();
-        auto fci = vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
+        auto semaphoreCreateInfo = vk::SemaphoreCreateInfo();
+        auto fenceCreateInfo = vk::FenceCreateInfo().setFlags(vk::FenceCreateFlagBits::eSignaled);
 
-        result = mDevice->handle().createSemaphore(&sci, nullptr, &mImageReady[i]);
-        result = mDevice->handle().createSemaphore(&sci, nullptr, &mRenderingFinished[i]);
-        result = mDevice->handle().createFence(&fci, nullptr, &mFrameInFlight[i]);
+        mImageReady[i] = mDevice->handle().createSemaphore(semaphoreCreateInfo);
+        mRenderingFinished[i] = mDevice->handle().createSemaphore(semaphoreCreateInfo);
+        mFrameInFlight[i] = mDevice->handle().createFence(fenceCreateInfo);
     }
 
     VK_PRINTLN(fmt::format("{} RHI initialized", VK_STYLED_PREFIX));
@@ -91,6 +91,8 @@ Frame VulkanRHI::beginFrame(const RHIFrameBeginInfo& frameBeginInfo)
 
 void VulkanRHI::submitFrame(const Frame& frame)
 {
+    const auto frameIndex = frame.getCurrentFrame();
+
     std::vector<vk::CommandBufferSubmitInfo> commandBufferSubmitInfos;
     for (const auto commandBuffer : frame.mCommandLists)
     {
@@ -99,15 +101,13 @@ void VulkanRHI::submitFrame(const Frame& frame)
         commandBufferSubmitInfos.push_back(info);
     }
 
-    const auto frameIndex = frame.getCurrentFrame();
-
     const auto waitSemaphoreInfo = vk::SemaphoreSubmitInfo()
         .setSemaphore(mImageReady[frameIndex])
         .setStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput);
     std::vector waitSemaphoreInfos = { waitSemaphoreInfo };
 
     const auto signalSemaphoreInfo = vk::SemaphoreSubmitInfo()
-        .setSemaphore(mImageReady[frameIndex])
+        .setSemaphore(mRenderingFinished[frameIndex])
         .setStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput);
     std::vector signalSemaphoreInfos = { signalSemaphoreInfo };
 
@@ -125,7 +125,7 @@ void VulkanRHI::submitFrame(const Frame& frame)
         throw std::runtime_error("big bad");
     }
 
-    mSwapchain->present(mImageReady[frameIndex], frame.getAcquiredFrameIndex());
+    mSwapchain->present(mRenderingFinished[frameIndex], frame.getAcquiredFrameIndex());
 
     mDevice->waitIdle();
     mCurrentFrame = (mCurrentFrame + 1) % mFramesInFlight;
