@@ -27,8 +27,10 @@ VulkanPipeline::VulkanPipeline(VulkanPipelineCreateInfo& createInfo)
     {
         mPipelineLayout = mDevice->handle().createPipelineLayout(layoutCreateInfo);
 
-        for (const auto& [index, shaderInfo] : std::views::enumerate(createInfo.shaderCreateInfos))
+        for (size_t index = 0; index < createInfo.shaderCreateInfos.size(); index++)
         {
+            const auto& shaderInfo = createInfo.shaderCreateInfos[index];
+
             const auto shaderSrc = readShaderFile(shaderInfo.filePath);
             auto shaderModuleCreateInfo = vk::ShaderModuleCreateInfo()
                 .setCodeSize(sizeof(char) * shaderSrc.size())
