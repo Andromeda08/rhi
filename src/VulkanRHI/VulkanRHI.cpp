@@ -192,12 +192,16 @@ std::unique_ptr<RHIPipeline> VulkanRHI::createPipeline(const RHIPipelineCreateIn
 void VulkanRHI::createInstance()
 {
     constexpr auto applicationInfo = vk::ApplicationInfo()
+#ifdef __APPLE__
+        .setApiVersion(VK_API_VERSION_1_2)
+#else
         .setApiVersion(VK_API_VERSION_1_3)
+#endif
         .setPApplicationName("Vulkan RHI");
 
     mInstanceLayers = getSupportedInstanceLayers();
     mInstanceExtensions = getSupportedInstanceExtensions(mWindow->getVulkanInstanceExtensions());
-    const auto instanceCreateInfo = vk::InstanceCreateInfo()
+    auto instanceCreateInfo = vk::InstanceCreateInfo()
         .setEnabledExtensionCount(mInstanceExtensions.size())
         .setPpEnabledExtensionNames(mInstanceExtensions.data())
         .setEnabledLayerCount(mInstanceLayers.size())
@@ -205,7 +209,7 @@ void VulkanRHI::createInstance()
         .setPApplicationInfo(&applicationInfo);
 
     #ifdef __APPLE__
-    createInfo.setFlags(vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR);
+    instanceCreateInfo.setFlags(vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR);
     #endif
 
     try {
@@ -244,7 +248,7 @@ std::vector<const char*> VulkanRHI::getSupportedInstanceExtensions(const std::ve
     std::vector rhiExtensions = {VK_EXT_DEBUG_UTILS_EXTENSION_NAME};
     const std::vector driverExtensions = vk::enumerateInstanceExtensionProperties();
 
-    #ifdef __APPLE_
+    #ifdef __APPLE__
     rhiExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     #endif
 
