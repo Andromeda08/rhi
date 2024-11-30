@@ -20,32 +20,10 @@ struct VulkanRenderPassInfo
 
     VulkanRenderPassInfo& addColorAttachment(
         vk::Format              format,
-        vk::ImageLayout         final_layout = vk::ImageLayout::eColorAttachmentOptimal,
-        vk::SampleCountFlagBits sample_count = vk::SampleCountFlagBits::e1,
-        vk::ClearColorValue     clear_value  = {0.0f, 0.0f, 0.0f, 1.0f},
-        vk::AttachmentLoadOp    load_op      = vk::AttachmentLoadOp::eClear)
-    {
-        const auto ad = vk::AttachmentDescription()
-            .setFormat(format)
-            .setSamples(sample_count)
-            .setLoadOp(load_op)
-            .setStoreOp(vk::AttachmentStoreOp::eStore)
-            .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
-            .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
-            .setInitialLayout(vk::ImageLayout::eUndefined)
-            .setFinalLayout(final_layout);
-        attachments.push_back(ad);
-
-        auto ref = vk::AttachmentReference()
-            .setLayout(vk::ImageLayout::eColorAttachmentOptimal)
-            .setAttachment(attachments.size() - 1);
-        colorRefs.push_back(ref);
-
-        auto cv = vk::ClearValue(clear_value);
-        clearValues.push_back(cv);
-
-        return *this;
-    }
+        vk::ImageLayout         finalLayout = vk::ImageLayout::eColorAttachmentOptimal,
+        vk::SampleCountFlagBits sampleCount = vk::SampleCountFlagBits::e1,
+        vk::ClearColorValue     clearValue  = {0.0f, 0.0f, 0.0f, 1.0f},
+        vk::AttachmentLoadOp    loadOp      = vk::AttachmentLoadOp::eClear);
 };
 
 class VulkanRenderPass final : public RHIRenderPass
@@ -65,72 +43,3 @@ private:
     std::vector<vk::ClearValue> mClearValues;
     VulkanDevice*               mDevice;
 };
-
-inline VulkanRenderPass::VulkanRenderPass(const VulkanRenderPassInfo& renderPassInfo)
-: RHIRenderPass()
-, mDevice(renderPassInfo.device)
-, mRenderArea(renderPassInfo.renderArea)
-, mClearValues(renderPassInfo.clearValues)
-{
-    auto subpass = vk::SubpassDescription()
-            .setColorAttachmentCount(static_cast<uint32_t>(renderPassInfo.colorRefs.size()))
-            .setInputAttachmentCount(0)
-            .setPInputAttachments(nullptr)
-            .setPResolveAttachments(renderPassInfo.hasResolveAttachment ? &renderPassInfo.resolveRef : nullptr)
-            .setPColorAttachments(renderPassInfo.colorRefs.data())
-            .setPDepthStencilAttachment(renderPassInfo.hasDepthAttachment ? &renderPassInfo.depthRef : nullptr)
-            .setPipelineBindPoint(vk::PipelineBindPoint::eGraphics);
-
-        auto subpass_dependency = vk::SubpassDependency()
-            .setSrcSubpass(VK_SUBPASS_EXTERNAL)
-            .setDstSubpass(0)
-            .setSrcStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
-            .setSrcAccessMask({})
-            .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
-            .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite);
-
-
-        auto rp_renderPassInfo = vk::RenderPassCreateInfo()
-            .setAttachmentCount(renderPassInfo.attachments.size())
-            .setPAttachments(renderPassInfo.attachments.data())
-            .setSubpassCount(1)
-            .setPSubpasses(&subpass)
-            .setDependencyCount(1)
-            .setPDependencies(&subpass_dependency);
-
-        if (const vk::Result result = mDevice->handle().createRenderPass(&rp_renderPassInfo, nullptr, &mRenderPass);
-            result != vk::Result::eSuccess)
-        {
-            // TODO
-            throw std::runtime_error("big bad");
-        }
-
-        mDevice->nameObject<vk::RenderPass>({
-            .debugName = renderPassInfo.debugName,
-            .handle = mRenderPass,
-        });
-
-        mRenderPassBeginInfo = vk::RenderPassBeginInfo()
-            .setRenderArea(mRenderArea)
-            .setRenderPass(mRenderPass)
-            .setClearValueCount(mClearValues.size())
-            .setPClearValues(mClearValues.data());
-}
-
-inline std::unique_ptr<VulkanRenderPass> VulkanRenderPass::createVulkanRenderPass(const VulkanRenderPassInfo& renderPassInfo)
-{
-    return std::make_unique<VulkanRenderPass>(renderPassInfo);
-}
-
-inline void VulkanRenderPass::execute(RHICommandList* commandList, RHIFramebufferHandle* framebuffer,
-                                      const std::function<void(RHICommandList*)> lambda)
-{
-    const auto commandBuffer = commandList->as< VulkanCommandList>()->handle();
-
-    mRenderPassBeginInfo.setFramebuffer(framebuffer->as<VulkanFramebufferHandle>()->handle());
-    commandBuffer.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
-
-    lambda(commandList);
-
-    commandBuffer.endRenderPass();
-}
