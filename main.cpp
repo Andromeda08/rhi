@@ -7,52 +7,50 @@
 
 std::unique_ptr<Window> gWindow;
 
+std::unique_ptr<DynamicRHI> rhiFactory(const RHIInterfaceType api)
+{
+    if (api == RHIInterfaceType::Vulkan)
+    {
+        return VulkanRHI::createVulkanRHI({
+            .pWindow = gWindow.get()
+        });
+    }
+    if (api == RHIInterfaceType::D3D12)
+    {
+#ifdef __APPLE__
+        fmt::println("[{}] {}",
+            styled("Elysia", fg(fmt::color::medium_purple)),
+            fmt::format("{} Backend not supported on {}",
+                styled("D3D12", fg(fmt::color::green_yellow)),
+                styled("macOS", fg(fmt::color::medium_purple))));
+        throw std::exception();
+#else
+        return D3D12RHI::createD3D12RHI({
+            .pWindow = gWindow.get(),
+        });
+#endif
+    }
+    throw std::exception();
+}
+
 int main(const int argc, char** argv)
 {
     auto api = RHIInterfaceType::Vulkan;
     if (argc >= 2)
     {
         const std::string apiArg = argv[1];
-
         if   (apiArg == "D3D12") api = RHIInterfaceType::D3D12;
         else                     api = RHIInterfaceType::Vulkan;
     }
 
-    const auto windowCreateInfo = WindowCreateInfo {
+    gWindow = Window::createWindow({
         .resolution = { 1280, 720 },
         .title = "RHI Example Window",
-    };
-    gWindow = std::make_unique<Window>(windowCreateInfo);
+    });
 
-    switch (api)
-    {
-        case RHIInterfaceType::Vulkan: {
-            gRHI = VulkanRHI::createVulkanRHI({
-                .pWindow = gWindow.get(),
-            });
-            break;
-        }
-        case RHIInterfaceType::D3D12: {
-#ifndef __APPLE__
-            gRHI = D3D12RHI::createD3D12RHI({
-                .pWindow = gWindow.get(),
-            });
-#else
-            fmt::println("[{}] {}",
-                styled("Elysia", fg(fmt::color::medium_purple)),
-                fmt::format("{} Backend not supported on {}",
-                    styled("D3D12", fg(fmt::color::green_yellow)),
-                    styled("macOS", fg(fmt::color::medium_purple))));
-            return 1;
-#endif
-            break;
-        }
-        default:
-            return 0;
-    }
+    gRHI = rhiFactory(api);
 
     std::vector testData = { 0.0f, 0.25f, 0.5f, 0.75f, 1.0f };
-
     auto testBuffer = gRHI->createBuffer({
         .bufferSize = 128,
         .bufferType = Uniform,
