@@ -190,7 +190,7 @@ std::unique_ptr<RHIPipeline> VulkanRHI::createPipeline(const RHIPipelineCreateIn
 
 void VulkanRHI::createInstance()
 {
-    const auto apiFeatureLevel = VulkanPlatform::getPlatformVulkanFeatureLevel();
+    constexpr auto apiFeatureLevel = VulkanPlatform::getPlatformVulkanFeatureLevel();
     constexpr auto applicationInfo = vk::ApplicationInfo()
         .setApiVersion(apiFeatureLevel)
         .setPApplicationName("VulkanRHI");
