@@ -53,35 +53,14 @@ std::unique_ptr<VulkanRHI> VulkanRHI::createVulkanRHI(const VulkanRHICreateInfo&
 
 Frame VulkanRHI::beginFrame(const RHIFrameBeginInfo& frameBeginInfo)
 {
-    // auto acquireNextImageInfo = vk::AcquireNextImageInfoKHR()
-    //     .setFence(mFrameInFlight[mCurrentFrame])
-    //     .setSemaphore(mImageReady[mCurrentFrame])
-    //     .setSwapchain(mSwapchain->handle())
-    //     .setTimeout(std::numeric_limits<uint64_t>::max());
-    //
-    // uint32_t nextImage;
-    // try {
-    //     nextImage = mDevice->handle().acquireNextImage2KHR(acquireNextImageInfo).value;
-    // }
-    // catch (const vk::OutOfDateKHRError& err)
-    // {
-    //     const auto msg = "Swapchain Out of Date and it should be recreated";
-    //     VK_PRINTLN(styled(msg, fg(fmt::color::yellow)));
-    //     throw std::runtime_error(msg);
-    // }
-    // catch (const vk::SystemError& err)
-    // {
-    //     const auto msg = fmt::format("Failed to acquire next Swapchain image: {}", err.what());
-    //     VK_PRINTLN(styled(msg, fg(fmt::color::yellow)));
-    //     throw std::runtime_error(msg);
-    // }
+    const vk::Fence fence = mFrameInFlight[mCurrentFrame];
 
-    vk::Result result;
-    vk::Fence fence = mFrameInFlight[mCurrentFrame];
-    result = mDevice->handle().waitForFences(1, &fence, true, std::numeric_limits<uint64_t>::max());
+    vk::Result result = mDevice->handle().waitForFences(1, &fence, true, std::numeric_limits<uint64_t>::max());
     result = mDevice->handle().resetFences(1, &fence);
-    auto nextImage = mDevice->handle().acquireNextImageKHR(mSwapchain->handle(), std::numeric_limits<uint64_t>::max(),
-                                                  mImageReady[mCurrentFrame], nullptr).value;
+
+    const auto nextImage = mDevice->handle().acquireNextImageKHR(
+        mSwapchain->handle(),std::numeric_limits<uint64_t>::max(),
+        mImageReady[mCurrentFrame], nullptr).value;
 
     return {
         .mCurrentFrame = mCurrentFrame,
@@ -122,7 +101,7 @@ void VulkanRHI::submitFrame(const Frame& frame)
     if (auto result = mDevice->getGraphicsQueue()->getQueue().submit2(1, &submitInfo, mFrameInFlight[frameIndex]);
         result != vk::Result::eSuccess)
     {
-        throw std::runtime_error("big bad");
+        throw std::runtime_error("Failed to submit CommandList");
     }
 
     mSwapchain->present(mRenderingFinished[frameIndex], frame.getAcquiredFrameIndex());
@@ -158,29 +137,48 @@ std::unique_ptr<RHIBuffer> VulkanRHI::createBuffer(const RHIBufferCreateInfo& cr
     });
 }
 
-std::unique_ptr<RHIFramebuffers> VulkanRHI::createFramebuffers(const RHIFramebuffersCreateInfo& createInfo)
+std::unique_ptr<RHIFramebuffer> VulkanRHI::createFramebuffer(const RHIFramebufferCreateInfo& createInfo)
 {
-    auto framebuffersInfo = VulkanFramebuffersInfo({
-        .framebufferCount = 2,
+    auto framebuffersInfo = VulkanFramebufferInfo({
+        .framebufferCount = createInfo.count,
         .renderPass = createInfo.renderPass->as<VulkanRenderPass>()->handle(),
-        .extent = mSwapchain->getExtent(),
+        .extent = { createInfo.extent.width, createInfo.extent.height },
         .device = mDevice.get(),
-        .debugName = "Test Framebuffer"
-    })
-    .addAttachment(mSwapchain->getImageView(0), 0, 0)
-    .addAttachment(mSwapchain->getImageView(1), 0, 1);
+        .debugName = createInfo.debugName
+    });
 
-    return VulkanFramebuffers::createVulkanFramebuffers(framebuffersInfo);
+    for (const auto& attachment : createInfo.attachments)
+    {
+        vk::ImageView imageView;
+        if (std::holds_alternative<RHISwapchain*>(attachment.imageView))
+        {
+            imageView = std::get<RHISwapchain*>(attachment.imageView)->as<VulkanSwapchain>()->getImageView(attachment.framebufferIndex);
+        }
+
+        framebuffersInfo.addAttachment(imageView, attachment.attachmentIndex, attachment.framebufferIndex);
+    }
+
+    return VulkanFramebuffer::createVulkanFramebuffer(framebuffersInfo);
 }
 
 std::unique_ptr<RHIRenderPass> VulkanRHI::createRenderPass(const RHIRenderPassCreateInfo& createInfo)
 {
-    const auto renderPassInfo = VulkanRenderPassInfo({
-        .renderArea = {{0, 0}, mSwapchain->getExtent()},
+     auto renderPassInfo = VulkanRenderPassInfo({
+        .renderArea = toVulkan(createInfo.renderArea),
         .device     = mDevice.get(),
-        .debugName  = "Test RenderPass",
-    })
-    .addColorAttachment(mSwapchain->getFormatVk(), vk::ImageLayout::ePresentSrcKHR);
+        .debugName  =  createInfo.debugName,
+    });
+
+    for (const auto& colorAttachment : createInfo.colorAttachments)
+    {
+        renderPassInfo.addColorAttachment(
+            toVulkan(colorAttachment.format),
+            toVulkan(colorAttachment.finalLayout),
+            vk::SampleCountFlagBits::e1,
+            colorAttachment.clearValue,
+            toVulkan(colorAttachment.loadOp));
+    }
+
     return VulkanRenderPass::createVulkanRenderPass(renderPassInfo);
 }
 

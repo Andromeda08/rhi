@@ -204,19 +204,11 @@ public:
     DISABLE_COPY_CTOR(VulkanPipeline);
     explicit DEF_PRIMARY_CTOR(VulkanPipeline, VulkanPipelineCreateInfo& createInfo);
 
-    ~VulkanPipeline() override = default;
+    ~VulkanPipeline() override;
 
     void bind(RHICommandList* commandList) override
     {
         commandList->as<VulkanCommandList>()->handle().bindPipeline(mBindPoint, mPipeline);
-    }
-
-    void bindDescriptorSet(const vk::CommandBuffer& commandBuffer, const vk::DescriptorSet& descriptorSet) {}
-
-    template <typename T>
-    void push_constants(const vk::CommandBuffer& commandBuffer, vk::ShaderStageFlags stages, vk::DeviceSize offset, const T* pData) const
-    {
-        commandBuffer.pushConstants(mPipelineLayout, stages, offset, sizeof(T), pData);
     }
 
     const vk::Pipeline&       handle() const { return mPipeline; }

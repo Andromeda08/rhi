@@ -35,7 +35,8 @@ add_library(VulkanRHI
     src/VulkanRHI/VulkanPipeline.hpp
     src/VulkanRHI/VulkanPipeline.cpp
         src/VulkanRHI/VulkanRenderpass.hpp
-        src/VulkanRHI/VulkanFramebuffer.hpp
+    src/VulkanRHI/VulkanFramebuffer.hpp
+    src/VulkanRHI/Platform.hpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
 target_link_libraries(VulkanRHI PUBLIC ${Vulkan_LIBRARIES} fmt::fmt)
@@ -87,7 +88,7 @@ add_executable(${PROJECT_NAME}
         src/RHI/Definitions.cpp
         src/RHI/RHIPipeline.hpp
     src/RHI/Frame.hpp
-        src/RHI/RHIFramebuffer.hpp
+    src/RHI/RHIFramebuffer.hpp
         src/RHI/RHIRenderPass.hpp
 )
 

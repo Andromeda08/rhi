@@ -17,21 +17,6 @@ struct RHIFrameBeginInfo
     bool useSwapchain = true;
 };
 
-struct RHIFramebuffersCreateInfo
-{
-    RHIRenderPass* renderPass;
-};
-
-struct RHIRenderPassCreateInfo
-{
-
-};
-
-struct RHIPipelineCreateInfo
-{
-    RHIRenderPass* renderPass;
-};
-
 class DynamicRHI
 {
 public:
@@ -47,7 +32,7 @@ public:
 
     virtual std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) = 0;
 
-    virtual std::unique_ptr<RHIFramebuffers> createFramebuffers(const RHIFramebuffersCreateInfo& createInfo) = 0;
+    virtual std::unique_ptr<RHIFramebuffer> createFramebuffer(const RHIFramebufferCreateInfo& createInfo) = 0;
 
     virtual std::unique_ptr<RHIRenderPass> createRenderPass(const RHIRenderPassCreateInfo& createInfo) = 0;
 

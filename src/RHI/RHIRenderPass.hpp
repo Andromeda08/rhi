@@ -3,7 +3,7 @@
 #include <functional>
 
 class RHICommandList;
-struct RHIFramebuffer;
+struct RHIFramebufferHandle;
 
 class RHIRenderPass
 {
@@ -13,5 +13,5 @@ public:
 
     DEF_AS_CONVERT(RHIRenderPass);
 
-    virtual void execute(RHICommandList* commandList, RHIFramebuffer* framebuffer, std::function<void(RHICommandList*)> lambda) = 0;
+    virtual void execute(RHICommandList* commandList, RHIFramebufferHandle* framebuffer, std::function<void(RHICommandList*)> lambda) = 0;
 };

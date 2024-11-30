@@ -28,13 +28,15 @@ public:
 
     void submitFrame(const Frame& frame) override;
 
+
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override;
 
     std::unique_ptr<RHIRenderPass> createRenderPass(const RHIRenderPassCreateInfo& createInfo) override;
 
-    std::unique_ptr<RHIFramebuffers> createFramebuffers(const RHIFramebuffersCreateInfo& createInfo) override;
+    std::unique_ptr<RHIFramebuffer> createFramebuffer(const RHIFramebufferCreateInfo& createInfo) override;
 
     std::unique_ptr<RHIPipeline> createPipeline(const RHIPipelineCreateInfo& createInfo) override;
+
 
     void              waitIdle()         const override { mDevice->waitIdle(); }
 

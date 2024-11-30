@@ -1,20 +1,20 @@
 #pragma once
 
-struct RHIFramebuffer
+struct RHIFramebufferHandle
 {
+    RHIFramebufferHandle() = default;
+    virtual ~RHIFramebufferHandle() = default;
+
+    DEF_AS_CONVERT(RHIFramebufferHandle);
+};
+
+class RHIFramebuffer
+{
+public:
     RHIFramebuffer() = default;
     virtual ~RHIFramebuffer() = default;
 
     DEF_AS_CONVERT(RHIFramebuffer);
-};
 
-class RHIFramebuffers
-{
-public:
-    RHIFramebuffers() = default;
-    virtual ~RHIFramebuffers() = default;
-
-    DEF_AS_CONVERT(RHIFramebuffers);
-
-    virtual RHIFramebuffer* getFramebuffer(size_t index) = 0;
+    virtual RHIFramebufferHandle* getFramebuffer(size_t index) = 0;
 };

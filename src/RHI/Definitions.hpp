@@ -1,7 +1,69 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
+#include <optional>
+#include <variant>
+#include <vector>
+
 #include "Macros.hpp"
+
+struct Size2D
+{
+    uint32_t width  {};
+    uint32_t height {};
+
+    Size2D& setWidth(uint32_t value);
+    Size2D& setHeight(uint32_t value);
+
+    float aspectRatio() const;
+};
+
+struct Size3D
+{
+    uint32_t width  {};
+    uint32_t height {};
+    uint32_t depth  {};
+
+    Size3D& setWidth(uint32_t value);
+    Size3D& setHeight(uint32_t value);
+    Size3D& setDepth(uint32_t value);
+};
+
+struct Offset2D
+{
+    int32_t x {};
+    int32_t y {};
+
+    Offset2D& setX(int32_t value);
+    Offset2D& setY(int32_t value);
+};
+
+struct Rect2D
+{
+    Offset2D offset {};
+    Size2D   size   {};
+
+    Rect2D& setOffset(Offset2D value);
+    Rect2D& setSize(Size2D value);
+};
+
+struct Viewport
+{
+    float x         {};
+    float y         {};
+    float width     {};
+    float height    {};
+    float minDepth  {};
+    float maxDepth  {};
+
+    Viewport& setX(float value);
+    Viewport& setY(float value);
+    Viewport& setWidth(float value);
+    Viewport& setHeight(float value);
+    Viewport& setMinDepth(float value);
+    Viewport& setMaxDepth(float value);
+};
 
 #pragma region "Enums"
 
@@ -88,11 +150,212 @@ enum class PrimitiveType
     TriangleStrip
 };
 
+#pragma endregion
+
+class RHISwapchain;
+
+class RHIRenderPass;
+class RHIFramebuffer;
+class RHIPipeline;
+
+#pragma region "RHIFramebuffer"
+
+struct RHIFramebufferAttachment
+{
+    std::variant<RHISwapchain*> imageView;
+    uint32_t                    attachmentIndex  { 0 };
+    int32_t                     framebufferIndex { -1 };
+};
+
+struct RHIFramebufferCreateInfo
+{
+    uint32_t                              count       { 0 };
+    RHIRenderPass*                        renderPass  { nullptr };
+    Size2D                                extent      {0, 0};
+    std::vector<RHIFramebufferAttachment> attachments {};
+    const char*                           debugName   {};
+};
+
+#pragma endregion
+
+#pragma region "RHIRenderPass"
+
+using ClearColorValue = std::array<float, 4>;
+
+struct ClearDepthStencilValue
+{
+    float    depth   = {};
+    uint32_t stencil = {};
+};
+
+enum class ImageLayout
+{
+    ColorAttachmentOptimal,
+    PresentSrc,
+};
+
+enum class AttachmentLoadOp
+{
+    Clear,
+    Load,
+    DontCare,
+};
+
+enum class AttachmentStoreOp
+{
+    None,
+    Store,
+    DontCare,
+};
+
+struct AttachmentDescription
+{
+    Format               format          { Format::R32G32B32A32Sfloat };
+    ImageLayout          finalLayout     { ImageLayout::ColorAttachmentOptimal };
+    std::array<float, 4> clearValue      { 0.0f, 0.0f, 0.0f, 1.0f };
+    AttachmentLoadOp     loadOp          { AttachmentLoadOp::Clear };
+    AttachmentStoreOp    storeOp         { AttachmentStoreOp::DontCare };
+    AttachmentLoadOp     stencilLoadOp   { AttachmentLoadOp::DontCare };
+    AttachmentStoreOp    stencilStoreOp  { AttachmentStoreOp::DontCare };
+
+    // Ignored when describing a Depth or Resolve attachment
+    uint32_t             attachmentIndex { 0 };
+};
+
+/**
+ * Parameter struct for DynamicRHI::createRenderPass()
+ */
+struct RHIRenderPassCreateInfo
+{
+    std::vector<AttachmentDescription>   colorAttachments  {};
+    std::optional<AttachmentDescription> depthAttachment   { std::nullopt };
+    std::optional<AttachmentDescription> resolveAttachment { std::nullopt };
+    Rect2D                               renderArea        {};
+    const char*                          debugName;
+};
+
+#pragma endregion
+
+#pragma region "RHIPipeline"
+
 enum class PipelineType
 {
     Graphics,
     RayTracing,
     Compute,
+};
+
+// Shaders
+enum class ShaderStage
+{
+    Vertex,
+    Fragment,
+};
+
+struct RHIShaderCreateInfo
+{
+    const char* filePath;
+    ShaderStage shaderStage;
+};
+
+// Graphics Pipeline State
+struct VertexInputAttributeDesc
+{
+    uint32_t location;
+    uint32_t binding;
+    Format   format;
+    uint32_t offset;
+};
+
+enum class VertexInputRate
+{
+    Vertex,
+    Instance,
+};
+
+struct VertexInputBindingDesc
+{
+    uint32_t        binding;
+    uint32_t        stride;
+    VertexInputRate inputRate;
+};
+
+enum class CullMode
+{
+    None,
+    Front,
+    Back,
+    FrontAndBack,
+};
+
+enum class PolygonMode
+{
+    Fill,
+    Line,
+};
+
+enum class ColorComponent { R, G, B, A };
+
+enum class BlendFactor
+{
+    One,
+    Zero
+};
+
+enum class BlendOp
+{
+    Add
+};
+
+struct BlendRule
+{
+    BlendFactor srcBlendFactor { BlendFactor::One };
+    BlendFactor dstBlendFactor { BlendFactor::Zero };
+    BlendOp     blendOp        { BlendOp::Add };
+};
+
+struct AttachmentState
+{
+    std::vector<ColorComponent> colorWriteMask      { ColorComponent::R, ColorComponent::G, ColorComponent::B, ColorComponent::A };
+    bool                        blendEnable         { false };
+    BlendRule                   blendColor          {};
+    BlendRule                   blendAlpha          {};
+
+    static AttachmentState colorsDefault() noexcept
+    {
+        return {};
+    }
+
+    static AttachmentState blendEnabled()  noexcept
+    {
+        return {
+            .blendEnable = true,
+        };
+    }
+};
+
+/**
+ * Parameter struct for configuring a Graphics Pipeline
+ */
+struct RHIGraphicsPipelineState
+{
+    CullMode                              cullMode              { CullMode::Back };
+    PolygonMode                           polygonMode           { PolygonMode::Fill };
+    std::vector<VertexInputAttributeDesc> vertexInputAttributes {};
+    std::vector<VertexInputBindingDesc>   vertexInputBindings   {};
+    std::vector<AttachmentState>          attachmentStates      {};
+};
+
+/**
+ * Parameter struct for DynamicRHI::createPipeline()
+ */
+struct RHIPipelineCreateInfo
+{
+    std::vector<RHIShaderCreateInfo> shaderCreateInfos     {};
+    RHIGraphicsPipelineState         graphicsPipelineState {};
+    RHIRenderPass*                   renderPass            { nullptr };
+    PipelineType                     pipelineType          { PipelineType::Graphics };
+    const char*                      debugName;
 };
 
 #pragma endregion
@@ -120,60 +383,3 @@ struct RHIBufferCreateInfo
 };
 
 #pragma endregion
-
-struct Size2D
-{
-    uint32_t width;
-    uint32_t height;
-
-    Size2D& setWidth(uint32_t value);
-    Size2D& setHeight(uint32_t value);
-
-    float aspectRatio() const;
-};
-
-struct Size3D
-{
-    uint32_t width;
-    uint32_t height;
-    uint32_t depth;
-
-    Size3D& setWidth(uint32_t value);
-    Size3D& setHeight(uint32_t value);
-    Size3D& setDepth(uint32_t value);
-};
-
-struct Offset2D
-{
-    int32_t x;
-    int32_t y;
-
-    Offset2D& setX(int32_t value);
-    Offset2D& setY(int32_t value);
-};
-
-struct Rect2D
-{
-    Size2D size;
-    Offset2D offset;
-
-    Rect2D& setSize(Size2D value);
-    Rect2D& setOffset(Offset2D value);
-};
-
-struct Viewport
-{
-    float x;
-    float y;
-    float width;
-    float height;
-    float minDepth;
-    float maxDepth;
-
-    Viewport& setX(float value);
-    Viewport& setY(float value);
-    Viewport& setWidth(float value);
-    Viewport& setHeight(float value);
-    Viewport& setMinDepth(float value);
-    Viewport& setMaxDepth(float value);
-};

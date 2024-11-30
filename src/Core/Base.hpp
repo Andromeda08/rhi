@@ -20,4 +20,4 @@
 fmt::println("{}", styled(fmt::format("[Temp] {}", MSG), fg(fmt::color::light_yellow)))
 
 #define RHI_PRINTLN(MESSAGE) \
-fmt::println("[{}] {}", styled("RHI", fg(fmt::color::cornflower_blue)), MESSAGE)
+fmt::println("[{}] {}", styled("Elysia", fg(fmt::color::middle_purple)), MESSAGE)

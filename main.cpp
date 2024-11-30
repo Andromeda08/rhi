@@ -32,12 +32,21 @@ int main(const int argc, char** argv)
             });
             break;
         }
-        // case RHIInterfaceType::D3D12: {
-        //     gRHI = D3D12RHI::createD3D12RHI({
-        //         .pWindow = gWindow.get(),
-        //     });
-        //     break;
-        // }
+        case RHIInterfaceType::D3D12: {
+#ifndef __APPLE__
+            gRHI = D3D12RHI::createD3D12RHI({
+                .pWindow = gWindow.get(),
+            });
+#else
+            fmt::println("[{}] {}",
+                styled("Elysia", fg(fmt::color::medium_purple)),
+                fmt::format("{} Backend not supported on {}",
+                    styled("D3D12", fg(fmt::color::green_yellow)),
+                    styled("macOS", fg(fmt::color::medium_purple))));
+            return 1;
+#endif
+            break;
+        }
         default:
             return 0;
     }
@@ -51,13 +60,40 @@ int main(const int argc, char** argv)
         .debugName  = "Test Buffer",
     });
 
-    const auto testRenderPass = gRHI->createRenderPass({});
-    const auto testFramebuffers = gRHI->createFramebuffers({
+    const auto testRenderPass = gRHI->createRenderPass({
+        .colorAttachments = {
+            {
+                .format = gRHI->getSwapchain()->getFormat(),
+                .finalLayout = ImageLayout::PresentSrc,
+            }},
+        .renderArea = {{0, 0}, gRHI->getSwapchain()->getSize()},
+        .debugName  = "Test RenderPass",
+    });
+
+    const auto testFramebuffers = gRHI->createFramebuffer({
+        .count = 2,
         .renderPass = testRenderPass.get(),
+        .extent = gRHI->getSwapchain()->getSize(),
+        .attachments =
+        {
+            { gRHI->getSwapchain(), 0, 0 },
+            { gRHI->getSwapchain(), 0, 1 }
+        },
+        .debugName = "Test Framebuffer",
     });
 
     const auto testPipeline = gRHI->createPipeline({
+        .shaderCreateInfos = {
+            { "triangle.vert.spv", ShaderStage::Vertex   },
+            { "triangle.frag.spv", ShaderStage::Fragment }
+        },
+        .graphicsPipelineState = {
+            .cullMode = CullMode::None,
+            .attachmentStates = { AttachmentState::colorsDefault() },
+        },
         .renderPass = testRenderPass.get(),
+        .pipelineType = PipelineType::Graphics,
+        .debugName = "Test Pipeline",
     });
 
     while (!gWindow->shouldClose())

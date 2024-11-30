@@ -26,6 +26,10 @@ VulkanPipeline::VulkanPipeline(VulkanPipelineCreateInfo& createInfo)
     try
     {
         mPipelineLayout = mDevice->handle().createPipelineLayout(layoutCreateInfo);
+        mDevice->nameObject<vk::PipelineLayout>({
+            .debugName = createInfo.debugName,
+            .handle = mPipelineLayout,
+        });
 
         for (size_t index = 0; index < createInfo.shaderCreateInfos.size(); index++)
         {
@@ -37,6 +41,10 @@ VulkanPipeline::VulkanPipeline(VulkanPipelineCreateInfo& createInfo)
                 .setPCode(reinterpret_cast<const uint32_t*>(shaderSrc.data()));
 
             shaders[index] = mDevice->handle().createShaderModule(shaderModuleCreateInfo);
+            mDevice->nameObject<vk::ShaderModule>({
+                .debugName = shaderInfo.filePath,
+                .handle = shaders[index],
+            });
 
             shaderStageInfos[index] = vk::PipelineShaderStageCreateInfo()
                 .setStage(shaderInfo.shaderStage)
@@ -66,6 +74,10 @@ VulkanPipeline::VulkanPipeline(VulkanPipelineCreateInfo& createInfo)
     try
     {
         mPipeline = mDevice->handle().createGraphicsPipeline(nullptr, graphicsPipelineCreateInfo).value;
+        mDevice->nameObject<vk::Pipeline>({
+            .debugName = createInfo.debugName,
+            .handle = mPipeline,
+        });
     } catch (const vk::SystemError& error) {
         fmt::println("Failed to create Pipeline: {}", error.what());
         throw;
@@ -75,6 +87,12 @@ VulkanPipeline::VulkanPipeline(VulkanPipelineCreateInfo& createInfo)
 std::unique_ptr<VulkanPipeline> VulkanPipeline::createVulkanPipeline(VulkanPipelineCreateInfo& createInfo)
 {
     return std::make_unique<VulkanPipeline>(createInfo);
+}
+
+VulkanPipeline::~VulkanPipeline()
+{
+    mDevice->handle().destroyPipeline(mPipeline);
+    mDevice->handle().destroyPipelineLayout(mPipelineLayout);
 }
 
 vk::PipelineBindPoint VulkanPipeline::toBindPoint(const PipelineType type)

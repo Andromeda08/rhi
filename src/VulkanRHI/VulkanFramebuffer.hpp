@@ -4,11 +4,11 @@
 #include "VulkanDevice.hpp"
 #include "RHI/RHIFramebuffer.hpp"
 
-struct VulkanFramebuffer final : public RHIFramebuffer
+struct VulkanFramebufferHandle final : public RHIFramebufferHandle
 {
-    explicit VulkanFramebuffer(const vk::Framebuffer framebuffer): RHIFramebuffer(), mFramebuffer(framebuffer) {}
+    explicit VulkanFramebufferHandle(const vk::Framebuffer framebuffer): RHIFramebufferHandle(), mFramebuffer(framebuffer) {}
 
-    ~VulkanFramebuffer() override = default;
+    ~VulkanFramebufferHandle() override = default;
 
     vk::Framebuffer handle() const { return mFramebuffer; }
 
@@ -16,9 +16,9 @@ private:
     vk::Framebuffer mFramebuffer;
 };
 
-struct VulkanFramebuffersInfo
+struct VulkanFramebufferInfo
 {
-    VulkanFramebuffersInfo& addAttachment(
+    VulkanFramebufferInfo& addAttachment(
         const vk::ImageView& imageView,
         std::optional<uint32_t> attachmentIndex = std::nullopt,
         std::optional<uint32_t> framebufferIndex = std::nullopt)
@@ -70,13 +70,13 @@ struct VulkanFramebuffersInfo
         return *this;
     }
 
-    VulkanFramebuffersInfo& setCount(uint32_t value)
+    VulkanFramebufferInfo& setCount(uint32_t value)
     {
         framebufferCount = value;
         return *this;
     }
 
-    VulkanFramebuffersInfo& validate()
+    VulkanFramebufferInfo& validate()
     {
         {
             bool has_missing_attachments = false;
@@ -114,18 +114,18 @@ struct VulkanFramebuffersInfo
     std::map<uint32_t, std::vector<vk::ImageView>> attachments {};
     int32_t lastAttachmentIndex {-1};
 
-    friend class VulkanFramebuffers;
+    friend class VulkanFramebuffer;
 };
 
-class VulkanFramebuffers final : public RHIFramebuffers
+class VulkanFramebuffer final : public RHIFramebuffer
 {
 public:
-    DISABLE_COPY_CTOR(VulkanFramebuffers);
-    explicit DEF_PRIMARY_CTOR(VulkanFramebuffers, VulkanFramebuffersInfo& framebuffersInfo);
+    DISABLE_COPY_CTOR(VulkanFramebuffer);
+    explicit DEF_PRIMARY_CTOR(VulkanFramebuffer, VulkanFramebufferInfo& framebuffersInfo);
 
-    ~VulkanFramebuffers() override = default;
+    ~VulkanFramebuffer() override = default;
 
-    RHIFramebuffer* getFramebuffer(const size_t index) override
+    RHIFramebufferHandle* getFramebuffer(const size_t index) override
     {
         if (index >= mFramebuffers.size())
         {
@@ -136,12 +136,12 @@ public:
     }
 
 private:
-    std::vector<std::unique_ptr<VulkanFramebuffer>> mFramebuffers;
+    std::vector<std::unique_ptr<VulkanFramebufferHandle>> mFramebuffers;
     VulkanDevice* mDevice;
 };
 
-inline VulkanFramebuffers::VulkanFramebuffers(VulkanFramebuffersInfo& framebuffersInfo)
-: RHIFramebuffers()
+inline VulkanFramebuffer::VulkanFramebuffer(VulkanFramebufferInfo& framebuffersInfo)
+: RHIFramebuffer()
 ,mDevice(framebuffersInfo.device)
 {
     auto fb_create_info = vk::FramebufferCreateInfo()
@@ -167,11 +167,11 @@ inline VulkanFramebuffers::VulkanFramebuffers(VulkanFramebuffersInfo& framebuffe
             .handle = framebuffers[i],
         });
 
-        mFramebuffers[i] = std::make_unique<VulkanFramebuffer>(framebuffers[i]);
+        mFramebuffers[i] = std::make_unique<VulkanFramebufferHandle>(framebuffers[i]);
     }
 }
 
-inline std::unique_ptr<VulkanFramebuffers> VulkanFramebuffers::createVulkanFramebuffers(VulkanFramebuffersInfo& framebuffersInfo)
+inline std::unique_ptr<VulkanFramebuffer> VulkanFramebuffer::createVulkanFramebuffer(VulkanFramebufferInfo& framebuffersInfo)
 {
-    return std::make_unique<VulkanFramebuffers>(framebuffersInfo);
+    return std::make_unique<VulkanFramebuffer>(framebuffersInfo);
 }

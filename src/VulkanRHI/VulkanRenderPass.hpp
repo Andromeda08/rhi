@@ -54,7 +54,7 @@ public:
     DISABLE_COPY_CTOR(VulkanRenderPass);
     explicit DEF_PRIMARY_CTOR(VulkanRenderPass, const VulkanRenderPassInfo& renderPassInfo);
 
-    void execute(RHICommandList* commandList, RHIFramebuffer* framebuffer, std::function<void(RHICommandList*)> lambda) override;
+    void execute(RHICommandList* commandList, RHIFramebufferHandle* framebuffer, std::function<void(RHICommandList*)> lambda) override;
 
     vk::RenderPass handle() const { return mRenderPass; }
 
@@ -122,12 +122,12 @@ inline std::unique_ptr<VulkanRenderPass> VulkanRenderPass::createVulkanRenderPas
     return std::make_unique<VulkanRenderPass>(renderPassInfo);
 }
 
-inline void VulkanRenderPass::execute(RHICommandList* commandList, RHIFramebuffer* framebuffer,
+inline void VulkanRenderPass::execute(RHICommandList* commandList, RHIFramebufferHandle* framebuffer,
                                       const std::function<void(RHICommandList*)> lambda)
 {
     const auto commandBuffer = commandList->as< VulkanCommandList>()->handle();
 
-    mRenderPassBeginInfo.setFramebuffer(framebuffer->as<VulkanFramebuffer>()->handle());
+    mRenderPassBeginInfo.setFramebuffer(framebuffer->as<VulkanFramebufferHandle>()->handle());
     commandBuffer.beginRenderPass(&mRenderPassBeginInfo, vk::SubpassContents::eInline);
 
     lambda(commandList);
