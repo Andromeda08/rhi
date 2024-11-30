@@ -37,6 +37,7 @@ add_library(VulkanRHI
         src/VulkanRHI/VulkanRenderpass.hpp
     src/VulkanRHI/VulkanFramebuffer.hpp
     src/VulkanRHI/Platform.hpp
+    src/VulkanRHI/VulkanFramebuffer.cpp
     src/VulkanRHI/VulkanRenderPass.cpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
