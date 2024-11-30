@@ -1,5 +1,6 @@
 #include "VulkanRHI.hpp"
 
+#include "Platform.hpp"
 #include "VulkanFramebuffer.hpp"
 #include "VulkanRenderPass.hpp"
 
@@ -189,13 +190,10 @@ std::unique_ptr<RHIPipeline> VulkanRHI::createPipeline(const RHIPipelineCreateIn
 
 void VulkanRHI::createInstance()
 {
+    const auto apiFeatureLevel = VulkanPlatform::getPlatformVulkanFeatureLevel();
     constexpr auto applicationInfo = vk::ApplicationInfo()
-#ifdef __APPLE__
-        .setApiVersion(VK_API_VERSION_1_2)
-#else
-        .setApiVersion(VK_API_VERSION_1_3)
-#endif
-        .setPApplicationName("Vulkan RHI");
+        .setApiVersion(apiFeatureLevel)
+        .setPApplicationName("VulkanRHI");
 
     mInstanceLayers = getSupportedInstanceLayers();
     mInstanceExtensions = getSupportedInstanceExtensions(mWindow->getVulkanInstanceExtensions());
