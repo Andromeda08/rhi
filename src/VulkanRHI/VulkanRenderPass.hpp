@@ -32,6 +32,8 @@ public:
     DISABLE_COPY_CTOR(VulkanRenderPass);
     explicit DEF_PRIMARY_CTOR(VulkanRenderPass, const VulkanRenderPassInfo& renderPassInfo);
 
+    ~VulkanRenderPass() override;
+
     void execute(RHICommandList* commandList, RHIFramebufferHandle* framebuffer, std::function<void(RHICommandList*)> lambda) override;
 
     vk::RenderPass handle() const { return mRenderPass; }

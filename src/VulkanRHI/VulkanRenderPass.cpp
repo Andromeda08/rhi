@@ -81,8 +81,13 @@ std::unique_ptr<VulkanRenderPass> VulkanRenderPass::createVulkanRenderPass(const
     return std::make_unique<VulkanRenderPass>(renderPassInfo);
 }
 
+VulkanRenderPass::~VulkanRenderPass()
+{
+    mDevice->handle().destroyRenderPass(mRenderPass);
+}
+
 void VulkanRenderPass::execute(RHICommandList* commandList, RHIFramebufferHandle* framebuffer,
-    const std::function<void(RHICommandList*)> lambda)
+                               const std::function<void(RHICommandList*)> lambda)
 {
     const auto commandBuffer = commandList->as< VulkanCommandList>()->handle();
 
