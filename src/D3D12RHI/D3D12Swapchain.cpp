@@ -68,8 +68,3 @@ uint32_t D3D12Swapchain::getNextFrameIndex(uint32_t currentFrame) const
 {
     return mSwapchain->GetCurrentBackBufferIndex();
 }
-
-void D3D12Swapchain::present() const
-{
-    PRINT_PLACEHOLDER("D3D12Swapchain::present()");
-}

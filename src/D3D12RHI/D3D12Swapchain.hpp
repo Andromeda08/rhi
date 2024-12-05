@@ -4,11 +4,11 @@
 #include "D3D12Core.hpp"
 #include "D3D12Device.hpp"
 #include "RHI/RHISwapchain.hpp"
-#include "RHI/IWindow.hpp"
+#include "RHI/RHIWindow.hpp"
 
 struct D3D12SwapchainParams
 {
-    IRHIWindow*            window;
+    RHIWindow*             window;
     D3D12Device*           device;
     ComPtr<IDXGIFactory4>& factory;
     uint32_t               imageCount {2};
@@ -23,14 +23,14 @@ public:
 
     uint32_t getNextFrameIndex(uint32_t currentFrame) const override;
 
-    void present() const override;
-
     Rect2D   getScissor()           override { return toRHI(mScissor);}
     Viewport getViewport()          override { return toRHI(mViewport); }
     Size2D   getSize()        const override { return mSize; }
     float    getAspectRatio() const override { return mAspectRatio; }
     Format   getFormat()      const override { return toRHI(mFormat); }
     uint32_t getFrameCount()        override { return mImageCount; }
+
+    void setScissorViewport(RHICommandList* commandList) const override {}
 
 private:
     ComPtr<IDXGISwapChain4>             mSwapchain;
@@ -46,6 +46,6 @@ private:
     ComPtr<ID3D12DescriptorHeap>        mRTVDescriptorHeap;
     std::vector<ComPtr<ID3D12Resource>> mRTVs;
 
-    IRHIWindow*                         mWindow;
+    RHIWindow*                          mWindow;
     D3D12Device*                        mDevice;
 };

@@ -60,8 +60,8 @@ std::string to_string(const std::wstring& wstring);
 inline Rect2D toRHI(const CD3DX12_RECT& rect)
 {
     return {
-        .size = Size2D(rect.bottom, rect.right),
         .offset = Offset2D(rect.top, rect.left),
+        .size = Size2D(rect.bottom, rect.right),
     };
 }
 

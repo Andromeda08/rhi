@@ -210,8 +210,8 @@ inline auto toRHI(const vk::Offset2D offset)
 inline auto toRHI(const vk::Rect2D rect)
 {
     return Rect2D {
+        .offset = toRHI(rect.offset),
         .size = toRHI(rect.extent),
-        .offset = toRHI(rect.offset)
     };
 }
 

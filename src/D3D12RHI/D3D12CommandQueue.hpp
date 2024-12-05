@@ -1,7 +1,7 @@
 #pragma once
 
 #include "D3D12Core.hpp"
-#include "RHI/CommandQueue.hpp"
+#include "RHI/RHICommandQueue.hpp"
 
 class D3D12CommandList;
 

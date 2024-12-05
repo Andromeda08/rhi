@@ -2,7 +2,7 @@
 
 #include "D3D12Core.hpp"
 #include "RHI/Definitions.hpp"
-#include "RHI/CommandList.hpp"
+#include "RHI/RHICommandList.hpp"
 
 struct D3D12CommandListParams
 {

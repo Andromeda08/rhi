@@ -21,6 +21,7 @@ add_subdirectory(external/glfw)
 add_compile_definitions(VULKAN_RHI_ENABLED)
 
 add_library(VulkanRHI
+    src/VulkanRHI/Platform.hpp
     src/VulkanRHI/VulkanBase.hpp
     src/VulkanRHI/VulkanCommandQueue.hpp src/VulkanRHI/VulkanCommandQueue.cpp
     src/VulkanRHI/VulkanDebugContext.hpp src/VulkanRHI/VulkanDebugContext.cpp
@@ -28,17 +29,11 @@ add_library(VulkanRHI
     src/VulkanRHI/VulkanDeviceExtension.hpp src/VulkanRHI/VulkanDeviceExtension.cpp
     src/VulkanRHI/VulkanRHI.hpp src/VulkanRHI/VulkanRHI.cpp
     src/VulkanRHI/VulkanSwapchain.hpp src/VulkanRHI/VulkanSwapchain.cpp
-        src/VulkanRHI/VulkanBuffer.hpp
-        src/VulkanRHI/VulkanBuffer.cpp
-        src/VulkanRHI/VulkanAllocator.hpp
-    src/VulkanRHI/VulkanAllocator.cpp
-    src/VulkanRHI/VulkanPipeline.hpp
-    src/VulkanRHI/VulkanPipeline.cpp
-        src/VulkanRHI/VulkanRenderpass.hpp
-    src/VulkanRHI/VulkanFramebuffer.hpp
-    src/VulkanRHI/Platform.hpp
-    src/VulkanRHI/VulkanFramebuffer.cpp
-    src/VulkanRHI/VulkanRenderPass.cpp
+    src/VulkanRHI/VulkanBuffer.hpp src/VulkanRHI/VulkanBuffer.cpp
+    src/VulkanRHI/VulkanAllocator.hpp src/VulkanRHI/VulkanAllocator.cpp
+    src/VulkanRHI/VulkanPipeline.hpp src/VulkanRHI/VulkanPipeline.cpp
+    src/VulkanRHI/VulkanFramebuffer.hpp src/VulkanRHI/VulkanFramebuffer.cpp
+    src/VulkanRHI/VulkanRenderPass.hpp src/VulkanRHI/VulkanRenderPass.cpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
 target_link_libraries(VulkanRHI PUBLIC ${Vulkan_LIBRARIES} fmt::fmt)
@@ -52,7 +47,7 @@ target_compile_definitions(VulkanRHI
 # ============== #
 #   D3D12 RHI    #
 # ============== #
-if (__APPLE__)
+if (WIN32)
     add_compile_definitions(D3D12_RHI_ENABLED WIN32_LEAN_AND_MEAN NOMINMAX _AMD64_=1)
 
     add_library(D3D12RHI

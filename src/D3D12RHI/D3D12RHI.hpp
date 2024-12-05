@@ -1,14 +1,15 @@
 #pragma once
 
 #include "RHI/DynamicRHI.hpp"
-#include "RHI/IWindow.hpp"
+#include "RHI/RHIWindow.hpp"
 #include "RHI/Macros.hpp"
 #include "D3D12Core.hpp"
 #include "D3D12Device.hpp"
+#include "D3D12Swapchain.hpp"
 
 struct D3D12RHICreateInfo
 {
-    IRHIWindow* pWindow;
+    RHIWindow* pWindow;
 };
 
 class D3D12RHI : public DynamicRHI
@@ -23,9 +24,28 @@ public:
 
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override { return nullptr; }
 
-    std::unique_ptr<IPipeline> createTestPipeline() override
+    Frame beginFrame(const RHIFrameBeginInfo& frameBeginInfo) override { return Frame {}; }
+
+    void submitFrame(const Frame& frame) override {}
+
+    std::unique_ptr<RHIFramebuffer> createFramebuffer(const RHIFramebufferCreateInfo& createInfo) override
     {
         return nullptr;
+    }
+
+    std::unique_ptr<RHIRenderPass> createRenderPass(const RHIRenderPassCreateInfo& createInfo) override
+    {
+        return nullptr;
+    }
+
+    std::unique_ptr<RHIPipeline> createPipeline(const RHIPipelineCreateInfo& createInfo) override
+    {
+        return nullptr;
+    }
+
+    RHISwapchain* getSwapchain() const override
+    {
+        return mSwapchain.get();
     }
 
     RHICommandQueue* getGraphicsQueue() override;
