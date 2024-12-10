@@ -25,7 +25,7 @@ public:
     /**
      * RHI Commands
      */
-    virtual void waitIdle() const = 0;
+    virtual void waitIdle() = 0;
 
     virtual Frame beginFrame(const RHIFrameBeginInfo& frameBeginInfo) = 0;
     virtual void  submitFrame(const Frame& frame) = 0;

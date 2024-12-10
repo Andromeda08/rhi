@@ -38,7 +38,7 @@ public:
     std::unique_ptr<RHIPipeline> createPipeline(const RHIPipelineCreateInfo& createInfo) override;
 
 
-    void              waitIdle()         const override { mDevice->waitIdle(); }
+    void              waitIdle()               override { mDevice->waitIdle(); }
 
     RHICommandQueue*  getGraphicsQueue()       override { return mDevice->getGraphicsQueue(); }
     RHIInterfaceType  getType()          const override { return RHIInterfaceType::Vulkan; }
