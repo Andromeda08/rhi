@@ -3,6 +3,7 @@
 #include "D3D12CommandQueue.hpp"
 #include "D3D12Core.hpp"
 #include "D3D12Device.hpp"
+#include "D3D12RenderPass.hpp"
 #include "RHI/RHISwapchain.hpp"
 #include "RHI/RHIWindow.hpp"
 
@@ -30,7 +31,34 @@ public:
     Format   getFormat()      const override { return toRHI(mFormat); }
     uint32_t getFrameCount()        override { return mImageCount; }
 
-    void setScissorViewport(RHICommandList* commandList) const override {}
+    void setScissorViewport(RHICommandList* commandList) const override;
+
+    D3D12RenderTarget getRenderTarget(const uint32_t i) const
+    {
+        if (i > mRTVs.size())
+        {
+            throw std::out_of_range(fmt::format("Index {} out of range", i));
+        }
+
+        const CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(mRTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), static_cast<int>(i), mRTVSize);
+
+        return {
+            .format = mFormat,
+            .rtv = mRTVs[i].Get(),
+            .rtvHandle = rtvHandle,
+            .initialState = D3D12_RESOURCE_STATE_PRESENT,
+        };
+    }
+
+    UINT getCurrentBackBufferIndex() const
+    {
+        return mSwapchain->GetCurrentBackBufferIndex();
+    }
+
+    void present(const uint32_t syncInterval = 1, const uint32_t flags = 0) const
+    {
+        D3D12_CHECK(mSwapchain->Present(syncInterval, flags), "Failed to present to Swapchain");
+    }
 
 private:
     ComPtr<IDXGISwapChain4>             mSwapchain;

@@ -57,6 +57,9 @@ if (WIN32)
         src/D3D12RHI/D3D12CommandQueue.hpp src/D3D12RHI/D3D12CommandQueue.cpp
         src/D3D12RHI/D3D12CommandList.hpp src/D3D12RHI/D3D12CommandList.cpp
         src/D3D12RHI/D3D12Swapchain.hpp src/D3D12RHI/D3D12Swapchain.cpp
+        src/D3D12RHI/D3D12Framebuffer.hpp src/D3D12RHI/D3D12Framebuffer.cpp
+        src/D3D12RHI/D3D12RenderPass.hpp src/D3D12RHI/D3D12RenderPass.cpp
+        src/D3D12RHI/D3D12Pipeline.hpp src/D3D12RHI/D3D12Pipeline.cpp
     )
     target_include_directories(D3D12RHI PUBLIC ${D3D12_INCLUDE_DIRS} "src" "external/fmt/include")
     target_link_libraries(D3D12RHI PUBLIC ${D3D12_LIBRARIES} fmt::fmt)
@@ -75,18 +78,18 @@ add_executable(${PROJECT_NAME}
     src/Core/EnumFlags.hpp
     src/WSI/Window.hpp src/WSI/Window.cpp
     src/RHI/DynamicRHI.hpp src/RHI/DynamicRHI.cpp
-        src/RHI/RHIWindow.hpp
-        src/RHI/Definitions.hpp
-        src/RHI/RHICommandQueue.hpp
-        src/RHI/RHICommandList.hpp
+    src/RHI/RHIWindow.hpp
+    src/RHI/Definitions.hpp
+    src/RHI/RHICommandQueue.hpp
+    src/RHI/RHICommandList.hpp
     src/RHI/RHISwapchain.hpp
     src/RHI/Macros.hpp
-        src/RHI/RHIBuffer.hpp
-        src/RHI/Definitions.cpp
-        src/RHI/RHIPipeline.hpp
+    src/RHI/RHIBuffer.hpp
+    src/RHI/Definitions.cpp
+    src/RHI/RHIPipeline.hpp
     src/RHI/Frame.hpp
     src/RHI/RHIFramebuffer.hpp
-        src/RHI/RHIRenderPass.hpp
+    src/RHI/RHIRenderPass.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw)

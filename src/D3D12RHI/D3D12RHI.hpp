@@ -20,28 +20,19 @@ public:
 
     ~D3D12RHI() override = default;
 
-    void waitIdle() const override {}
+    void waitIdle() override;
 
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override { return nullptr; }
 
-    Frame beginFrame(const RHIFrameBeginInfo& frameBeginInfo) override { return Frame {}; }
+    Frame beginFrame(const RHIFrameBeginInfo& frameBeginInfo) override;
 
-    void submitFrame(const Frame& frame) override {}
+    void submitFrame(const Frame& frame) override;
 
-    std::unique_ptr<RHIFramebuffer> createFramebuffer(const RHIFramebufferCreateInfo& createInfo) override
-    {
-        return nullptr;
-    }
+    std::unique_ptr<RHIFramebuffer> createFramebuffer(const RHIFramebufferCreateInfo& createInfo) override;
 
-    std::unique_ptr<RHIRenderPass> createRenderPass(const RHIRenderPassCreateInfo& createInfo) override
-    {
-        return nullptr;
-    }
+    std::unique_ptr<RHIRenderPass> createRenderPass(const RHIRenderPassCreateInfo& createInfo) override;
 
-    std::unique_ptr<RHIPipeline> createPipeline(const RHIPipelineCreateInfo& createInfo) override
-    {
-        return nullptr;
-    }
+    std::unique_ptr<RHIPipeline> createPipeline(const RHIPipelineCreateInfo& createInfo) override;
 
     RHISwapchain* getSwapchain() const override
     {
@@ -68,4 +59,11 @@ private:
 
     std::unique_ptr<D3D12Device>    mDevice;
     std::unique_ptr<D3D12Swapchain> mSwapchain;
+
+    std::vector<uint64_t>           mFenceValues;
+    ComPtr<ID3D12Fence>             mFence;
+    HANDLE                          mFenceEvent {nullptr};
+    UINT                            mFrameIndex {0};
+    uint32_t                        mFramesInFlight {2};
+    uint32_t                        mCurrentFrame {0};
 };

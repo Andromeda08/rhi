@@ -26,6 +26,15 @@ public:
     explicit DEF_PRIMARY_CTOR(D3D12Device, const ComPtr<IDXGIAdapter1>& adapter);
 
     /**
+     * Internal D3D12 Wrappers
+     */
+    void makeRootSignature(ID3D12RootSignature** ppRootSignature, D3D12_ROOT_SIGNATURE_FLAGS flags) const;
+
+    void createGraphicsPSO(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& graphicsPipelineStateDesc, ComPtr<ID3D12PipelineState>& pipelineState) const;
+
+    void createFence(uint64_t initialValue, D3D12_FENCE_FLAGS flags, ComPtr<ID3D12Fence>& fence) const;
+
+    /**
      * Command Queues
      */
     D3D12CommandQueue* getDirectQueue() const { return mDirectQueue.get(); }

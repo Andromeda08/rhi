@@ -15,7 +15,7 @@ D3D12Device::D3D12Device(const ComPtr<IDXGIAdapter1>& adapter)
     D3D12_PRINTLN(fmt::format("Using Adapter: {}", mAdapterName));
 
     mDirectQueue = D3D12CommandQueue::createD3D12CommandQueue({
-        .device = mDevice,
+        .device = mDevice.Get(),
         .type = RHICommandQueueType::Graphics,
         .commandListCount = 2,
     });
@@ -26,6 +26,32 @@ D3D12Device::D3D12Device(const ComPtr<IDXGIAdapter1>& adapter)
 std::unique_ptr<D3D12Device> D3D12Device::createD3D12Device(const ComPtr<IDXGIAdapter1>& adapter)
 {
     return std::make_unique<D3D12Device>(adapter);
+}
+
+void D3D12Device::makeRootSignature(ID3D12RootSignature** ppRootSignature, D3D12_ROOT_SIGNATURE_FLAGS flags) const
+{
+    CD3DX12_ROOT_SIGNATURE_DESC rootSignatureDesc;
+    rootSignatureDesc.Init(0, nullptr, 0, nullptr, flags);
+
+    ComPtr<ID3DBlob> signature;
+    ComPtr<ID3DBlob> error;
+    D3D12_CHECK(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, &signature, &error),
+        "Failed to serialize RootSignature");
+
+    D3D12_CHECK(mDevice->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(ppRootSignature)),
+        "Failed to create RootSignature");
+}
+
+void D3D12Device::createGraphicsPSO(const D3D12_GRAPHICS_PIPELINE_STATE_DESC& graphicsPipelineStateDesc,
+    ComPtr<ID3D12PipelineState>& pipelineState) const
+{
+    D3D12_CHECK(mDevice->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&pipelineState)),
+        "Failed to create GraphicsPipelineState");
+}
+
+void D3D12Device::createFence(const uint64_t initialValue, const D3D12_FENCE_FLAGS flags, ComPtr<ID3D12Fence>& fence) const
+{
+    D3D12_CHECK(mDevice->CreateFence(initialValue, flags, IID_PPV_ARGS(&fence)), "Failed to create Fence");
 }
 
 void D3D12Device::createDescriptorHeap(const D3D12CreateDescriptorHeapParams& params) const

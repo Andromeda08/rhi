@@ -39,8 +39,13 @@ int main(const int argc, char** argv)
     if (argc >= 2)
     {
         const std::string apiArg = argv[1];
-        if   (apiArg == "D3D12") api = RHIInterfaceType::D3D12;
-        else                     api = RHIInterfaceType::Vulkan;
+        if      (apiArg == "--d3d12")   api = RHIInterfaceType::D3D12;
+        else if (apiArg == "--vulkan")  api = RHIInterfaceType::Vulkan;
+        else
+        {
+            fmt::println("[{}] Invalid API argument: {}, defaulting to Vulkan", styled("Warning", fg(fmt::color::light_yellow)), apiArg);
+            api = RHIInterfaceType::Vulkan;
+        }
     }
 
     gWindow = Window::createWindow({
@@ -63,6 +68,7 @@ int main(const int argc, char** argv)
             {
                 .format = gRHI->getSwapchain()->getFormat(),
                 .finalLayout = ImageLayout::PresentSrc,
+                .attachmentSource = gRHI->getSwapchain(),
             }},
         .renderArea = {{0, 0}, gRHI->getSwapchain()->getSize()},
         .debugName  = "Test RenderPass",
@@ -82,8 +88,8 @@ int main(const int argc, char** argv)
 
     const auto testPipeline = gRHI->createPipeline({
         .shaderCreateInfos = {
-            { "triangle.vert.spv", ShaderStage::Vertex   },
-            { "triangle.frag.spv", ShaderStage::Fragment }
+            { (api == RHIInterfaceType::Vulkan) ? "triangle.vert.spv" : "triangle.vert.dxil", ShaderStage::Vertex   },
+            { (api == RHIInterfaceType::Vulkan) ? "triangle.frag.spv" : "triangle.frag.dxil", ShaderStage::Fragment }
         },
         .graphicsPipelineState = {
             .cullMode = CullMode::None,

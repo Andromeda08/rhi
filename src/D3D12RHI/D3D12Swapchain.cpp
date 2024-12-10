@@ -1,5 +1,8 @@
 #include "D3D12Swapchain.hpp"
 
+#include "D3D12CommandList.hpp"
+#include "RHI/RHICommandList.hpp"
+
 D3D12Swapchain::D3D12Swapchain(const D3D12SwapchainParams& params)
 : mSize(params.window->framebufferSize())
 , mImageCount(params.imageCount)
@@ -67,4 +70,11 @@ std::unique_ptr<D3D12Swapchain> D3D12Swapchain::createD3D12Swapchain(const D3D12
 uint32_t D3D12Swapchain::getNextFrameIndex(uint32_t currentFrame) const
 {
     return mSwapchain->GetCurrentBackBufferIndex();
+}
+
+void D3D12Swapchain::setScissorViewport(RHICommandList* commandList) const
+{
+    const auto graphicsCommandList = commandList->as<D3D12CommandList>()->asGraphicsCommandList();
+    graphicsCommandList->RSSetViewports(1, &mViewport);
+    graphicsCommandList->RSSetScissorRects(1, &mScissor);
 }
