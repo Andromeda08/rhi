@@ -6,6 +6,7 @@
 #include <iterator>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <set>

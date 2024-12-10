@@ -220,6 +220,9 @@ struct AttachmentDescription
 
     // Ignored when describing a Depth or Resolve attachment
     uint32_t             attachmentIndex { 0 };
+
+    // To be used for D3D12, for now...
+    std::variant<std::monostate, RHISwapchain*> attachmentSource = std::monostate {};
 };
 
 /**
