@@ -6,18 +6,7 @@
 
 void VulkanCommandList::copyBuffer(RHIBuffer* src, RHIBuffer* dst)
 {
-    auto* vkSrc = src->as<VulkanBuffer>();
-    auto* vkDst = dst->as<VulkanBuffer>();
-
-    const auto bufferCopy = vk::BufferCopy()
-        .setSize(vkSrc->getSize())
-        .setSrcOffset(vkSrc->getOffset())
-        .setDstOffset(vkDst->getOffset());
-
-    // TODO: uncomment after command submission is supported
-    // mCommandList.copyBuffer(vkSrc->handle(), vkDst->handle(), 1, &bufferCopy);
-
-    fmt::println("VulkanCommandList::copyBuffer()");
+    fmt::println("VulkanCommandList::copyBuffer() not implemented");
 }
 
 #pragma endregion
@@ -70,17 +59,6 @@ VulkanCommandQueue::VulkanCommandQueue(const VulkanCommandQueueCreateInfo& creat
         }));
         id++;
     }
-
-    const auto singleTimeBufferAllocateInfo = vk::CommandBufferAllocateInfo()
-        .setCommandBufferCount(1)
-        .setCommandPool(mCommandPool)
-        .setLevel(vk::CommandBufferLevel::ePrimary);
-
-    const std::vector<vk::CommandBuffer> commandBuffers = mDevice.allocateCommandBuffers(singleTimeBufferAllocateInfo);
-    mSingleTimeCommandList = VulkanCommandList::createVulkanCommandList({
-        .commandBuffer = commandBuffers[0],
-        .id            = id,
-    });
 }
 
 std::unique_ptr<VulkanCommandQueue> VulkanCommandQueue::createVulkanCommandQueue(const VulkanCommandQueueCreateInfo& createInfo)
@@ -114,9 +92,37 @@ RHICommandList* VulkanCommandQueue::getCommandList(uint32_t id)
 
 void VulkanCommandQueue::executeSingleTimeCommand(const std::function<void(RHICommandList*)>& lambda)
 {
-    // TODO: implement
-    fmt::println("VulkanCommandQueue::executeSingleTimeCommand()");
+    const auto singleTimeBufferAllocateInfo = vk::CommandBufferAllocateInfo()
+        .setCommandBufferCount(1)
+        .setCommandPool(mCommandPool)
+        .setLevel(vk::CommandBufferLevel::ePrimary);
+
+    const std::vector<vk::CommandBuffer> commandBuffers = mDevice.allocateCommandBuffers(singleTimeBufferAllocateInfo);
+    mSingleTimeCommandList = VulkanCommandList::createVulkanCommandList({
+        .commandBuffer = commandBuffers[0],
+        .id            = 123123,
+    });
+
+    constexpr auto beginInfo = vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+    commandBuffers[0].begin(beginInfo);
+    mSingleTimeCommandList->mIsRecording = true;
+
     lambda(mSingleTimeCommandList.get());
+
+    mSingleTimeCommandList->mIsRecording = false;
+    commandBuffers[0].end();
+
+    const auto submitInfo = vk::SubmitInfo()
+        .setCommandBufferCount(1)
+        .setPCommandBuffers(&commandBuffers[0]);
+    if (const auto result = mQueue.submit(1, &submitInfo, nullptr);
+        result != vk::Result::eSuccess)
+    {
+        throw std::runtime_error("Failed to submit CommandLists");
+    }
+
+    mQueue.waitIdle();
+    mDevice.freeCommandBuffers(mCommandPool, 1, &commandBuffers[0]);
 }
 
 #pragma endregion "CommandQueue"
