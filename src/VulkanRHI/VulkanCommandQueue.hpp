@@ -38,12 +38,22 @@ public:
         mCommandList.draw(vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
+    void drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance) override
+    {
+        mCommandList.drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+    }
+
+    void bindVertexBuffer(RHIBuffer* buffer) override;
+
+    void bindIndexBuffer(RHIBuffer* buffer) override;
+
     vk::CommandBuffer handle() const { return mCommandList; }
 
 private:
     friend class VulkanCommandQueue;
     vk::CommandBuffer getUnderlyingCommandBuffer() const;
 
+private:
     vk::CommandBuffer mCommandList;
     uint32_t          mId;
 

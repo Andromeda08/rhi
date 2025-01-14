@@ -24,6 +24,9 @@ public:
     // virtual void bindDescriptorSet() = 0;
     // virtual void pushConstants() = 0;
     virtual void draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) = 0;
+    virtual void drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance) = 0;
+    virtual void bindVertexBuffer(RHIBuffer* buffer) = 0;
+    virtual void bindIndexBuffer(RHIBuffer* buffer) = 0;
 
     /**
      * Transfer operations

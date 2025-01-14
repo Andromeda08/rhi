@@ -1,5 +1,7 @@
 #include "D3D12CommandList.hpp"
 
+#include "D3D12Buffer.hpp"
+
 D3D12CommandList::D3D12CommandList(const D3D12CommandListParams& params)
 : RHICommandList()
 , mCommandList(params.commandList)
@@ -81,4 +83,40 @@ void D3D12CommandList::draw(uint32_t vertexCount, uint32_t instanceCount, uint32
     const auto graphicsCommandList = asGraphicsCommandList();
     graphicsCommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     graphicsCommandList->DrawInstanced(vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
+void D3D12CommandList::drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex,
+    uint32_t vertexOffset, uint32_t firstInstance)
+{
+    if (!mIsGraphicsCommandList)
+    {
+        fmt::println("{} called on a non-graphics CommandList", styled("D3D12CommandList::draw()", fg(fmt::color::light_yellow)));
+        return;
+    }
+
+    const auto graphicsCommandList = asGraphicsCommandList();
+    graphicsCommandList->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    graphicsCommandList->DrawIndexedInstanced(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+}
+
+void D3D12CommandList::bindVertexBuffer(RHIBuffer* buffer)
+{
+    auto* d3d12Buffer = buffer->as<D3D12Buffer>();
+    auto& bufferView = d3d12Buffer->getVertexBufferView();
+
+    if (auto* graphicsCommandList = asGraphicsCommandList())
+    {
+        graphicsCommandList->IASetVertexBuffers(0, 1, &bufferView);
+    }
+}
+
+void D3D12CommandList::bindIndexBuffer(RHIBuffer* buffer)
+{
+    auto* d3d12Buffer = buffer->as<D3D12Buffer>();
+    auto& bufferView = d3d12Buffer->getIndexBufferView();
+
+    if (auto* graphicsCommandList = asGraphicsCommandList())
+    {
+        graphicsCommandList->IASetIndexBuffer(&bufferView);
+    }
 }

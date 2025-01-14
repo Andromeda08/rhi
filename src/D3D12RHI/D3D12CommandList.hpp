@@ -28,9 +28,18 @@ public:
 
     void draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) override;
 
+    void drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, uint32_t vertexOffset, uint32_t firstInstance) override;
+
     void copyBuffer(RHIBuffer* src, RHIBuffer* dst) override {}
 
+    void bindVertexBuffer(RHIBuffer* buffer) override;
+
+    void bindIndexBuffer(RHIBuffer* buffer) override;
+
+
 private:
+    friend class D3D12CommandQueue;
+
     bool mIsRecording           = false;
     bool mIsGraphicsCommandList = false;
 

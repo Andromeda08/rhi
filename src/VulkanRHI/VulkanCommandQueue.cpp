@@ -1,5 +1,6 @@
 #include "VulkanCommandQueue.hpp"
 
+#include "RHI/RHIBuffer.hpp"
 #include "VulkanBuffer.hpp"
 
 #pragma region "Specific command implementations"
@@ -7,6 +8,21 @@
 void VulkanCommandList::copyBuffer(RHIBuffer* src, RHIBuffer* dst)
 {
     fmt::println("VulkanCommandList::copyBuffer() not implemented");
+}
+
+void VulkanCommandList::bindVertexBuffer(RHIBuffer* buffer)
+{
+    static constexpr vk::DeviceSize offsets[1] = { 0 };
+    auto* vkBuffer = buffer->as<VulkanBuffer>();
+    auto handle = vkBuffer->handle();
+    mCommandList.bindVertexBuffers(0, 1, &handle, offsets);
+}
+
+void VulkanCommandList::bindIndexBuffer(RHIBuffer* buffer)
+{
+    auto* vkBuffer = buffer->as<VulkanBuffer>();
+    auto handle = vkBuffer->handle();
+    mCommandList.bindIndexBuffer(handle, 0, vk::IndexType::eUint32);
 }
 
 #pragma endregion
