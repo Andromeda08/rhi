@@ -49,7 +49,6 @@ VulkanRenderPass::VulkanRenderPass(const VulkanRenderPassInfo& renderPassInfo)
         .setDstStageMask(vk::PipelineStageFlagBits::eColorAttachmentOutput | vk::PipelineStageFlagBits::eEarlyFragmentTests)
         .setDstAccessMask(vk::AccessFlagBits::eColorAttachmentWrite | vk::AccessFlagBits::eDepthStencilAttachmentWrite);
 
-
     const auto rp_renderPassInfo = vk::RenderPassCreateInfo()
         .setAttachmentCount(renderPassInfo.attachments.size())
         .setPAttachments(renderPassInfo.attachments.data())

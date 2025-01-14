@@ -103,13 +103,27 @@ int main(const int argc, char** argv)
     #pragma endregion
 
     #pragma region "Render Targets Setup"
+    const auto depthTexture = gRHI->createTexture({
+        .size = gRHI->getSwapchain()->getSize(),
+        .format = Format::D32Sfloat,
+        .sampled = false,
+        .debugName = "Depth Texture"
+    });
+
     const auto testRenderPass = gRHI->createRenderPass({
         .colorAttachments = {
             {
                 .format = gRHI->getSwapchain()->getFormat(),
                 .finalLayout = ImageLayout::PresentSrc,
                 .attachmentSource = gRHI->getSwapchain(),
-            }},
+            },
+        },
+        .depthAttachment = AttachmentDescription({
+            .format = Format::D32Sfloat,
+            .finalLayout = ImageLayout::DepthAttachmentOptimal,
+            .depthClearValue = 1.0f,
+            .stencilClearValue = 0,
+        }),
         .renderArea = {{0, 0}, gRHI->getSwapchain()->getSize()},
         .debugName  = "Test RenderPass",
     });
@@ -118,10 +132,10 @@ int main(const int argc, char** argv)
         .count = 2,
         .renderPass = testRenderPass.get(),
         .extent = gRHI->getSwapchain()->getSize(),
-        .attachments =
-        {
+        .attachments = {
             { gRHI->getSwapchain(), 0, 0 },
-            { gRHI->getSwapchain(), 0, 1 }
+            { gRHI->getSwapchain(), 0, 1 },
+            { depthTexture.get(), 1 },
         },
         .debugName = "Test Framebuffer",
     });

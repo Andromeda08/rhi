@@ -133,11 +133,12 @@ inline vk::Format toVulkan(const Format format)
 {
     switch (format)
     {
-        case Format::B8G8R8A8Unorm:        return vk::Format::eB8G8R8A8Unorm;
-        case Format::R32G32B32A32Sfloat:   return vk::Format::eR32G32B32A32Sfloat;
-        case Format::R32G32B32Sfloat:      return vk::Format::eR32G32B32Sfloat;
-        case Format::R32G32Sfloat:         return vk::Format::eR32G32Sfloat;
-        case Format::R32Sfloat:            return vk::Format::eR32Sfloat;
+        case Format::B8G8R8A8Unorm:         return vk::Format::eB8G8R8A8Unorm;
+        case Format::R32G32B32A32Sfloat:    return vk::Format::eR32G32B32A32Sfloat;
+        case Format::R32G32B32Sfloat:       return vk::Format::eR32G32B32Sfloat;
+        case Format::R32G32Sfloat:          return vk::Format::eR32G32Sfloat;
+        case Format::R32Sfloat:             return vk::Format::eR32Sfloat;
+        case Format::D32Sfloat:             return vk::Format::eD32Sfloat;
     }
     throw std::exception();
 }

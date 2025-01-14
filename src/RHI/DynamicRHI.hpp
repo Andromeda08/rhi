@@ -7,6 +7,7 @@
 #include "RHIFramebuffer.hpp"
 #include "RHIPipeline.hpp"
 #include "RHIRenderPass.hpp"
+#include "RHITexture.hpp"
 
 class  RHICommandQueue;
 class  RHISwapchain;
@@ -31,6 +32,8 @@ public:
     virtual void  submitFrame(const Frame& frame) = 0;
 
     virtual std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) = 0;
+
+    virtual std::unique_ptr<RHITexture> createTexture(const RHITextureCreateInfo& createInfo) = 0;
 
     virtual std::unique_ptr<RHIFramebuffer> createFramebuffer(const RHIFramebufferCreateInfo& createInfo) = 0;
 

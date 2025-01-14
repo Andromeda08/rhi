@@ -40,6 +40,8 @@ add_library(VulkanRHI
     src/VulkanRHI/VulkanPipeline.hpp src/VulkanRHI/VulkanPipeline.cpp
     src/VulkanRHI/VulkanFramebuffer.hpp src/VulkanRHI/VulkanFramebuffer.cpp
     src/VulkanRHI/VulkanRenderPass.hpp src/VulkanRHI/VulkanRenderPass.cpp
+    src/VulkanRHI/VulkanTexture.hpp
+    src/VulkanRHI/VulkanTexture.cpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
 target_link_libraries(VulkanRHI PUBLIC ${Vulkan_LIBRARIES} fmt::fmt)
@@ -109,6 +111,7 @@ add_executable(${PROJECT_NAME}
     src/RHI/Frame.hpp
     src/RHI/RHIFramebuffer.hpp
     src/RHI/RHIRenderPass.hpp
+    src/RHI/RHITexture.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw glm::glm)

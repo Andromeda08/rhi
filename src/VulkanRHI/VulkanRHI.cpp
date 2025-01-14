@@ -3,6 +3,7 @@
 #include "Platform.hpp"
 #include "VulkanFramebuffer.hpp"
 #include "VulkanRenderPass.hpp"
+#include "VulkanTexture.hpp"
 
 VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE;
 
@@ -121,6 +122,17 @@ std::unique_ptr<RHIBuffer> VulkanRHI::createBuffer(const RHIBufferCreateInfo& cr
     });
 }
 
+std::unique_ptr<RHITexture> VulkanRHI::createTexture(const RHITextureCreateInfo& createInfo)
+{
+    return VulkanTexture::createVulkanTexture({
+        .size = createInfo.size,
+        .format = createInfo.format,
+        .sampled = createInfo.sampled,
+        .debugName = createInfo.debugName,
+        .pDevice = mDevice.get(),
+    });
+}
+
 std::unique_ptr<RHIFramebuffer> VulkanRHI::createFramebuffer(const RHIFramebufferCreateInfo& createInfo)
 {
     auto framebuffersInfo = VulkanFramebufferInfo({
@@ -137,9 +149,13 @@ std::unique_ptr<RHIFramebuffer> VulkanRHI::createFramebuffer(const RHIFramebuffe
         if (std::holds_alternative<RHISwapchain*>(attachment.imageView))
         {
             imageView = std::get<RHISwapchain*>(attachment.imageView)->as<VulkanSwapchain>()->getImageView(attachment.framebufferIndex);
+            framebuffersInfo.addAttachment(imageView, attachment.attachmentIndex, attachment.framebufferIndex);
         }
-
-        framebuffersInfo.addAttachment(imageView, attachment.attachmentIndex, attachment.framebufferIndex);
+        if (std::holds_alternative<RHITexture*>(attachment.imageView))
+        {
+            imageView = std::get<RHITexture*>(attachment.imageView)->as<VulkanTexture>()->getImageView();
+            framebuffersInfo.addAttachment(imageView, attachment.attachmentIndex);
+        }
     }
 
     return VulkanFramebuffer::createVulkanFramebuffer(framebuffersInfo);
@@ -161,6 +177,32 @@ std::unique_ptr<RHIRenderPass> VulkanRHI::createRenderPass(const RHIRenderPassCr
             vk::SampleCountFlagBits::e1,
             colorAttachment.clearValue,
             toVulkan(colorAttachment.loadOp));
+    }
+
+    if (createInfo.depthAttachment.has_value())
+    {
+        const auto& depthAttachment = createInfo.depthAttachment.value();
+        renderPassInfo.hasDepthAttachment = true;
+
+        const auto depthDescription = vk::AttachmentDescription()
+            .setFormat(toVulkan(depthAttachment.format))
+            .setSamples(vk::SampleCountFlagBits::e1)
+            .setLoadOp(vk::AttachmentLoadOp::eClear)
+            .setStoreOp(vk::AttachmentStoreOp::eDontCare)
+            .setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
+            .setStencilStoreOp(vk::AttachmentStoreOp::eDontCare)
+            .setInitialLayout(vk::ImageLayout::eUndefined)
+            .setFinalLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+        renderPassInfo.attachments.push_back(depthDescription);
+
+        renderPassInfo.depthRef = vk::AttachmentReference()
+            .setAttachment(static_cast<uint32_t>(renderPassInfo.attachments.size() - 1))
+            .setLayout(vk::ImageLayout::eDepthStencilAttachmentOptimal);
+
+        const auto clearValue = vk::ClearValue()
+            .setDepthStencil({ depthAttachment.depthClearValue, depthAttachment.stencilClearValue });
+
+        renderPassInfo.clearValues.push_back(clearValue);
     }
 
     return VulkanRenderPass::createVulkanRenderPass(renderPassInfo);

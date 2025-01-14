@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #define DISABLE_COPY_CTOR(TYPE)         \
 TYPE(const TYPE&) = delete;             \
 TYPE& operator=(const TYPE&) = delete;  \

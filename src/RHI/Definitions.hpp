@@ -120,7 +120,13 @@ enum class Format
     R32G32B32Sfloat,    // f32 x 3
     R32G32Sfloat,       // f32 x 2
     R32Sfloat,          // f32 x 1
+    D32Sfloat,          // 32-bit Depth
 };
+
+inline bool isDepthFormat(const Format format) noexcept
+{
+    return format == Format::D32Sfloat;
+}
 
 enum class ImageType
 {
@@ -165,6 +171,7 @@ enum class PrimitiveType
 #pragma endregion
 
 class RHISwapchain;
+class RHITexture;
 
 class RHIRenderPass;
 class RHIFramebuffer;
@@ -174,7 +181,7 @@ class RHIPipeline;
 
 struct RHIFramebufferAttachment
 {
-    std::variant<RHISwapchain*> imageView;
+    std::variant<RHISwapchain*, RHITexture*> imageView;
     uint32_t                    attachmentIndex  { 0 };
     int32_t                     framebufferIndex { -1 };
 };
@@ -203,6 +210,7 @@ struct ClearDepthStencilValue
 enum class ImageLayout
 {
     ColorAttachmentOptimal,
+    DepthAttachmentOptimal,
     PresentSrc,
 };
 
@@ -230,11 +238,14 @@ struct AttachmentDescription
     AttachmentLoadOp     stencilLoadOp   { AttachmentLoadOp::DontCare };
     AttachmentStoreOp    stencilStoreOp  { AttachmentStoreOp::DontCare };
 
+    float                depthClearValue {1.0f};
+    uint32_t             stencilClearValue {0};
+
     // Ignored when describing a Depth or Resolve attachment
     uint32_t             attachmentIndex { 0 };
 
     // To be used for D3D12, for now...
-    std::variant<std::monostate, RHISwapchain*> attachmentSource = std::monostate {};
+    std::variant<std::monostate, RHITexture*, RHISwapchain*> attachmentSource = std::monostate {};
 };
 
 /**
@@ -372,6 +383,7 @@ struct RHIGraphicsPipelineState
 {
     CullMode                              cullMode              { CullMode::Back };
     PolygonMode                           polygonMode           { PolygonMode::Fill };
+    bool                                  depthTest             { true };
     std::vector<VertexInputAttributeDesc> vertexInputAttributes {};
     std::vector<VertexInputBindingDesc>   vertexInputBindings   {};
     std::vector<AttachmentState>          attachmentStates      {};

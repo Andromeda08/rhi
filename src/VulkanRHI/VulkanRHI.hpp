@@ -31,6 +31,8 @@ public:
 
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override;
 
+    std::unique_ptr<RHITexture> createTexture(const RHITextureCreateInfo& createInfo) override;
+
     std::unique_ptr<RHIRenderPass> createRenderPass(const RHIRenderPassCreateInfo& createInfo) override;
 
     std::unique_ptr<RHIFramebuffer> createFramebuffer(const RHIFramebufferCreateInfo& createInfo) override;
