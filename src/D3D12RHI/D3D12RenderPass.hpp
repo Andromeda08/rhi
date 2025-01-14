@@ -10,12 +10,23 @@ struct D3D12RenderTarget
     ID3D12Resource*                 rtv;
     CD3DX12_CPU_DESCRIPTOR_HANDLE   rtvHandle;
     std::array<float, 4>            clearColor { 0.0f, 0.0f, 0.0f, 1.0f };
-     D3D12_RESOURCE_STATES          initialState;
+    D3D12_RESOURCE_STATES           initialState;
+};
+
+struct D3D12DepthTarget
+{
+    DXGI_FORMAT                   format;
+    ID3D12Resource*               dsv;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle;
+    float                         depthClear;
+    uint32_t                      stencilClear;
+    D3D12_RESOURCE_STATES         initialState;
 };
 
 struct D3D12RenderPassCreateInfo
 {
     std::vector<std::vector<D3D12RenderTarget>> perFrameRenderTargets;
+    D3D12DepthTarget depthTarget;
 };
 
 /**
@@ -35,7 +46,10 @@ public:
 
     std::vector<D3D12RenderTarget> getRenderTargets(const uint32_t i) const;
 
+    std::optional<D3D12DepthTarget> getDSV() const { return mDepthTarget; }
+
 private:
     std::vector<std::vector<D3D12RenderTarget>> mRenderTargets;
+    std::optional<D3D12DepthTarget>             mDepthTarget { std::nullopt };
     uint32_t mCounter = 0; // TODO: 💀
 };

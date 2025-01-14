@@ -29,10 +29,10 @@ D3D12Pipeline::D3D12Pipeline(D3D12PipelineCreateInfo& createInfo)
     psoDesc.RasterizerState.FrontCounterClockwise = true;
     psoDesc.BlendState = createInfo.graphicsPiplineState.blendState;
 
-    // TODO: Depth and Stencil disabled
     psoDesc.DepthStencilState = createInfo.graphicsPiplineState.depthStencilState;
-    psoDesc.DepthStencilState.DepthEnable = false; // true in reference
-    // psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+    psoDesc.DepthStencilState.DepthEnable = createInfo.enableDepth;
+    psoDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+    psoDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
     psoDesc.DepthStencilState.StencilEnable = false;
 
     psoDesc.SampleDesc.Count = 1u;
@@ -45,6 +45,12 @@ D3D12Pipeline::D3D12Pipeline(D3D12PipelineCreateInfo& createInfo)
     for (const auto& [i, rtv] : std::views::enumerate((renderTargets)))
     {
         psoDesc.RTVFormats[i] = rtv.format;
+    }
+
+    if (createInfo.enableDepth && createInfo.renderPass->getDSV().has_value())
+    {
+        const auto& dsv = createInfo.renderPass->getDSV().value();
+        psoDesc.DSVFormat = dsv.format;
     }
 
     /**

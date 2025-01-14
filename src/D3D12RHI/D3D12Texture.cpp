@@ -44,6 +44,11 @@ D3D12Texture::D3D12Texture(const D3D12TextureCreateInfo& createInfo)
     mResource = mAllocation->GetResource();
 
     D3D12_CHECK(mResource->SetName(mDebugName.c_str()), "Failed to name D3D12 Resource");
+
+    if (isDepthFormat(createInfo.format))
+    {
+        createDSV();
+    }
 }
 
 std::unique_ptr<D3D12Texture> D3D12Texture::createD3D12Texture(const D3D12TextureCreateInfo& createInfo)
@@ -54,4 +59,35 @@ std::unique_ptr<D3D12Texture> D3D12Texture::createD3D12Texture(const D3D12Textur
 D3D12Texture::~D3D12Texture()
 {
     mAllocation->Release();
+}
+
+void D3D12Texture::createDSV()
+{
+    mDSViewDesc = {
+        .Format = mFormat,
+        .ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D,
+        .Flags = D3D12_DSV_FLAG_NONE,
+        .Texture2D = {
+            .MipSlice = 0
+        },
+    };
+
+    mDevice->createDescriptorHeap({
+        .desc = {
+            .Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV,
+            .NumDescriptors = 1,
+            .Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE,
+        },
+        .descriptorHeap = mDSVHeap,
+        .debugName = "DSV Heap",
+    });
+
+    CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(mDSVHeap->GetCPUDescriptorHandleForHeapStart());
+
+    mDevice->createDepthStencilView({
+        .texture = mResource,
+        .dsvDesc = &mDSViewDesc,
+        .cpuHandle = dsvHandle,
+        .debugName = "DSV",
+    });
 }

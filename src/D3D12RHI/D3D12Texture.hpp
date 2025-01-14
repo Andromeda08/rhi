@@ -21,15 +21,28 @@ public:
 
     ~D3D12Texture() override;
 
+    DXGI_FORMAT getFormat() const { return mFormat; }
+    ID3D12Resource* getDSV() const { return mResource; }
+    CD3DX12_CPU_DESCRIPTOR_HANDLE getDSVHandle() const
+    {
+        CD3DX12_CPU_DESCRIPTOR_HANDLE dsvHandle(mDSVHeap->GetCPUDescriptorHandleForHeapStart());
+        return dsvHandle;
+    }
+
 private:
-    Size2D                      mSize;
-    DXGI_FORMAT                 mFormat;
-    D3D12MA::Allocation*        mAllocation;
-    ID3D12Resource*             mResource;
+    void createDSV();
 
-    D3D12_GPU_VIRTUAL_ADDRESS   mAddress;
-    D3D12_RESOURCE_STATES       mState { D3D12_RESOURCE_STATE_COMMON };
+    Size2D                          mSize;
+    DXGI_FORMAT                     mFormat;
+    D3D12MA::Allocation*            mAllocation;
+    ID3D12Resource*                 mResource;
 
-    std::wstring                mDebugName {};
-    D3D12Device*                mDevice;
+    D3D12_RESOURCE_STATES           mState { D3D12_RESOURCE_STATE_COMMON };
+
+    ComPtr<ID3D12DescriptorHeap>    mDSVHeap;
+    D3D12_DEPTH_STENCIL_VIEW_DESC   mDSViewDesc;
+    ComPtr<ID3D12Resource>          mDSView;
+
+    std::wstring                    mDebugName {};
+    D3D12Device*                    mDevice;
 };

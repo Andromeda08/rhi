@@ -3,8 +3,10 @@
 #include "D3D12CommandList.hpp"
 
 D3D12RenderPass::D3D12RenderPass(D3D12RenderPassCreateInfo& createInfo)
-: RHIRenderPass(), mRenderTargets(createInfo.perFrameRenderTargets)
+: RHIRenderPass()
+, mRenderTargets(createInfo.perFrameRenderTargets)
 {
+    mDepthTarget = createInfo.depthTarget;
 }
 
 std::unique_ptr<D3D12RenderPass> D3D12RenderPass::createD3D12RenderPass(D3D12RenderPassCreateInfo& createInfo)
@@ -28,8 +30,24 @@ void D3D12RenderPass::execute(RHICommandList* commandList, RHIFramebufferHandle*
         rtvHandles.push_back(renderTarget.rtvHandle);
     }
 
+    D3D12_CPU_DESCRIPTOR_HANDLE* depthDescriptor = nullptr;
+    if (mDepthTarget.has_value())
+    {
+        auto& depthTarget = mDepthTarget.value();
+        depthDescriptor = &depthTarget.dsvHandle;
+
+        const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(depthTarget.dsv, depthTarget.initialState, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+        graphicsCommandList->ResourceBarrier(1, &barrier);
+    }
+
     graphicsCommandList->ResourceBarrier(rtvBeginBarriers.size(), rtvBeginBarriers.data());
-    graphicsCommandList->OMSetRenderTargets(rtvHandles.size(), rtvHandles.data(), false, nullptr);
+    graphicsCommandList->OMSetRenderTargets(rtvHandles.size(), rtvHandles.data(), false, depthDescriptor);
+
+    if (mDepthTarget.has_value())
+    {
+        const auto& depthTarget = mDepthTarget.value();
+        graphicsCommandList->ClearDepthStencilView(depthTarget.dsvHandle, D3D12_CLEAR_FLAG_DEPTH, depthTarget.depthClear, 0, 0, nullptr);
+    }
 
     for (const auto& renderTarget : frameRenderTargets)
     {
@@ -58,4 +76,3 @@ std::vector<D3D12RenderTarget> D3D12RenderPass::getRenderTargets(const uint32_t 
 
     return mRenderTargets[i];
 }
-

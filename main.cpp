@@ -123,6 +123,7 @@ int main(const int argc, char** argv)
             .finalLayout = ImageLayout::DepthAttachmentOptimal,
             .depthClearValue = 1.0f,
             .stencilClearValue = 0,
+            .attachmentSource = depthTexture.get(),
         }),
         .renderArea = {{0, 0}, gRHI->getSwapchain()->getSize()},
         .debugName  = "Test RenderPass",

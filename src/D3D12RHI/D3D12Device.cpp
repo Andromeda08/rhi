@@ -94,3 +94,8 @@ void D3D12Device::createRenderTargetView(const D3D12CreateRenderTargetViewParams
     );
     #endif
 }
+
+void D3D12Device::createDepthStencilView(const D3D12CreateDepthStencilViewParams& params) const
+{
+    mDevice->CreateDepthStencilView(params.texture, params.dsvDesc, params.cpuHandle);
+}

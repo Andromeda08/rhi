@@ -19,6 +19,14 @@ struct D3D12CreateRenderTargetViewParams
     std::string                     debugName;
 };
 
+struct D3D12CreateDepthStencilViewParams
+{
+    ID3D12Resource*                 texture;
+    D3D12_DEPTH_STENCIL_VIEW_DESC*  dsvDesc;
+    CD3DX12_CPU_DESCRIPTOR_HANDLE   cpuHandle;
+    std::string                     debugName;
+};
+
 class D3D12Device
 {
 public:
@@ -48,6 +56,7 @@ public:
     uint32_t getDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE heapType) const;
 
     void     createRenderTargetView(const D3D12CreateRenderTargetViewParams& params) const;
+    void     createDepthStencilView(const D3D12CreateDepthStencilViewParams& params) const;
 
 private:
     ComPtr<IDXGIAdapter1> mAdapter;

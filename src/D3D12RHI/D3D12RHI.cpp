@@ -120,6 +120,21 @@ std::unique_ptr<RHIRenderPass> D3D12RHI::createRenderPass(const RHIRenderPassCre
 
         d3d12CreateInfo.perFrameRenderTargets.push_back(frameRenderTargets);
     }
+
+    if (createInfo.depthAttachment.has_value())
+    {
+        const auto& depthAttachment = createInfo.depthAttachment.value();
+        const auto depthTexture = std::get<RHITexture*>(depthAttachment.attachmentSource)->as<D3D12Texture>();
+
+        d3d12CreateInfo.depthTarget = {
+            .format = depthTexture->getFormat(),
+            .dsv = depthTexture->getDSV(),
+            .dsvHandle = depthTexture->getDSVHandle(),
+            .depthClear = depthAttachment.depthClearValue,
+            .stencilClear = depthAttachment.stencilClearValue,
+            .initialState = D3D12_RESOURCE_STATE_COMMON,
+        };
+    }
     
     return D3D12RenderPass::createD3D12RenderPass(d3d12CreateInfo);
 }
@@ -152,6 +167,7 @@ std::unique_ptr<RHIPipeline> D3D12RHI::createPipeline(const RHIPipelineCreateInf
 
     D3D12PipelineCreateInfo d3d12CreateInfo = {
         .inputElements = inputElements,
+        .enableDepth = createInfo.graphicsPipelineState.depthTest,
         .shadersCreateInfos = createInfo.shaderCreateInfos,
         .renderPass = createInfo.renderPass->as<D3D12RenderPass>(),
         .pipelineType = createInfo.pipelineType,

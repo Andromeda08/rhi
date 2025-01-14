@@ -24,6 +24,7 @@ struct D3D12PipelineCreateInfo
 {
     std::vector<D3D12_INPUT_ELEMENT_DESC>   inputElements {};
 
+    bool                                    enableDepth {};
     std::vector<RHIShaderCreateInfo>        shadersCreateInfos {};
     D3D12RenderPass*                        renderPass = nullptr;
     PipelineType                            pipelineType { PipelineType::Graphics };
