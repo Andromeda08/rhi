@@ -75,11 +75,11 @@ VulkanBuffer::VulkanBuffer(const VulkanBufferCreateInfo& createInfo)
     mSize    = createInfo.bufferSize;
 
     mDevice->nameObject<vk::Buffer>({
-        .debugName  = createInfo.debugName,
+        .debugName  = createInfo.debugName.c_str(),
         .handle     = mBuffer,
     });
 
-    VK_VERBOSE(fmt::format("Created Buffer (debugName: {})", createInfo.debugName ? createInfo.debugName : "-"));
+    VK_VERBOSE(fmt::format("Created Buffer (debugName: {})", createInfo.debugName.empty() ? "-" : createInfo.debugName));
 }
 
 std::unique_ptr<VulkanBuffer> VulkanBuffer::createVulkanBuffer(const VulkanBufferCreateInfo& createInfo)

@@ -4,13 +4,14 @@
 #include "VulkanBase.hpp"
 #include "VulkanDevice.hpp"
 #include "RHI/RHIBuffer.hpp"
+#include "RHI/Validation.hpp"
 
 struct VulkanBufferCreateInfo
 {
     uint64_t            bufferSize;
     RHIBufferType       bufferType;
     VulkanDevice*       pDevice;
-    const char*         debugName;
+    std::string         debugName;
 };
 
 class VulkanBuffer : public RHIBuffer
