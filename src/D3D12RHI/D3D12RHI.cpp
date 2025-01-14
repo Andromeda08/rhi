@@ -1,5 +1,6 @@
 #include "D3D12RHI.hpp"
 
+#include "D3D12Buffer.hpp"
 #include "D3D12CommandList.hpp"
 #include "D3D12Device.hpp"
 #include "D3D12CommandQueue.hpp"

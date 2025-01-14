@@ -17,6 +17,8 @@ class D3D12Swapchain;
 #include <d3dcompiler.h>
 #include <wrl/client.h>
 
+#include <D3D12MemAlloc.h>
+
 using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::WeakRef;
 

@@ -20,6 +20,15 @@ D3D12Device::D3D12Device(const ComPtr<IDXGIAdapter1>& adapter)
         .commandListCount = 2,
     });
 
+    D3D12MA::ALLOCATOR_DESC allocatorDesc = {};
+    allocatorDesc.pDevice = mDevice.Get();
+    allocatorDesc.pAdapter = mAdapter.Get();
+    allocatorDesc.Flags = D3D12MA::ALLOCATOR_FLAG_MSAA_TEXTURES_ALWAYS_COMMITTED | D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
+
+    D3D12_CHECK(
+        D3D12MA::CreateAllocator(&allocatorDesc, &mAllocator),
+        "Failed to create D3D12 Allocator");
+
     D3D12_VERBOSE("Created D3D12Device");
 }
 

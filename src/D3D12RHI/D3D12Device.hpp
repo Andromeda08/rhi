@@ -34,6 +34,8 @@ public:
 
     void createFence(uint64_t initialValue, D3D12_FENCE_FLAGS flags, ComPtr<ID3D12Fence>& fence) const;
 
+    D3D12MA::Allocator* getAllocator() const { return mAllocator; }
+
     /**
      * Command Queues
      */
@@ -49,7 +51,8 @@ public:
 
 private:
     ComPtr<IDXGIAdapter1> mAdapter;
-    ComPtr<ID3D12Device> mDevice;
+    ComPtr<ID3D12Device>  mDevice;
+    D3D12MA::Allocator*   mAllocator;
 
     std::unique_ptr<D3D12CommandQueue> mDirectQueue;
 

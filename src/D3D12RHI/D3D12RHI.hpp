@@ -41,19 +41,16 @@ public:
 
     RHICommandQueue* getGraphicsQueue() override;
 
-    RHIInterfaceType getType() const override { return RHIInterfaceType::D3D12; }
-
-    ComPtr<IDXGIFactory4> getFactory() const { return mFactory; }
-    D3D12Device*          getDevice()  const { return mDevice.get(); }
-
-private:
-    void createFactory();
-
-    ComPtr<IDXGIAdapter1> selectAdapter() const;
-
-    void createDevice();
+    RHIInterfaceType      getType()      const override { return RHIInterfaceType::D3D12; }
+    RHISwapchain*         getSwapchain() const override { return mSwapchain.get(); }
+    ComPtr<IDXGIFactory4> getFactory()   const { return mFactory; }
+    D3D12Device*          getDevice()    const { return mDevice.get(); }
 
 private:
+    void                    createFactory();
+    ComPtr<IDXGIAdapter1>   selectAdapter() const;
+    void                    createDevice();
+
     ComPtr<IDXGIFactory4>           mFactory;
     ComPtr<ID3D12Debug>             mDebug;
 
