@@ -113,23 +113,6 @@ void VulkanRHI::submitFrame(const Frame& frame)
 
 std::unique_ptr<RHIBuffer> VulkanRHI::createBuffer(const RHIBufferCreateInfo& createInfo)
 {
-    if (createInfo.pData)
-    {
-        std::unique_ptr<VulkanBuffer> result;
-        getGraphicsQueue()->executeSingleTimeCommand([&](RHICommandList* commandList) {
-            result = VulkanBuffer::createVulkanBufferWithData({
-                    .bufferSize = createInfo.bufferSize,
-                    .bufferType = createInfo.bufferType,
-                    .pDevice    = mDevice.get(),
-                    .debugName  = createInfo.debugName,
-                },
-                createInfo.pData,
-                commandList
-            );
-        });
-        return result;
-    }
-
     return VulkanBuffer::createVulkanBuffer({
         .bufferSize = createInfo.bufferSize,
         .bufferType = createInfo.bufferType,
@@ -185,7 +168,51 @@ std::unique_ptr<RHIRenderPass> VulkanRHI::createRenderPass(const RHIRenderPassCr
 
 std::unique_ptr<RHIPipeline> VulkanRHI::createPipeline(const RHIPipelineCreateInfo& createInfo)
 {
-    return VulkanPipeline::createTestPipeline(mDevice.get(), createInfo.renderPass);
+    std::vector<vk::VertexInputAttributeDescription> attributes;
+    std::vector<vk::VertexInputBindingDescription> bindings;
+    for (const auto& attrib : createInfo.graphicsPipelineState.vertexInputAttributes)
+    {
+        const auto attribute = vk::VertexInputAttributeDescription()
+            .setBinding(attrib.binding)
+            .setLocation(attrib.location)
+            .setFormat(toVulkan(attrib.format))
+            .setOffset(attrib.offset);
+        attributes.push_back(attribute);
+    }
+
+    for (const auto& binding : createInfo.graphicsPipelineState.vertexInputBindings)
+    {
+        const auto bind = vk::VertexInputBindingDescription()
+            .setBinding(binding.binding)
+            .setStride(binding.stride)
+            .setInputRate(toVulkan(binding.inputRate));
+        bindings.push_back(bind);
+    }
+
+    std::vector<VulkanShaderCreateInfo> vulkanShaderInfos;
+    for (const auto& shaderInfo : createInfo.shaderCreateInfos)
+    {
+        vulkanShaderInfos.push_back({
+            .filePath = shaderInfo.filePath,
+            .shaderStage = toVulkan(shaderInfo.shaderStage),
+        });
+    }
+
+    VulkanPipelineCreateInfo pipelineCreateInfo = {
+        .pushConstantRanges = {},
+        .descriptorSetLayouts = {},
+        .shaderCreateInfos = vulkanShaderInfos,
+        .renderPass = createInfo.renderPass->as<VulkanRenderPass>()->handle(),
+        .graphicsPipelineState = VulkanGraphicsPipelineStateInfo({
+            .attributeDescriptions = attributes,
+            .bindingDescriptions = bindings,
+            .attachmentStates = { VulkanPipelineUtils::makeColorBlendAttachmentState() }
+        }).setCullMode(toVulkan(createInfo.graphicsPipelineState.cullMode)),
+        .pDevice = mDevice.get(),
+        .debugName = createInfo.debugName,
+    };
+
+    return VulkanPipeline::createVulkanPipeline(pipelineCreateInfo);
 }
 
 void VulkanRHI::createInstance()

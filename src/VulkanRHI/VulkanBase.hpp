@@ -178,6 +178,46 @@ inline vk::AttachmentStoreOp toVulkan(const AttachmentStoreOp storeOp)
     throw std::exception();
 }
 
+inline vk::VertexInputRate toVulkan(const VertexInputRate inputRate)
+{
+    switch (inputRate)
+    {
+        case VertexInputRate::Vertex:
+            return vk::VertexInputRate::eVertex;
+        case VertexInputRate::Instance:
+            return vk::VertexInputRate::eInstance;
+    }
+    throw std::exception();
+}
+
+inline vk::ShaderStageFlagBits toVulkan(const ShaderStage shaderStage)
+{
+    switch (shaderStage)
+    {
+        case ShaderStage::Vertex:
+            return vk::ShaderStageFlagBits::eVertex;
+        case ShaderStage::Fragment:
+            return vk::ShaderStageFlagBits::eFragment;
+    }
+    throw std::exception();
+}
+
+inline vk::CullModeFlagBits toVulkan(const CullMode cullMode)
+{
+    switch (cullMode)
+    {
+        case CullMode::None:
+            return vk::CullModeFlagBits::eNone;
+        case CullMode::Front:
+            return vk::CullModeFlagBits::eFront;
+        case CullMode::Back:
+            return vk::CullModeFlagBits::eBack;
+        case CullMode::FrontAndBack:
+            return vk::CullModeFlagBits::eFrontAndBack;
+    }
+    throw std::exception();
+}
+
 #pragma endregion
 
 #pragma region "Vulkan to RHI Type Conversion"
