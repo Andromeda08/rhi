@@ -37,7 +37,7 @@ public:
 
     ~VulkanBuffer() override;
 
-    void setData(const void* pData) const
+    void setData(const void* pData) const override
     {
         void* mappedMemory = mMemory->map();
         std::memcpy(mappedMemory, pData, mMemory->getSize());
