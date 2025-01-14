@@ -3,6 +3,7 @@
 #include <array>
 #include <cstdint>
 #include <optional>
+#include <string>
 #include <variant>
 #include <vector>
 
@@ -382,7 +383,7 @@ struct RHIBufferCreateInfo
     uint64_t        bufferSize;
     RHIBufferType   bufferType;
     void*           pData {nullptr};
-    const char*     debugName;
+    std::string     debugName;
 };
 
 #pragma endregion
