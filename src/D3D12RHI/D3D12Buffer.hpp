@@ -19,13 +19,47 @@ public:
 
     ~D3D12Buffer() override;
 
-    void setData(const void* pData) const override;
+    void setData(const void* pData, uint64_t dataSize) const override;
 
     void uploadData(const RHIBufferUploadInfo& uploadInfo) override;
 
     uint64_t getSize() override { return mAllocation->GetSize(); }
 
     uint64_t getOffset() override { return mAllocation->GetOffset(); }
+
+    D3D12_VERTEX_BUFFER_VIEW& getVertexBufferView()
+    {
+        if (mBufferType != Vertex)
+        {
+            const auto msg = "getVertexBufferView() can only be called on Vertex buffers";
+            D3D12_PRINTLN(msg);
+            throw std::runtime_error(msg);
+        }
+
+        mVertexBufferView = {
+            .BufferLocation = mAddress,
+            .SizeInBytes = static_cast<UINT>(mSize),
+            .StrideInBytes = 32u,
+        };
+        return mVertexBufferView;
+    }
+
+    D3D12_INDEX_BUFFER_VIEW& getIndexBufferView()
+    {
+        if (mBufferType != Index)
+        {
+            const auto msg = "getIndexBufferView() can only be called on Index buffers";
+            D3D12_PRINTLN(msg);
+            throw std::runtime_error(msg);
+        }
+
+        mIndexBufferView = {
+            .BufferLocation = mAddress,
+            .SizeInBytes = static_cast<UINT>(mSize),
+            .Format = DXGI_FORMAT_R32_UINT,
+        };
+        return mIndexBufferView;
+    }
 
 private:
     uint64_t                    mSize;
@@ -36,6 +70,10 @@ private:
     D3D12_RESOURCE_STATES       mState { D3D12_RESOURCE_STATE_COMMON };
     D3D12_HEAP_TYPE             mHeapType;
 
+    D3D12_VERTEX_BUFFER_VIEW    mVertexBufferView {};
+    D3D12_INDEX_BUFFER_VIEW     mIndexBufferView {};
+
+    RHIBufferType               mBufferType;
     const wchar_t*              mDebugName {};
     D3D12Device*                mDevice;
 };

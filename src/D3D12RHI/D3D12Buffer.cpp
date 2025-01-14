@@ -1,6 +1,8 @@
 #include "D3D12Buffer.hpp"
 
+#include "D3D12CommandList.hpp"
 #include "D3D12Device.hpp"
+#include "RHI/RHICommandList.hpp"
 
 D3D12_HEAP_TYPE getD3D12HeapType(const RHIBufferType bufferType)
 {
@@ -19,7 +21,11 @@ D3D12_HEAP_TYPE getD3D12HeapType(const RHIBufferType bufferType)
 }
 
 D3D12Buffer::D3D12Buffer(const D3D12BufferCreateInfo& createInfo)
-: RHIBuffer(), mSize(createInfo.bufferSize), mDebugName(createInfo.debugName), mDevice(createInfo.pDevice)
+: RHIBuffer()
+, mSize(createInfo.bufferSize)
+, mBufferType(createInfo.bufferType)
+, mDebugName(createInfo.debugName)
+, mDevice(createInfo.pDevice)
 {
     mHeapType = getD3D12HeapType(createInfo.bufferType);
 
@@ -68,7 +74,7 @@ D3D12Buffer::~D3D12Buffer()
     mAllocation->Release();
 }
 
-void D3D12Buffer::setData(const void* pData) const
+void D3D12Buffer::setData(const void* pData, const uint64_t dataSize) const
 {
     if (mHeapType != D3D12_HEAP_TYPE_UPLOAD)
     {
@@ -82,11 +88,35 @@ void D3D12Buffer::setData(const void* pData) const
 
     void* mappedMemory;
     D3D12_CHECK(mResource->Map(0, nullptr, &mappedMemory), "Failed to map memory");
-    std::memcpy(mappedMemory, pData, mAllocation->GetSize());
+    memcpy(mappedMemory, pData, dataSize);
     mResource->Unmap(0, nullptr);
 }
 
 void D3D12Buffer::uploadData(const RHIBufferUploadInfo& uploadInfo)
 {
-    D3D12_PRINTLN("D3D12Buffer::uploadData() not implemented");
+    // D3D12_PRINTLN("D3D12Buffer::uploadData() not implemented");
+
+    D3D12Buffer* stagingBuffer = uploadInfo.pStagingBuffer->as<D3D12Buffer>();
+
+    auto* d3d12List = uploadInfo.pCommandList->as<D3D12CommandList>();
+    auto* commandList = d3d12List->asGraphicsCommandList();
+
+    const auto toCopyBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        mResource,
+        D3D12_RESOURCE_STATE_COMMON,
+        D3D12_RESOURCE_STATE_COPY_DEST
+    );
+    commandList->ResourceBarrier(1, &toCopyBarrier);
+
+    commandList->CopyBufferRegion(
+        mResource, 0,
+        stagingBuffer->mResource, 0,
+        uploadInfo.dataSize);
+
+    const auto toGenericBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+        mResource,
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        D3D12_RESOURCE_STATE_GENERIC_READ
+    );
+    commandList->ResourceBarrier(1, &toGenericBarrier);
 }
