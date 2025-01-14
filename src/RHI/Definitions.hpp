@@ -269,6 +269,15 @@ struct VertexInputAttributeDesc
     uint32_t binding;
     Format   format;
     uint32_t offset;
+
+    // D3D12 Specific Attribute
+    std::string semanticName {};
+
+    // D3D12 Specific Attribute
+    uint32_t    semanticIndex {};
+
+    // D3D12 Specific Attribute
+    bool        appendAligned {true};
 };
 
 enum class VertexInputRate
@@ -279,9 +288,16 @@ enum class VertexInputRate
 
 struct VertexInputBindingDesc
 {
+    // Vulkan Specific
     uint32_t        binding;
+
+    // Vulkan Specific
     uint32_t        stride;
+
     VertexInputRate inputRate;
+
+    // D3D12 Specific
+    uint32_t        instanceStepRate;
 };
 
 enum class CullMode
