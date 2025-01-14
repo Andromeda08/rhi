@@ -23,7 +23,7 @@ public:
 
     DEF_AS_CONVERT(RHIBuffer);
 
-    virtual void setData(const void* pData) const = 0;
+    virtual void setData(const void* pData, uint64_t dataSize) const = 0;
 
     /**
      * Upload data to a buffer via a Staging buffer.

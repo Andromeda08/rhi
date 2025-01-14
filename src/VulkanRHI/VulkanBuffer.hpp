@@ -20,28 +20,12 @@ public:
     DISABLE_COPY_CTOR(VulkanBuffer);
     explicit DEF_PRIMARY_CTOR(VulkanBuffer, const VulkanBufferCreateInfo& createInfo);
 
-    template <class T>
-    static std::unique_ptr<VulkanBuffer> createVulkanBufferWithData(const VulkanBufferCreateInfo& createInfo, T* pData, RHICommandList* pCommandList)
-    {
-        auto buffer = createVulkanBuffer(createInfo);
-        const auto stagingBuffer = createVulkanBuffer({
-            .bufferSize = createInfo.bufferSize,
-            .bufferType = Staging,
-            .pDevice    = createInfo.pDevice,
-        });
-        stagingBuffer->setData(pData);
-
-        pCommandList->copyBuffer(buffer.get(), stagingBuffer.get());
-
-        return buffer;
-    }
-
     ~VulkanBuffer() override;
 
-    void setData(const void* pData) const override
+    void setData(const void* pData, const uint64_t dataSize) const override
     {
         void* mappedMemory = mMemory->map();
-        std::memcpy(mappedMemory, pData, mMemory->getSize());
+        std::memcpy(mappedMemory, pData, dataSize);
         mMemory->unmap();
     }
 

@@ -97,7 +97,7 @@ void VulkanBuffer::uploadData(const RHIBufferUploadInfo& uploadInfo)
 {
     VulkanBuffer* stagingBuffer = uploadInfo.pStagingBuffer->as<VulkanBuffer>();
 
-    stagingBuffer->setData(uploadInfo.pData);
+    stagingBuffer->setData(uploadInfo.pData, uploadInfo.dataSize);
 
     const auto bufferCopy = vk::BufferCopy()
         .setSize(uploadInfo.dataSize)
