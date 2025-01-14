@@ -75,6 +75,17 @@ enum class RHIInterfaceType
     D3D12,
 };
 
+inline std::string toString(const RHIInterfaceType interfaceType)
+{
+    switch (interfaceType)
+    {
+        case RHIInterfaceType::None:    return "No API";
+        case RHIInterfaceType::Vulkan:  return "Vulkan";
+        case RHIInterfaceType::D3D12:   return "D3D12";
+    }
+    throw std::exception();
+}
+
 enum class RHICommandQueueType
 {
     Graphics,

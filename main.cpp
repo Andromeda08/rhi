@@ -51,8 +51,8 @@ int main(const int argc, char** argv)
     }
 
     gWindow = Window::createWindow({
-        .resolution = { 1600, 900 },
-        .title = "RHI Example Window",
+        .resolution = { 1280, 720 },
+        .title = fmt::format("RHI Window ({})", toString(api)),
     });
 
     gRHI = rhiFactory(api);
