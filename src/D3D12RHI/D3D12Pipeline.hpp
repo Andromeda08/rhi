@@ -22,15 +22,15 @@ struct D3D12GraphicsPipelineStateInfo
 
 struct D3D12PipelineCreateInfo
 {
-    std::vector<int32_t>                inputElements {};   // TODO: Replace with proper type
+    std::vector<D3D12_INPUT_ELEMENT_DESC>   inputElements {};
 
-    std::vector<RHIShaderCreateInfo>    shadersCreateInfos {};
-    D3D12RenderPass*                    renderPass = nullptr;
-    PipelineType                        pipelineType { PipelineType::Graphics };
-    D3D12GraphicsPipelineStateInfo      graphicsPiplineState {};
+    std::vector<RHIShaderCreateInfo>        shadersCreateInfos {};
+    D3D12RenderPass*                        renderPass = nullptr;
+    PipelineType                            pipelineType { PipelineType::Graphics };
+    D3D12GraphicsPipelineStateInfo          graphicsPiplineState {};
 
-    D3D12Device*                        device = nullptr;
-    const char*                         debugName;
+    D3D12Device*                            device = nullptr;
+    const char*                             debugName;
 };
 
 class D3D12Pipeline : public RHIPipeline

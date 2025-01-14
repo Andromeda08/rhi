@@ -118,4 +118,36 @@ inline Format toRHI(const DXGI_FORMAT format)
     }
 }
 
+inline D3D12_INPUT_CLASSIFICATION toD3D12(const VertexInputRate inputRate)
+{
+    switch (inputRate)
+    {
+        case VertexInputRate::Vertex:
+            return D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+        case VertexInputRate::Instance:
+            return D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+        default:
+            throw std::runtime_error("Unsupported VertexInputRate");
+    }
+}
+
+inline DXGI_FORMAT toD3D12(const Format format)
+{
+    switch (format)
+    {
+        case Format::B8G8R8A8Unorm:
+            return DXGI_FORMAT_B8G8R8A8_UNORM;
+        case Format::R32G32B32A32Sfloat:
+            return DXGI_FORMAT_R32G32B32A32_FLOAT;
+        case Format::R32G32B32Sfloat:
+            return DXGI_FORMAT_R32G32B32_FLOAT;
+        case Format::R32G32Sfloat:
+            return DXGI_FORMAT_R32G32_FLOAT;
+        case Format::R32Sfloat:
+            return DXGI_FORMAT_R32_FLOAT;
+        default:
+            throw std::runtime_error("Unsupported Format");
+    }
+}
+
 #pragma endregion

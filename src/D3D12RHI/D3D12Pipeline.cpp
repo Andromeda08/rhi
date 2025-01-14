@@ -21,8 +21,12 @@ D3D12Pipeline::D3D12Pipeline(D3D12PipelineCreateInfo& createInfo)
     D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc = {};
     psoDesc.pRootSignature = mRootSignature.Get();
 
-    psoDesc.InputLayout = { nullptr, 0u }; // TODO: Placeholder
+    psoDesc.InputLayout = {
+        .pInputElementDescs = createInfo.inputElements.data(),
+        .NumElements = static_cast<UINT>(createInfo.inputElements.size()),
+    };
     psoDesc.RasterizerState = createInfo.graphicsPiplineState.rasterizerState;
+    psoDesc.RasterizerState.FrontCounterClockwise = true;
     psoDesc.BlendState = createInfo.graphicsPiplineState.blendState;
 
     // TODO: Depth and Stencil disabled

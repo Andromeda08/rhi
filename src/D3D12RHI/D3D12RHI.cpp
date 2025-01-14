@@ -125,8 +125,32 @@ std::unique_ptr<RHIRenderPass> D3D12RHI::createRenderPass(const RHIRenderPassCre
 
 std::unique_ptr<RHIPipeline> D3D12RHI::createPipeline(const RHIPipelineCreateInfo& createInfo)
 {
+    std::vector<D3D12_INPUT_ELEMENT_DESC> inputElements;
+    for (const auto& attrib : createInfo.graphicsPipelineState.vertexInputAttributes)
+    {
+        auto it = std::ranges::find_if(createInfo.graphicsPipelineState.vertexInputBindings, [&](const VertexInputBindingDesc& value) {
+            return value.binding == attrib.binding;
+        });
+        if (it == std::end(createInfo.graphicsPipelineState.vertexInputBindings))
+        {
+            throw std::runtime_error(fmt::format("Attribute references binding {} that has no binding description", attrib.binding));
+        }
+        const auto& binding = *it;
+
+        D3D12_INPUT_ELEMENT_DESC desc = {
+            .SemanticName = attrib.semanticName.c_str(),
+            .SemanticIndex = attrib.semanticIndex,
+            .Format = toD3D12(attrib.format),
+            .InputSlot = attrib.binding,
+            .AlignedByteOffset = (attrib.appendAligned) ? D3D12_APPEND_ALIGNED_ELEMENT : attrib.offset,
+            .InputSlotClass = toD3D12(binding.inputRate),
+            .InstanceDataStepRate = binding.instanceStepRate,
+        };
+        inputElements.push_back(desc);
+    }
+
     D3D12PipelineCreateInfo d3d12CreateInfo = {
-        .inputElements = {},    // TODO: Replace with processed InputElements
+        .inputElements = inputElements,
         .shadersCreateInfos = createInfo.shaderCreateInfos,
         .renderPass = createInfo.renderPass->as<D3D12RenderPass>(),
         .pipelineType = createInfo.pipelineType,
