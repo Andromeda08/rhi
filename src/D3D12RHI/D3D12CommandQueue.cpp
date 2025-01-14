@@ -52,3 +52,52 @@ D3D12_COMMAND_LIST_TYPE D3D12CommandQueue::getD3D12QueueType(RHICommandQueueType
     }
     throw std::runtime_error("Unsupported RHICommandQueueType");
 }
+
+void D3D12CommandQueue::executeSingleTimeCommand(const std::function<void(RHICommandList*)>& lambda)
+{
+    ID3D12Fence* fence;
+    HANDLE fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+    UINT64 fenceValue = 1;
+
+    D3D12_CHECK(mDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)),
+        "Failed to create Fence");
+
+    ComPtr<ID3D12CommandAllocator> allocator;
+    D3D12_CHECK(mDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator)),
+        "Failed to create CommandAllocator");
+
+    ComPtr<ID3D12CommandList> commandList;
+    D3D12_CHECK(mDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, allocator.Get(), nullptr, IID_PPV_ARGS(&commandList)),
+        "Failed to create CommandList");
+
+    ComPtr<ID3D12GraphicsCommandList> graphicsList;
+    D3D12_CHECK(commandList.As(&graphicsList), "Failed to cast to GraphicsCommandList");
+
+    auto rhiList = D3D12CommandList::createD3D12CommandList({
+        .commandList = commandList,
+        .commandAllocator = allocator,
+        .queueType = mType,
+    });
+
+    rhiList->mIsRecording = true;
+
+    lambda(rhiList.get());
+
+    graphicsList->Close();
+    rhiList->mIsRecording = false;
+
+    ID3D12CommandList* commandLists[] = { commandList.Get() };
+    mCommandQueue->ExecuteCommandLists(1, commandLists);
+    mCommandQueue->Signal(fence, fenceValue);
+
+    if (fence->GetCompletedValue() < fenceValue)
+    {
+        fence->SetEventOnCompletion(fenceValue, fenceEvent);
+        WaitForSingleObject(fenceEvent, INFINITE);
+    }
+
+    CloseHandle(fenceEvent);
+    // commandList->Release();
+    // allocator->Release();
+    // fence->Release();
+}
