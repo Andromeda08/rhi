@@ -7,6 +7,7 @@
 #include "D3D12Framebuffer.hpp"
 #include "D3D12Pipeline.hpp"
 #include "D3D12Swapchain.hpp"
+#include "D3D12Texture.hpp"
 
 D3D12RHI::D3D12RHI(const D3D12RHICreateInfo& createInfo)
 : DynamicRHI()
@@ -169,6 +170,17 @@ std::unique_ptr<RHIBuffer> D3D12RHI::createBuffer(const RHIBufferCreateInfo& cre
         .bufferType = createInfo.bufferType,
         .pDevice = mDevice.get(),
         .debugName = TO_LPCWSTR(createInfo.debugName),
+    });
+}
+
+std::unique_ptr<RHITexture> D3D12RHI::createTexture(const RHITextureCreateInfo& createInfo)
+{
+    return D3D12Texture::createD3D12Texture({
+        .size = createInfo.size,
+        .format = createInfo.format,
+        .sampled = createInfo.sampled,
+        .debugName = createInfo.debugName,
+        .pDevice = mDevice.get(),
     });
 }
 

@@ -12,7 +12,7 @@ struct D3D12RHICreateInfo
     RHIWindow* pWindow;
 };
 
-class D3D12RHI : public DynamicRHI
+class D3D12RHI final : public DynamicRHI
 {
 public:
     DISABLE_COPY_CTOR(D3D12RHI);
@@ -34,6 +34,8 @@ public:
 
     std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override;
 
+    std::unique_ptr<RHITexture> createTexture(const RHITextureCreateInfo& createInfo) override;
+
 
     RHICommandQueue* getGraphicsQueue() override;
 
@@ -47,6 +49,7 @@ private:
     ComPtr<IDXGIAdapter1>   selectAdapter() const;
     void                    createDevice();
 
+private:
     ComPtr<IDXGIFactory4>           mFactory;
     ComPtr<ID3D12Debug>             mDebug;
 

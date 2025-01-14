@@ -70,6 +70,8 @@ if (WIN32)
         src/D3D12RHI/D3D12Pipeline.hpp src/D3D12RHI/D3D12Pipeline.cpp
         src/D3D12RHI/D3D12Buffer.hpp
         src/D3D12RHI/D3D12Buffer.cpp
+        src/D3D12RHI/D3D12Texture.hpp
+        src/D3D12RHI/D3D12Texture.cpp
     )
     target_include_directories(D3D12RHI PUBLIC
         ${D3D12_INCLUDE_DIRS}

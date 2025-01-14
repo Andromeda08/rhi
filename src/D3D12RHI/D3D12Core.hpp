@@ -145,6 +145,8 @@ inline DXGI_FORMAT toD3D12(const Format format)
             return DXGI_FORMAT_R32G32_FLOAT;
         case Format::R32Sfloat:
             return DXGI_FORMAT_R32_FLOAT;
+        case Format::D32Sfloat:
+            return DXGI_FORMAT_D32_FLOAT;
         default:
             throw std::runtime_error("Unsupported Format");
     }
