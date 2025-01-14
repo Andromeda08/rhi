@@ -8,12 +8,18 @@ set(CMAKE_CXX_STANDARD 23)
 # ============== #
 find_package(Vulkan REQUIRED)
 
-add_subdirectory(external/dx12headers)
-set(D3D12_LIBRARIES "d3d12.lib" "dxgi.lib" "d3dcompiler.lib")
-set(D3D12_INCLUDE_DIRS "external/dx12headers/include/directx")
+if (WIN32)
+    add_subdirectory(external/dx12headers)
+    set(D3D12_LIBRARIES "d3d12.lib" "dxgi.lib" "d3dcompiler.lib")
+    set(D3D12_INCLUDE_DIRS "external/dx12headers/include/directx")
+
+    add_subdirectory(external/d3d12ma)
+    set(D3D12MA_INCLUDE_DIRS "external/d3d12ma/include")
+endif()
 
 add_subdirectory(external/fmt)
 add_subdirectory(external/glfw)
+add_subdirectory(external/glm)
 
 # ============== #
 #   Vulkan RHI   #
@@ -60,9 +66,20 @@ if (WIN32)
         src/D3D12RHI/D3D12Framebuffer.hpp src/D3D12RHI/D3D12Framebuffer.cpp
         src/D3D12RHI/D3D12RenderPass.hpp src/D3D12RHI/D3D12RenderPass.cpp
         src/D3D12RHI/D3D12Pipeline.hpp src/D3D12RHI/D3D12Pipeline.cpp
+        src/D3D12RHI/D3D12Buffer.hpp
+        src/D3D12RHI/D3D12Buffer.cpp
     )
-    target_include_directories(D3D12RHI PUBLIC ${D3D12_INCLUDE_DIRS} "src" "external/fmt/include")
-    target_link_libraries(D3D12RHI PUBLIC ${D3D12_LIBRARIES} fmt::fmt)
+    target_include_directories(D3D12RHI PUBLIC
+        ${D3D12_INCLUDE_DIRS}
+        ${D3D12MA_INCLUDE_DIRS}
+        "src"
+        "external/fmt/include"
+    )
+    target_link_libraries(D3D12RHI PUBLIC
+        ${D3D12_LIBRARIES}
+        D3D12MemoryAllocator
+        fmt::fmt
+    )
     target_compile_definitions(D3D12RHI
         PRIVATE D3D12_DEBUGGING_ENABLED
         PRIVATE D3D12_VERBOSE_LOGGING
@@ -74,6 +91,8 @@ endif()
 # ============== #
 add_executable(${PROJECT_NAME}
     main.cpp
+    src/Scene/Geometry.hpp src/Scene/Geometry.cpp
+
     src/Core/Base.hpp
     src/Core/EnumFlags.hpp
     src/WSI/Window.hpp src/WSI/Window.cpp
@@ -92,12 +111,13 @@ add_executable(${PROJECT_NAME}
     src/RHI/RHIRenderPass.hpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw)
+target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw glm::glm)
 target_compile_definitions(${PROJECT_NAME} PRIVATE RHI_DEBUGGING_ENABLED)
 target_include_directories(${PROJECT_NAME} PRIVATE
     "src"
     external/fmt/include
     external/glfw/include
+    external/glm
 )
 
 if (WIN32)
