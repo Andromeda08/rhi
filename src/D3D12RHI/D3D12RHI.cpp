@@ -138,6 +138,16 @@ std::unique_ptr<RHIPipeline> D3D12RHI::createPipeline(const RHIPipelineCreateInf
     return D3D12Pipeline::createD3D12Pipeline(d3d12CreateInfo);
 }
 
+std::unique_ptr<RHIBuffer> D3D12RHI::createBuffer(const RHIBufferCreateInfo& createInfo)
+{
+    return D3D12Buffer::createD3D12Buffer({
+        .bufferSize = createInfo.bufferSize,
+        .bufferType = createInfo.bufferType,
+        .pDevice = mDevice.get(),
+        .debugName = TO_LPCWSTR(createInfo.debugName),
+    });
+}
+
 RHICommandQueue* D3D12RHI::getGraphicsQueue()
 {
     return mDevice->getDirectQueue();

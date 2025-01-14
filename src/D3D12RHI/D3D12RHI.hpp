@@ -22,8 +22,6 @@ public:
 
     void waitIdle() override;
 
-    std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override { return nullptr; }
-
     Frame beginFrame(const RHIFrameBeginInfo& frameBeginInfo) override;
 
     void submitFrame(const Frame& frame) override;
@@ -34,10 +32,8 @@ public:
 
     std::unique_ptr<RHIPipeline> createPipeline(const RHIPipelineCreateInfo& createInfo) override;
 
-    RHISwapchain* getSwapchain() const override
-    {
-        return mSwapchain.get();
-    }
+    std::unique_ptr<RHIBuffer> createBuffer(const RHIBufferCreateInfo& createInfo) override;
+
 
     RHICommandQueue* getGraphicsQueue() override;
 
