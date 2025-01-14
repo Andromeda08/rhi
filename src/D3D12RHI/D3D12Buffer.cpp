@@ -120,3 +120,37 @@ void D3D12Buffer::uploadData(const RHIBufferUploadInfo& uploadInfo)
     );
     commandList->ResourceBarrier(1, &toGenericBarrier);
 }
+
+D3D12_VERTEX_BUFFER_VIEW& D3D12Buffer::getVertexBufferView()
+{
+    if (mBufferType != Vertex)
+    {
+        const auto msg = "getVertexBufferView() can only be called on Vertex buffers";
+        D3D12_PRINTLN(msg);
+        throw std::runtime_error(msg);
+    }
+
+    mVertexBufferView = {
+        .BufferLocation = mAddress,
+        .SizeInBytes = static_cast<UINT>(mSize),
+        .StrideInBytes = 32u,
+    };
+    return mVertexBufferView;
+}
+
+D3D12_INDEX_BUFFER_VIEW& D3D12Buffer::getIndexBufferView()
+{
+    if (mBufferType != Index)
+    {
+        const auto msg = "getIndexBufferView() can only be called on Index buffers";
+        D3D12_PRINTLN(msg);
+        throw std::runtime_error(msg);
+    }
+
+    mIndexBufferView = {
+        .BufferLocation = mAddress,
+        .SizeInBytes = static_cast<UINT>(mSize),
+        .Format = DXGI_FORMAT_R32_UINT,
+    };
+    return mIndexBufferView;
+}

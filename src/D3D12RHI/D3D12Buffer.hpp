@@ -27,39 +27,9 @@ public:
 
     uint64_t getOffset() override { return mAllocation->GetOffset(); }
 
-    D3D12_VERTEX_BUFFER_VIEW& getVertexBufferView()
-    {
-        if (mBufferType != Vertex)
-        {
-            const auto msg = "getVertexBufferView() can only be called on Vertex buffers";
-            D3D12_PRINTLN(msg);
-            throw std::runtime_error(msg);
-        }
+    D3D12_VERTEX_BUFFER_VIEW& getVertexBufferView();
 
-        mVertexBufferView = {
-            .BufferLocation = mAddress,
-            .SizeInBytes = static_cast<UINT>(mSize),
-            .StrideInBytes = 32u,
-        };
-        return mVertexBufferView;
-    }
-
-    D3D12_INDEX_BUFFER_VIEW& getIndexBufferView()
-    {
-        if (mBufferType != Index)
-        {
-            const auto msg = "getIndexBufferView() can only be called on Index buffers";
-            D3D12_PRINTLN(msg);
-            throw std::runtime_error(msg);
-        }
-
-        mIndexBufferView = {
-            .BufferLocation = mAddress,
-            .SizeInBytes = static_cast<UINT>(mSize),
-            .Format = DXGI_FORMAT_R32_UINT,
-        };
-        return mIndexBufferView;
-    }
+    D3D12_INDEX_BUFFER_VIEW& getIndexBufferView();
 
 private:
     uint64_t                    mSize;
