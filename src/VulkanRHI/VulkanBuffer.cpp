@@ -92,3 +92,18 @@ VulkanBuffer::~VulkanBuffer()
     mDevice->handle().destroyBuffer(mBuffer);
     mMemory->free();
 }
+
+void VulkanBuffer::uploadData(const RHIBufferUploadInfo& uploadInfo)
+{
+    VulkanBuffer* stagingBuffer = uploadInfo.pStagingBuffer->as<VulkanBuffer>();
+
+    stagingBuffer->setData(uploadInfo.pData);
+
+    const auto bufferCopy = vk::BufferCopy()
+        .setSize(uploadInfo.dataSize)
+        .setSrcOffset(0)
+        .setDstOffset(0);
+
+    auto* commandBuffer = uploadInfo.pCommandList->as<VulkanCommandList>();
+    commandBuffer->handle().copyBuffer(stagingBuffer->mBuffer, mBuffer, 1, &bufferCopy);
+}

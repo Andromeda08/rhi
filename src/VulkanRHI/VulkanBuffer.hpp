@@ -44,6 +44,8 @@ public:
         mMemory->unmap();
     }
 
+    void uploadData(const RHIBufferUploadInfo& uploadInfo) override;
+
     vk::DeviceAddress getAddress() const { return mAddress; }
     vk::Buffer        handle()     const { return mBuffer; }
 
