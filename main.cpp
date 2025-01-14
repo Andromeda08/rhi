@@ -71,6 +71,7 @@ int main(const int argc, char** argv)
         .bufferType = Staging,
         .debugName  = "Cube Vertices Staging",
     });
+    vertexStaging->setData(cubeGeometry->getVertices().data(), cubeGeometry->vertexCount() * sizeof(BasicVertex));
 
     const auto indexBuffer = gRHI->createBuffer({
         .bufferSize = cubeGeometry->indexCount() * sizeof(uint32_t),
@@ -83,6 +84,7 @@ int main(const int argc, char** argv)
         .bufferType = Staging,
         .debugName  = "Cube Indices Staging",
     });
+    indexStaging->setData(cubeGeometry->getIndices().data(), cubeGeometry->indexCount() * sizeof(uint32_t));
 
     gRHI->getGraphicsQueue()->executeSingleTimeCommand([&](RHICommandList* commandList) {
         vertexBuffer->uploadData({
@@ -100,7 +102,7 @@ int main(const int argc, char** argv)
     });
     #pragma endregion
 
-    #pragma region "Renderer Setup"
+    #pragma region "Render Targets Setup"
     const auto testRenderPass = gRHI->createRenderPass({
         .colorAttachments = {
             {
@@ -123,7 +125,9 @@ int main(const int argc, char** argv)
         },
         .debugName = "Test Framebuffer",
     });
+    #pragma endregion
 
+    #pragma region "(Triangle) Pipeline"
     const auto testPipeline = gRHI->createPipeline({
         .shaderCreateInfos = {
             { (api == RHIInterfaceType::Vulkan) ? "triangle.vert.spv" : "triangle.vert.dxil", ShaderStage::Vertex   },
@@ -136,6 +140,30 @@ int main(const int argc, char** argv)
         .renderPass = testRenderPass.get(),
         .pipelineType = PipelineType::Graphics,
         .debugName = "Test Pipeline",
+    });
+    #pragma endregion
+
+    #pragma region "(Basic Forward) Pipeline"
+    const auto fwdPipeline = gRHI->createPipeline({
+        .shaderCreateInfos = {
+            { (api == RHIInterfaceType::Vulkan) ? "forward.vert.spv" : "forward.vert.dxil", ShaderStage::Vertex   },
+            { (api == RHIInterfaceType::Vulkan) ? "forward.frag.spv" : "forward.frag.dxil", ShaderStage::Fragment }
+        },
+        .graphicsPipelineState = {
+            .cullMode = CullMode::Back,
+            .vertexInputAttributes = {
+                { 0, 0, Format::R32G32B32Sfloat, offsetof(BasicVertex, position), "POSITION", 0 },
+                { 1, 0, Format::R32G32B32Sfloat, offsetof(BasicVertex, normal), "NORMAL", 0 },
+                { 2, 0, Format::R32G32Sfloat, offsetof(BasicVertex, uv), "TEXCOORD", 0 },
+            },
+            .vertexInputBindings = {
+                { 0, sizeof(BasicVertex), VertexInputRate::Vertex, 0 },
+            },
+            .attachmentStates = { AttachmentState::colorsDefault() },
+        },
+        .renderPass = testRenderPass.get(),
+        .pipelineType = PipelineType::Graphics,
+        .debugName = "Forward Pipeline",
     });
     #pragma endregion
 
@@ -153,8 +181,13 @@ int main(const int argc, char** argv)
         {
             gRHI->getSwapchain()->setScissorViewport(cmd);
 
-            testPipeline->bind(commandList);
-            cmd->draw(3, 1, 0, 0);
+            // testPipeline->bind(commandList);
+            // cmd->draw(3, 1, 0, 0);
+
+            fwdPipeline->bind(cmd);
+            cmd->bindVertexBuffer(vertexBuffer.get());
+            cmd->bindIndexBuffer(indexBuffer.get());
+            cmd->drawIndexed(cubeGeometry->indexCount(), 1, 0, 0, 0);
         });
         commandList->end();
 
