@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Definitions.hpp"
-#include "Macros.hpp"
+
+rhi_BEGIN_NAMESPACE;
 
 struct RHITextureCreateInfo
 {
-    Size2D      size;
-    Format      format  {Format::R32G32B32A32Sfloat};
-    bool        sampled {true};
-    std::string debugName;
+    Size2D      size        = {};
+    Format      format      = Format::R32G32B32A32Sfloat;
+    bool        sampled     = true;
+    std::string debugName   = {};
 };
 
 class RHITexture
@@ -18,3 +19,5 @@ public:
 
     DEF_AS_CONVERT(RHITexture);
 };
+
+rhi_END_NAMESPACE;

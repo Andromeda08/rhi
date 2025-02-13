@@ -6,6 +6,8 @@
 
 #include "RHICommandList.hpp"
 
+rhi_BEGIN_NAMESPACE;
+
 struct Frame
 {
     const uint32_t               mCurrentFrame;
@@ -22,3 +24,5 @@ struct Frame
         return *this;
     }
 };
+
+rhi_END_NAMESPACE;
