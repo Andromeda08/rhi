@@ -9,6 +9,30 @@
 
 #include "Macros.hpp"
 
+rhi_BEGIN_NAMESPACE;
+
+/**
+ * RHI Forward Declarations
+ */
+
+class DynamicRHI;
+class RHIBuffer;
+class RHICommandList;
+class RHICommandQueue;
+class RHIFramebuffer;
+class RHIFramebufferHandle;
+class RHIPipeline;
+class RHIRenderPass;
+class RHISwapchain;
+class RHITexture;
+
+struct Frame;
+
+/**
+ * RHI: Common structs and types
+ */
+#pragma region "common"
+
 struct Size2D
 {
     uint32_t width  {};
@@ -66,7 +90,17 @@ struct Viewport
     Viewport& setMaxDepth(float value);
 };
 
-#pragma region "Enums"
+struct RHIFrameBeginInfo
+{
+    bool useSwapchain = true;
+};
+
+#pragma endregion
+
+/**
+ * RHI: Enums
+ */
+#pragma region "enums"
 
 enum class RHIInterfaceType
 {
@@ -75,16 +109,14 @@ enum class RHIInterfaceType
     D3D12,
 };
 
-inline std::string toString(const RHIInterfaceType interfaceType)
+enum RHIBufferType
 {
-    switch (interfaceType)
-    {
-        case RHIInterfaceType::None:    return "No API";
-        case RHIInterfaceType::Vulkan:  return "Vulkan";
-        case RHIInterfaceType::D3D12:   return "D3D12";
-    }
-    throw std::exception();
-}
+    Index,
+    Staging,
+    Storage,
+    Uniform,
+    Vertex,
+};
 
 enum class RHICommandQueueType
 {
@@ -92,21 +124,46 @@ enum class RHICommandQueueType
     AsyncCompute,
 };
 
-enum class RHIResourceType
+enum class AttachmentLoadOp
 {
+    Clear,
+    Load,
+    DontCare,
 };
 
-enum class BufferUsageFlags : uint32_t
+enum class AttachmentStoreOp
 {
-    None            = 0,        // Vulkan Value
-    TransferSrc     = 1,        // 1
-    TransferDst     = 1 << 1,   // 2
-    UniformBuffer   = 1 << 4,   // 16
-    StorageBuffer   = 1 << 5,   // 32
-    IndexBuffer     = 1 << 6,   // 64
-    VertexBuffer    = 1 << 7,   // 128
+    None,
+    Store,
+    DontCare,
 };
-ENUM_FLAGS(BufferUsageFlags);
+
+enum class ColorComponent
+{
+    R,
+    G,
+    B,
+    A,
+};
+
+enum class BlendFactor
+{
+    One,
+    Zero
+};
+
+enum class BlendOp
+{
+    Add
+};
+
+enum class CullMode
+{
+    None,
+    Front,
+    Back,
+    FrontAndBack,
+};
 
 enum class ColorSpace
 {
@@ -115,31 +172,49 @@ enum class ColorSpace
 
 enum class Format
 {
-    B8G8R8A8Unorm,      // Swapchain Format
-    R32G32B32A32Sfloat, // f32 x 4
-    R32G32B32Sfloat,    // f32 x 3
-    R32G32Sfloat,       // f32 x 2
-    R32Sfloat,          // f32 x 1
-    D32Sfloat,          // 32-bit Depth
+    B8G8R8A8Unorm,
+    R32G32B32A32Sfloat,
+    R32G32B32Sfloat,
+    R32G32Sfloat,
+    R32Sfloat,
+    D32Sfloat,
 };
-
-inline bool isDepthFormat(const Format format) noexcept
-{
-    return format == Format::D32Sfloat;
-}
 
 enum class ImageType
 {
-    Image2D,
-    Image3D
+    Image2D
 };
 
-// TODO: Add required ImageUsageFlags
-enum class ImageUsageFlags
+enum class ImageLayout
 {
-    None = 0,
+    ColorAttachmentOptimal,
+    DepthAttachmentOptimal,
+    PresentSrc,
 };
-ENUM_FLAGS(ImageUsageFlags);
+
+enum class PipelineType
+{
+    Graphics,
+    RayTracing,
+    Compute,
+};
+
+enum class PolygonMode
+{
+    Fill,
+    Line,
+};
+
+enum class PrimitiveTopology
+{
+    Triangle,
+};
+
+enum class PrimitiveType
+{
+    TriangleList,
+    TriangleStrip
+};
 
 enum class ShaderType
 {
@@ -157,27 +232,42 @@ enum class ShaderResourceType
     CombinedImageSampler,
 };
 
-enum class PrimitiveTopology
+enum class ShaderStage
 {
-    Triangle,
+    Vertex,
+    Fragment,
 };
 
-enum class PrimitiveType
+enum class VertexInputRate
 {
-    TriangleList,
-    TriangleStrip
+    Vertex,
+    Instance,
 };
 
 #pragma endregion
 
-class RHISwapchain;
-class RHITexture;
+/**
+ * RHI: Enum to string conversion
+ */
+#pragma region "enum to string"
 
-class RHIRenderPass;
-class RHIFramebuffer;
-class RHIPipeline;
+inline std::string toString(const RHIInterfaceType interfaceType) noexcept
+{
+    switch (interfaceType)
+    {
+        case RHIInterfaceType::Vulkan:  return "Vulkan";
+        case RHIInterfaceType::D3D12:   return "D3D12";
+        default:                        return "No API";
+    }
+}
 
-#pragma region "RHIFramebuffer"
+#pragma endregion
+
+
+/**
+ * RHI: Framebuffer
+ */
+#pragma region "framebuffer"
 
 struct RHIFramebufferAttachment
 {
@@ -197,7 +287,10 @@ struct RHIFramebufferCreateInfo
 
 #pragma endregion
 
-#pragma region "RHIRenderPass"
+/**
+ * RHI: RenderPass
+ */
+#pragma region "renderpass"
 
 using ClearColorValue = std::array<float, 4>;
 
@@ -207,76 +300,43 @@ struct ClearDepthStencilValue
     uint32_t stencil = {};
 };
 
-enum class ImageLayout
-{
-    ColorAttachmentOptimal,
-    DepthAttachmentOptimal,
-    PresentSrc,
-};
-
-enum class AttachmentLoadOp
-{
-    Clear,
-    Load,
-    DontCare,
-};
-
-enum class AttachmentStoreOp
-{
-    None,
-    Store,
-    DontCare,
-};
+using AttachmentSource = std::variant<std::monostate, RHITexture*, RHISwapchain*>;
 
 struct AttachmentDescription
 {
-    Format               format          { Format::R32G32B32A32Sfloat };
-    ImageLayout          finalLayout     { ImageLayout::ColorAttachmentOptimal };
-    std::array<float, 4> clearValue      { 0.0f, 0.0f, 0.0f, 1.0f };
-    AttachmentLoadOp     loadOp          { AttachmentLoadOp::Clear };
-    AttachmentStoreOp    storeOp         { AttachmentStoreOp::DontCare };
-    AttachmentLoadOp     stencilLoadOp   { AttachmentLoadOp::DontCare };
-    AttachmentStoreOp    stencilStoreOp  { AttachmentStoreOp::DontCare };
+    Format               format             = Format::R32G32B32A32Sfloat ;
+    ImageLayout          finalLayout        = ImageLayout::ColorAttachmentOptimal;
+    std::array<float, 4> clearValue         = { 0.0f, 0.0f, 0.0f, 1.0f };
+    AttachmentLoadOp     loadOp             = AttachmentLoadOp::Clear;
+    AttachmentStoreOp    storeOp            = AttachmentStoreOp::DontCare;
+    AttachmentLoadOp     stencilLoadOp      = AttachmentLoadOp::DontCare;
+    AttachmentStoreOp    stencilStoreOp     = AttachmentStoreOp::DontCare;
 
-    float                depthClearValue {1.0f};
-    uint32_t             stencilClearValue {0};
+    float                depthClearValue    = 1.0f;
+    uint32_t             stencilClearValue  = 0;
 
     // Ignored when describing a Depth or Resolve attachment
-    uint32_t             attachmentIndex { 0 };
+    uint32_t             attachmentIndex    = 0;
 
-    // To be used for D3D12, for now...
-    std::variant<std::monostate, RHITexture*, RHISwapchain*> attachmentSource = std::monostate {};
+    // Used only by the D3D12 Backend
+    AttachmentSource     attachmentSource   = std::monostate {};
 };
 
-/**
- * Parameter struct for DynamicRHI::createRenderPass()
- */
 struct RHIRenderPassCreateInfo
 {
-    std::vector<AttachmentDescription>   colorAttachments  {};
-    std::optional<AttachmentDescription> depthAttachment   { std::nullopt };
-    std::optional<AttachmentDescription> resolveAttachment { std::nullopt };
-    Rect2D                               renderArea        {};
-    const char*                          debugName;
+    std::vector<AttachmentDescription>   colorAttachments  = {};
+    std::optional<AttachmentDescription> depthAttachment   = { std::nullopt };
+    std::optional<AttachmentDescription> resolveAttachment = { std::nullopt };
+    Rect2D                               renderArea        = {};
+    const char*                          debugName         = {};
 };
 
 #pragma endregion
 
-#pragma region "RHIPipeline"
-
-enum class PipelineType
-{
-    Graphics,
-    RayTracing,
-    Compute,
-};
-
-// Shaders
-enum class ShaderStage
-{
-    Vertex,
-    Fragment,
-};
+/**
+ * RHI: Pipeline
+ */
+#pragma region "pipeline"
 
 struct RHIShaderCreateInfo
 {
@@ -284,90 +344,46 @@ struct RHIShaderCreateInfo
     ShaderStage shaderStage;
 };
 
-// Graphics Pipeline State
 struct VertexInputAttributeDesc
 {
-    uint32_t location;
-    uint32_t binding;
-    Format   format;
-    uint32_t offset;
+    uint32_t    location;
+    uint32_t    binding;
+    Format      format;
+    uint32_t    offset;
 
-    // D3D12 Specific Attribute
-    std::string semanticName {};
-
-    // D3D12 Specific Attribute
-    uint32_t    semanticIndex {};
-
-    // D3D12 Specific Attribute
-    bool        appendAligned {true};
-};
-
-enum class VertexInputRate
-{
-    Vertex,
-    Instance,
+    std::string semanticName  {};       // D3D12 only
+    uint32_t    semanticIndex {};       // D3D12 only
+    bool        appendAligned {true};   // D3D12 only
 };
 
 struct VertexInputBindingDesc
 {
-    // Vulkan Specific
-    uint32_t        binding;
-
-    // Vulkan Specific
-    uint32_t        stride;
-
-    VertexInputRate inputRate;
-
-    // D3D12 Specific
-    uint32_t        instanceStepRate;
-};
-
-enum class CullMode
-{
-    None,
-    Front,
-    Back,
-    FrontAndBack,
-};
-
-enum class PolygonMode
-{
-    Fill,
-    Line,
-};
-
-enum class ColorComponent { R, G, B, A };
-
-enum class BlendFactor
-{
-    One,
-    Zero
-};
-
-enum class BlendOp
-{
-    Add
+    uint32_t        binding;            // Vulkan only
+    uint32_t        stride;             // Vulkan only
+    VertexInputRate inputRate;          // Shared
+    uint32_t        instanceStepRate;   // D3D12 only
 };
 
 struct BlendRule
 {
-    BlendFactor srcBlendFactor { BlendFactor::One };
-    BlendFactor dstBlendFactor { BlendFactor::Zero };
-    BlendOp     blendOp        { BlendOp::Add };
+    BlendFactor srcBlendFactor = BlendFactor::One;
+    BlendFactor dstBlendFactor = BlendFactor::Zero;
+    BlendOp     blendOp        = BlendOp::Add;
 };
 
 struct AttachmentState
 {
-    std::vector<ColorComponent> colorWriteMask      { ColorComponent::R, ColorComponent::G, ColorComponent::B, ColorComponent::A };
-    bool                        blendEnable         { false };
-    BlendRule                   blendColor          {};
-    BlendRule                   blendAlpha          {};
+    using enum ColorComponent;
+
+    std::vector<ColorComponent> colorWriteMask = { R, G, B, A };
+    bool                        blendEnable    = false;
+    BlendRule                   blendColor     = {};
+    BlendRule                   blendAlpha     = {};
 
     static AttachmentState colorsDefault() noexcept
     {
         return {};
     }
-
     static AttachmentState blendEnabled()  noexcept
     {
         return {
@@ -376,53 +392,52 @@ struct AttachmentState
     }
 };
 
-/**
- * Parameter struct for configuring a Graphics Pipeline
- */
 struct RHIGraphicsPipelineState
 {
-    CullMode                              cullMode              { CullMode::Back };
-    PolygonMode                           polygonMode           { PolygonMode::Fill };
-    bool                                  depthTest             { true };
-    std::vector<VertexInputAttributeDesc> vertexInputAttributes {};
-    std::vector<VertexInputBindingDesc>   vertexInputBindings   {};
-    std::vector<AttachmentState>          attachmentStates      {};
+    CullMode                              cullMode              = CullMode::Back;
+    PolygonMode                           polygonMode           = PolygonMode::Fill;
+    bool                                  depthTest             = true;
+    std::vector<VertexInputAttributeDesc> vertexInputAttributes = {};
+    std::vector<VertexInputBindingDesc>   vertexInputBindings   = {};
+    std::vector<AttachmentState>          attachmentStates      = {};
 };
 
-/**
- * Parameter struct for DynamicRHI::createPipeline()
- */
 struct RHIPipelineCreateInfo
 {
-    std::vector<RHIShaderCreateInfo> shaderCreateInfos     {};
-    RHIGraphicsPipelineState         graphicsPipelineState {};
-    RHIRenderPass*                   renderPass            { nullptr };
-    PipelineType                     pipelineType          { PipelineType::Graphics };
-    const char*                      debugName;
+    std::vector<RHIShaderCreateInfo> shaderCreateInfos     = {};
+    RHIGraphicsPipelineState         graphicsPipelineState = {};
+    RHIRenderPass*                   renderPass            = nullptr;
+    PipelineType                     pipelineType          = PipelineType::Graphics;
+    const char*                      debugName             = {};
 };
 
 #pragma endregion
 
 /**
- * Buffers
+ * RHI: Buffers
  */
-#pragma region "Buffers"
-
-enum RHIBufferType
-{
-    Index,
-    Staging,
-    Storage,
-    Uniform,
-    Vertex,
-};
+#pragma region "buffers"
 
 struct RHIBufferCreateInfo
 {
-    uint64_t        bufferSize;
+    uint64_t        bufferSize = 0;
     RHIBufferType   bufferType;
-    void*           pData {nullptr};
-    std::string     debugName;
+    void*           pData      = nullptr;
+    std::string     debugName  = {};
 };
 
 #pragma endregion
+
+/**
+ * Utility Methods
+ */
+#pragma region "Utility Methods"
+
+inline bool isDepthFormat(const Format format) noexcept
+{
+    return format == Format::D32Sfloat;
+}
+
+#pragma endregion
+
+rhi_END_NAMESPACE;

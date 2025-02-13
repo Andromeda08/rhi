@@ -2,6 +2,23 @@
 
 #include <type_traits>
 
+// Toggle the use of namespace for the RHI by (un)defining this macro.
+// #define rhi_USE_NAMESPACE
+
+// Set the name of the namespace used for the RHI here.
+#define rhi_NAMESPACE rhi
+
+#ifdef rhi_USE_NAMESPACE
+    #define rhi_BEGIN_NAMESPACE namespace rhi_NAMESPACE {
+    #define rhi_END_NAMESPACE }
+#else
+    #define rhi_BEGIN_NAMESPACE
+    #define rhi_END_NAMESPACE
+#endif
+
+#define XSTR(A) #A
+#define STR(A) XSTR(A)
+
 #define DISABLE_COPY_CTOR(TYPE)         \
 TYPE(const TYPE&) = delete;             \
 TYPE& operator=(const TYPE&) = delete;  \
@@ -16,9 +33,6 @@ static std::unique_ptr<TYPE> create##TYPE(__VA_ARGS__);
 TYPE(__VA_ARGS__);                                          \
 static std::shared_ptr<TYPE> create##TYPE(__VA_ARGS__);
 
-#define XSTR(A) #A
-#define STR(A) XSTR(A)
-
 #define DEF_AS_CONVERT(TYPE)                                \
 template <typename T>                                       \
 T* as() {                                                   \
@@ -27,13 +41,3 @@ T* as() {                                                   \
         "Template parameter T must be a type of " #TYPE);   \
     return dynamic_cast<T*>(this);                          \
 }
-
-#define ENUM_FLAGS(Enum) \
-    inline           Enum& operator|=(Enum& Lhs, Enum Rhs) { return Lhs = (Enum)((__underlying_type(Enum))Lhs | (__underlying_type(Enum))Rhs); } \
-    inline           Enum& operator&=(Enum& Lhs, Enum Rhs) { return Lhs = (Enum)((__underlying_type(Enum))Lhs & (__underlying_type(Enum))Rhs); } \
-    inline           Enum& operator^=(Enum& Lhs, Enum Rhs) { return Lhs = (Enum)((__underlying_type(Enum))Lhs ^ (__underlying_type(Enum))Rhs); } \
-    inline constexpr Enum  operator| (Enum  Lhs, Enum Rhs) { return (Enum)((__underlying_type(Enum))Lhs | (__underlying_type(Enum))Rhs); } \
-    inline constexpr Enum  operator& (Enum  Lhs, Enum Rhs) { return (Enum)((__underlying_type(Enum))Lhs & (__underlying_type(Enum))Rhs); } \
-    inline constexpr Enum  operator^ (Enum  Lhs, Enum Rhs) { return (Enum)((__underlying_type(Enum))Lhs ^ (__underlying_type(Enum))Rhs); } \
-    inline constexpr bool  operator! (Enum  E)             { return !(__underlying_type(Enum))E; } \
-    inline constexpr Enum  operator~ (Enum  E)             { return (Enum)~(__underlying_type(Enum))E; }

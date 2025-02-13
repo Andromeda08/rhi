@@ -1,5 +1,7 @@
 #include "Definitions.hpp"
 
+rhi_BEGIN_NAMESPACE;
+
 Size2D& Size2D::setWidth(const uint32_t value)
 {
     width = value;
@@ -94,3 +96,5 @@ Viewport& Viewport::setMaxDepth(const float value)
     maxDepth = value;
     return *this;
 }
+
+rhi_END_NAMESPACE;
