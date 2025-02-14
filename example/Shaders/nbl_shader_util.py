@@ -178,7 +178,7 @@ def compile_glsl(shader: str, options: Options):
 def cmd_compile(options: Options):
     shaders = collect_shaders()
 
-    if not options.silent:
+    if not options.silent and not os.path.exists(g_bin_dir):
         print(f"[Info] Created output directory: [./{g_bin_dir}]")
         os.makedirs(g_bin_dir)
 
