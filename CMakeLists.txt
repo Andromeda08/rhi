@@ -59,7 +59,7 @@ add_library(${PROJECT_NAME}
     src/RHI/RHISwapchain.hpp
     src/RHI/RHITexture.hpp
     src/RHI/RHIWindow.hpp
-    src/RHI.hpp
+    src/include/RHI.hpp
     src/RHI.cpp
     # endregion
 )

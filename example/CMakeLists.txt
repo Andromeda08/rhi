@@ -7,7 +7,7 @@ add_executable("rhi_example"
 )
 
 target_include_directories("rhi_example" PRIVATE
-    "../src"
+    "../src/include"
     "../external/glfw/include"
     "../external/glm"
 )
