@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Core/Base.hpp"
 #include "RHI/Definitions.hpp"
-#include "RHI/Macros.hpp"
 
 // Forward Declarations
 class D3D12Device;
