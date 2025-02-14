@@ -4,6 +4,11 @@ project(RHI)
 set(CMAKE_CXX_STANDARD 23)
 
 # ============== #
+#    Options     #
+# ============== #
+set(RHI_EXAMPLE TRUE)   # Build example project
+
+# ============== #
 #  Dependencies  #
 # ============== #
 find_package(Vulkan REQUIRED)
@@ -29,19 +34,18 @@ add_compile_definitions(VULKAN_RHI_ENABLED)
 add_library(VulkanRHI
     src/VulkanRHI/Platform.hpp
     src/VulkanRHI/VulkanBase.hpp
-    src/VulkanRHI/VulkanCommandQueue.hpp src/VulkanRHI/VulkanCommandQueue.cpp
-    src/VulkanRHI/VulkanDebugContext.hpp src/VulkanRHI/VulkanDebugContext.cpp
-    src/VulkanRHI/VulkanDevice.hpp src/VulkanRHI/VulkanDevice.cpp
+    src/VulkanRHI/VulkanCommandQueue.hpp    src/VulkanRHI/VulkanCommandQueue.cpp
+    src/VulkanRHI/VulkanDebugContext.hpp    src/VulkanRHI/VulkanDebugContext.cpp
+    src/VulkanRHI/VulkanDevice.hpp          src/VulkanRHI/VulkanDevice.cpp
     src/VulkanRHI/VulkanDeviceExtension.hpp src/VulkanRHI/VulkanDeviceExtension.cpp
-    src/VulkanRHI/VulkanRHI.hpp src/VulkanRHI/VulkanRHI.cpp
-    src/VulkanRHI/VulkanSwapchain.hpp src/VulkanRHI/VulkanSwapchain.cpp
-    src/VulkanRHI/VulkanBuffer.hpp src/VulkanRHI/VulkanBuffer.cpp
-    src/VulkanRHI/VulkanAllocator.hpp src/VulkanRHI/VulkanAllocator.cpp
-    src/VulkanRHI/VulkanPipeline.hpp src/VulkanRHI/VulkanPipeline.cpp
-    src/VulkanRHI/VulkanFramebuffer.hpp src/VulkanRHI/VulkanFramebuffer.cpp
-    src/VulkanRHI/VulkanRenderPass.hpp src/VulkanRHI/VulkanRenderPass.cpp
-    src/VulkanRHI/VulkanTexture.hpp
-    src/VulkanRHI/VulkanTexture.cpp
+    src/VulkanRHI/VulkanRHI.hpp             src/VulkanRHI/VulkanRHI.cpp
+    src/VulkanRHI/VulkanSwapchain.hpp       src/VulkanRHI/VulkanSwapchain.cpp
+    src/VulkanRHI/VulkanBuffer.hpp          src/VulkanRHI/VulkanBuffer.cpp
+    src/VulkanRHI/VulkanAllocator.hpp       src/VulkanRHI/VulkanAllocator.cpp
+    src/VulkanRHI/VulkanPipeline.hpp        src/VulkanRHI/VulkanPipeline.cpp
+    src/VulkanRHI/VulkanFramebuffer.hpp     src/VulkanRHI/VulkanFramebuffer.cpp
+    src/VulkanRHI/VulkanRenderPass.hpp      src/VulkanRHI/VulkanRenderPass.cpp
+    src/VulkanRHI/VulkanTexture.hpp         src/VulkanRHI/VulkanTexture.cpp
 )
 target_include_directories(VulkanRHI PUBLIC ${Vulkan_INCLUDE_DIRS} "src" "external/fmt/include")
 target_link_libraries(VulkanRHI PUBLIC ${Vulkan_LIBRARIES} fmt::fmt)
@@ -49,7 +53,7 @@ target_compile_definitions(VulkanRHI
     PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
     PRIVATE VULKAN_DEBUGGING_ENABLED
     PRIVATE VULKAN_VERBOSE_LOGGING
-    # PRIVATE VULKAN_API_DUMP
+    PRIVATE VULKAN_API_DUMP
 )
 
 # ============== #
@@ -93,38 +97,37 @@ endif()
 # ============== #
 #   RHI Library  #
 # ============== #
-add_executable(${PROJECT_NAME}
-    main.cpp
-    src/Scene/Geometry.hpp src/Scene/Geometry.cpp
-
-    src/Core/Base.hpp
-    src/Core/EnumFlags.hpp
-    src/WSI/Window.hpp src/WSI/Window.cpp
-    src/RHI/DynamicRHI.hpp src/RHI/DynamicRHI.cpp
-    src/RHI/RHIWindow.hpp
+add_library(${PROJECT_NAME}
     src/RHI/Definitions.hpp
-    src/RHI/RHICommandQueue.hpp
-    src/RHI/RHICommandList.hpp
-    src/RHI/RHISwapchain.hpp
+    src/RHI/Definitions.cpp
+    src/RHI/DynamicRHI.hpp
+    src/RHI/DynamicRHI.cpp
+    src/RHI/Frame.hpp
     src/RHI/Macros.hpp
     src/RHI/RHIBuffer.hpp
-    src/RHI/Definitions.cpp
-    src/RHI/RHIPipeline.hpp
-    src/RHI/Frame.hpp
+    src/RHI/RHICommandList.hpp
+    src/RHI/RHICommandQueue.hpp
     src/RHI/RHIFramebuffer.hpp
+    src/RHI/RHIPipeline.hpp
     src/RHI/RHIRenderPass.hpp
+    src/RHI/RHISwapchain.hpp
     src/RHI/RHITexture.hpp
+    src/RHI/RHIWindow.hpp
+    src/RHI.hpp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE VulkanRHI fmt::fmt glfw glm::glm)
+target_precompile_headers(${PROJECT_NAME} PRIVATE "src/pch.hpp")
+target_link_libraries(${PROJECT_NAME} PUBLIC VulkanRHI fmt::fmt)
 target_compile_definitions(${PROJECT_NAME} PRIVATE RHI_DEBUGGING_ENABLED)
-target_include_directories(${PROJECT_NAME} PRIVATE
-    "src"
-    external/fmt/include
-    external/glfw/include
-    external/glm
-)
+target_include_directories(${PROJECT_NAME} PRIVATE "src" "external/fmt/include")
 
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PRIVATE D3D12RHI)
+    target_link_libraries(${PROJECT_NAME} PUBLIC D3D12RHI)
+endif()
+
+# ============== #
+#  Example App.  #
+# ============== #
+if (RHI_EXAMPLE)
+    add_subdirectory(example)
 endif()

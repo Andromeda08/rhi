@@ -9,7 +9,7 @@ struct VSOutput {
     float4 color      : COLOR;
 };
 
-VSOutput vertexMain(VSInput input) {
+VSOutput main(VSInput input) {
     VSOutput output;
 
     // HLSL matrices are **row-major**, so CPU-side will need a glm::transpose() for D3D12...
@@ -31,13 +31,4 @@ VSOutput vertexMain(VSInput input) {
     output.color = float4(input.normal, 1.0f);
 
     return output;
-}
-
-struct PSInput {
-    float4 position   : SV_Position;
-    float4 color      : COLOR;
-};
-
-float4 pixelMain(PSInput input) : SV_Target {
-    return input.color;
 }
