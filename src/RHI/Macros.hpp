@@ -6,7 +6,9 @@
 // #define rhi_USE_NAMESPACE
 
 // Set the name of the namespace used for the RHI here.
-#define rhi_NAMESPACE rhi
+#ifndef rhi_NAMESPACE
+    #define rhi_NAMESPACE rhi
+#endif
 
 #ifdef rhi_USE_NAMESPACE
     #define rhi_BEGIN_NAMESPACE namespace rhi_NAMESPACE {

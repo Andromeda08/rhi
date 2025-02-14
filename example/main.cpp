@@ -7,6 +7,10 @@
 
 std::unique_ptr<Window> gWindow;
 
+#ifdef rhi_USE_NAMESPACE
+    using namespace rhi_NAMESPACE;
+#endif
+
 RHIInterfaceType parseApiArgument(const std::string& arg) noexcept
 {
     if (arg == "--d3d12")  return RHIInterfaceType::D3D12;

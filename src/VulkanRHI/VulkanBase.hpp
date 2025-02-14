@@ -21,7 +21,11 @@
 #include <fmt/format.h>
 #include <fmt/color.h>
 
-#include "RHI/Macros.hpp"
+#include "RHI/Definitions.hpp"
+
+#ifdef rhi_USE_NAMESPACE
+    using namespace rhi_NAMESPACE;
+#endif
 
 #define VK_PREFIX "Vulkan"
 #define VK_STYLED_PREFIX styled(VK_PREFIX, fg(fmt::color::crimson))
@@ -109,8 +113,6 @@ inline std::vector<const char*> getSupportedExtensions(const std::vector<const c
 }
 
 #pragma endregion
-
-#include "RHI/Definitions.hpp"
 
 #pragma region "RHI to Vulkan Type Conversion"
 

@@ -2,6 +2,11 @@
 
 #include "RHI/Definitions.hpp"
 
+#ifdef rhi_USE_NAMESPACE
+    using namespace rhi_NAMESPACE;
+#endif
+
+
 // Forward Declarations
 class D3D12Device;
 class D3D12CommandQueue;
