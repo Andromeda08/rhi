@@ -152,8 +152,8 @@ def get_hlsl_profile(shader):
     else:
         return ''
 
-def get_output_shader_name(shader, options: Options):
-    name = f"{g_bin_dir}\\{shader.rsplit('\\')[-1]}.{"spv" if g_vulkan_hlsl else "dxil"}"
+def get_output_shader_name(shader, options: Options, ext: str = "spv"):
+    name = f"{g_bin_dir}\\{shader.rsplit('\\')[-1]}.{ext}"
     if options.no_preserve_extension:
         for lang in g_shader_langs:
             if f".{lang}" in name:
@@ -162,7 +162,7 @@ def get_output_shader_name(shader, options: Options):
 
 def compile_hlsl(shader: str, options: Options):
     profile = get_hlsl_profile(shader)
-    out_name = get_output_shader_name(shader, options)
+    out_name = get_output_shader_name(shader, options, "spv" if g_vulkan_hlsl else "dxil")
 
     command = f"dxc -T {profile} -E main {shader} -Fo {out_name}"
     if g_vulkan_hlsl:
