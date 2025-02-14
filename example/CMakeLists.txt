@@ -4,7 +4,6 @@ add_executable("rhi_example"
     Scene/Geometry.hpp Scene/Geometry.cpp
     WSI/Window.hpp WSI/Window.cpp
     main.cpp
-    util.hpp
 )
 
 target_include_directories("rhi_example" PRIVATE

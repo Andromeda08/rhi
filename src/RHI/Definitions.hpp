@@ -25,6 +25,7 @@ class RHIPipeline;
 class RHIRenderPass;
 class RHISwapchain;
 class RHITexture;
+class RHIWindow;
 
 struct Frame;
 
@@ -263,6 +264,14 @@ inline std::string toString(const RHIInterfaceType interfaceType) noexcept
 
 #pragma endregion
 
+/**
+ * RHI: Creation
+ */
+struct RHICreateInfo
+{
+    RHIInterfaceType apiType = RHIInterfaceType::Vulkan;
+    RHIWindow*       pWindow = nullptr;
+};
 
 /**
  * RHI: Framebuffer

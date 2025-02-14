@@ -1,4 +1,4 @@
-#pragma once
+#include "RHI.hpp"
 
 #include <VulkanRHI/VulkanRHI.hpp>
 
@@ -6,15 +6,22 @@
     #include "D3D12RHI/D3D12RHI.hpp"
 #endif
 
-inline std::unique_ptr<DynamicRHI> rhiFactory(const RHIInterfaceType api, RHIWindow* pWindow)
+#ifdef __APPLE__
+    #include <fmt/color.h>
+    #include <fmt/format.h>
+#endif
+
+rhi_BEGIN_NAMESPACE;
+
+std::unique_ptr<DynamicRHI> createRHI(const RHICreateInfo& rhiCreateInfo)
 {
-    if (api == RHIInterfaceType::Vulkan)
+    if (rhiCreateInfo.apiType == RHIInterfaceType::Vulkan)
     {
         return VulkanRHI::createVulkanRHI({
-            .pWindow = pWindow
+            .pWindow = rhiCreateInfo.pWindow
         });
     }
-    if (api == RHIInterfaceType::D3D12)
+    if (rhiCreateInfo.apiType == RHIInterfaceType::D3D12)
     {
 #ifdef __APPLE__
         fmt::println("[{}] {}",
@@ -25,9 +32,11 @@ inline std::unique_ptr<DynamicRHI> rhiFactory(const RHIInterfaceType api, RHIWin
         throw std::exception();
 #else
         return D3D12RHI::createD3D12RHI({
-            .pWindow = pWindow,
+            .pWindow = rhiCreateInfo.pWindow,
         });
 #endif
     }
     throw std::exception();
 }
+
+rhi_END_NAMESPACE;

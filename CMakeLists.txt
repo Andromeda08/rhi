@@ -60,6 +60,7 @@ add_library(${PROJECT_NAME}
     src/RHI/RHITexture.hpp
     src/RHI/RHIWindow.hpp
     src/RHI.hpp
+    src/RHI.cpp
     # endregion
 )
 

@@ -1,7 +1,6 @@
 #include <RHI.hpp>
 #include <fmt/color.h>
 #include <fmt/format.h>
-#include "util.hpp"
 #include "Scene/Geometry.hpp"
 #include "WSI/Window.hpp"
 
@@ -36,7 +35,10 @@ int main(const int argc, char** argv)
         .title = fmt::format("RHI Window ({})", toString(api)),
     });
 
-    gRHI = rhiFactory(api, gWindow.get());
+    gRHI = createRHI({
+        .apiType = api,
+        .pWindow = gWindow.get(),
+    });
 
     const std::unique_ptr<Geometry> cubeGeometry = std::make_unique<Cube>();
 

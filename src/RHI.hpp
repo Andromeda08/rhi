@@ -12,3 +12,12 @@
 #include "RHI/RHISwapchain.hpp"
 #include "RHI/RHITexture.hpp"
 #include "RHI/RHIWindow.hpp"
+
+rhi_BEGIN_NAMESPACE;
+
+/**
+ * Factory method used to instantiate the chosen API backend.
+ */
+std::unique_ptr<DynamicRHI> createRHI(const RHICreateInfo& rhiCreateInfo);
+
+rhi_END_NAMESPACE;
