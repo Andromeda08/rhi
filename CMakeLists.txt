@@ -27,6 +27,37 @@ add_subdirectory(external/glfw)
 add_subdirectory(external/glm)
 
 # ============== #
+#   RHI Library  #
+# ============== #
+add_library(${PROJECT_NAME}
+        src/RHI/Definitions.hpp
+        src/RHI/Definitions.cpp
+        src/RHI/DynamicRHI.hpp
+        src/RHI/DynamicRHI.cpp
+        src/RHI/Frame.hpp
+        src/RHI/Macros.hpp
+        src/RHI/RHIBuffer.hpp
+        src/RHI/RHICommandList.hpp
+        src/RHI/RHICommandQueue.hpp
+        src/RHI/RHIFramebuffer.hpp
+        src/RHI/RHIPipeline.hpp
+        src/RHI/RHIRenderPass.hpp
+        src/RHI/RHISwapchain.hpp
+        src/RHI/RHITexture.hpp
+        src/RHI/RHIWindow.hpp
+        src/RHI.hpp
+)
+
+target_precompile_headers(${PROJECT_NAME} PUBLIC "src/pch.hpp")
+target_link_libraries(${PROJECT_NAME} PUBLIC VulkanRHI fmt::fmt)
+target_compile_definitions(${PROJECT_NAME} PRIVATE RHI_DEBUGGING_ENABLED)
+target_include_directories(${PROJECT_NAME} PRIVATE "src" "external/fmt/include")
+
+if (WIN32)
+    target_link_libraries(${PROJECT_NAME} PUBLIC D3D12RHI)
+endif()
+
+# ============== #
 #   Vulkan RHI   #
 # ============== #
 add_compile_definitions(VULKAN_RHI_ENABLED)
@@ -53,8 +84,9 @@ target_compile_definitions(VulkanRHI
     PRIVATE VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
     PRIVATE VULKAN_DEBUGGING_ENABLED
     PRIVATE VULKAN_VERBOSE_LOGGING
-    PRIVATE VULKAN_API_DUMP
+    # PRIVATE VULKAN_API_DUMP
 )
+target_precompile_headers(VulkanRHI REUSE_FROM RHI)
 
 # ============== #
 #   D3D12 RHI    #
@@ -92,37 +124,7 @@ if (WIN32)
         PRIVATE D3D12_DEBUGGING_ENABLED
         PRIVATE D3D12_VERBOSE_LOGGING
     )
-endif()
-
-# ============== #
-#   RHI Library  #
-# ============== #
-add_library(${PROJECT_NAME}
-    src/RHI/Definitions.hpp
-    src/RHI/Definitions.cpp
-    src/RHI/DynamicRHI.hpp
-    src/RHI/DynamicRHI.cpp
-    src/RHI/Frame.hpp
-    src/RHI/Macros.hpp
-    src/RHI/RHIBuffer.hpp
-    src/RHI/RHICommandList.hpp
-    src/RHI/RHICommandQueue.hpp
-    src/RHI/RHIFramebuffer.hpp
-    src/RHI/RHIPipeline.hpp
-    src/RHI/RHIRenderPass.hpp
-    src/RHI/RHISwapchain.hpp
-    src/RHI/RHITexture.hpp
-    src/RHI/RHIWindow.hpp
-    src/RHI.hpp
-)
-
-target_precompile_headers(${PROJECT_NAME} PRIVATE "src/pch.hpp")
-target_link_libraries(${PROJECT_NAME} PUBLIC VulkanRHI fmt::fmt)
-target_compile_definitions(${PROJECT_NAME} PRIVATE RHI_DEBUGGING_ENABLED)
-target_include_directories(${PROJECT_NAME} PRIVATE "src" "external/fmt/include")
-
-if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PUBLIC D3D12RHI)
+    target_precompile_headers(D3D12RHI REUSE_FROM RHI)
 endif()
 
 # ============== #
