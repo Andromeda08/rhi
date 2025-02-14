@@ -4,7 +4,6 @@
 #include "VulkanBase.hpp"
 #include "VulkanDevice.hpp"
 #include "RHI/RHIBuffer.hpp"
-#include "RHI/Validation.hpp"
 
 struct VulkanBufferCreateInfo
 {
