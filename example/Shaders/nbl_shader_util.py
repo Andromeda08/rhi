@@ -58,7 +58,6 @@ class Options:
     copy_output: bool = False
     silent: bool = False
     no_preserve_extension: bool = True
-    clean: bool = False
     # Shader compiler flags
     target_env: str = g_target_vulkan_env
     no_debug: bool = False
@@ -82,10 +81,6 @@ class Options:
         if has_silent:
             self.silent = True
 
-        has_clean, _ = fetch_params("--clean", args, 0)
-        if has_clean:
-            self.clean = True
-
         self.copy_dirs = [d for d in g_copy_target_dirs]
         _, copy = fetch_params("--copy", args, 25)
         if len(copy) > 0:
@@ -104,7 +99,6 @@ def cmd_help():
           "--init        \tGenerate directory structure for shaders in current working directory.\n"
           "--copy <dirs> \tCopy output files to list of space delimited directories.\n"
           "--target <env>\tSpecify the target Vulkan environment. [Default: 1.3]\n"
-          "--clean       \tClean output directory before compilation.\n"
           "--no-debug    \tDo not emit debug information.\n"
           "--no-lang-ext \tStrip shader language extension [glsl, hlsl] from output file name."
           "--silent      \tDo not use print.")
@@ -184,15 +178,9 @@ def compile_glsl(shader: str, options: Options):
 def cmd_compile(options: Options):
     shaders = collect_shaders()
 
-    if not os.path.exists(g_bin_dir):
-        if not options.silent:
-            print(f"[Info] Created output directory: [./{g_bin_dir}]")
+    if not options.silent:
+        print(f"[Info] Created output directory: [./{g_bin_dir}]")
         os.makedirs(g_bin_dir)
-    else:
-        if options.clean:
-            old_files = glob.glob(f"{g_bin_dir}/*")
-            for f in old_files:
-                os.remove(f)
 
     if not options.silent:
         print(f"[Info] Compiling {len(shaders)} shader(s). [target_env={options.target_env}] [debug={not options.no_debug}]")
