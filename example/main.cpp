@@ -1,38 +1,25 @@
-#include "WSI/Window.hpp"
-#include "RHI/DynamicRHI.hpp"
+#include <RHI.hpp>
+#include <fmt/color.h>
+#include <fmt/format.h>
+#include "util.hpp"
 #include "Scene/Geometry.hpp"
-#include "VulkanRHI/VulkanRHI.hpp"
-
-#ifdef D3D12_RHI_ENABLED
-    #include "D3D12RHI/D3D12RHI.hpp"
-#endif
+#include "WSI/Window.hpp"
 
 std::unique_ptr<Window> gWindow;
 
-std::unique_ptr<DynamicRHI> rhiFactory(const RHIInterfaceType api)
-{
-    if (api == RHIInterfaceType::Vulkan)
-    {
-        return VulkanRHI::createVulkanRHI({
-            .pWindow = gWindow.get()
-        });
-    }
-    if (api == RHIInterfaceType::D3D12)
-    {
-#ifdef __APPLE__
-        fmt::println("[{}] {}",
-            styled("Elysia", fg(fmt::color::medium_purple)),
-            fmt::format("{} Backend not supported on {}",
-                styled("D3D12", fg(fmt::color::green_yellow)),
-                styled("macOS", fg(fmt::color::medium_purple))));
-        throw std::exception();
-#else
-        return D3D12RHI::createD3D12RHI({
-            .pWindow = gWindow.get(),
-        });
+#ifdef rhi_USE_NAMESPACE
+    using namespace rhi_NAMESPACE;
 #endif
-    }
-    throw std::exception();
+
+RHIInterfaceType parseApiArgument(const std::string& arg) noexcept
+{
+    if (arg == "--d3d12")  return RHIInterfaceType::D3D12;
+    if (arg == "--vulkan") return RHIInterfaceType::Vulkan;
+
+    fmt::println("[{}] Invalid API argument: {}, defaulting to Vulkan",
+        styled("Warning", fg(fmt::color::light_yellow)), arg);
+
+    return RHIInterfaceType::Vulkan;
 }
 
 int main(const int argc, char** argv)
@@ -41,21 +28,15 @@ int main(const int argc, char** argv)
     if (argc >= 2)
     {
         const std::string apiArg = argv[1];
-        if      (apiArg == "--d3d12")   api = RHIInterfaceType::D3D12;
-        else if (apiArg == "--vulkan")  api = RHIInterfaceType::Vulkan;
-        else
-        {
-            fmt::println("[{}] Invalid API argument: {}, defaulting to Vulkan", styled("Warning", fg(fmt::color::light_yellow)), apiArg);
-            api = RHIInterfaceType::Vulkan;
-        }
+        api = parseApiArgument(apiArg);
     }
 
     gWindow = Window::createWindow({
-        .resolution = { 1280, 720 },
+        .resolution = { 1600, 900 },
         .title = fmt::format("RHI Window ({})", toString(api)),
     });
 
-    gRHI = rhiFactory(api);
+    gRHI = rhiFactory(api, gWindow.get());
 
     const std::unique_ptr<Geometry> cubeGeometry = std::make_unique<Cube>();
 
@@ -142,22 +123,6 @@ int main(const int argc, char** argv)
     });
     #pragma endregion
 
-    #pragma region "(Triangle) Pipeline"
-    const auto testPipeline = gRHI->createPipeline({
-        .shaderCreateInfos = {
-            { (api == RHIInterfaceType::Vulkan) ? "triangle.vert.spv" : "triangle.vert.dxil", ShaderStage::Vertex   },
-            { (api == RHIInterfaceType::Vulkan) ? "triangle.frag.spv" : "triangle.frag.dxil", ShaderStage::Fragment }
-        },
-        .graphicsPipelineState = {
-            .cullMode = CullMode::None,
-            .attachmentStates = { AttachmentState::colorsDefault() },
-        },
-        .renderPass = testRenderPass.get(),
-        .pipelineType = PipelineType::Graphics,
-        .debugName = "Test Pipeline",
-    });
-    #pragma endregion
-
     #pragma region "(Basic Forward) Pipeline"
     const auto fwdPipeline = gRHI->createPipeline({
         .shaderCreateInfos = {
@@ -195,9 +160,6 @@ int main(const int argc, char** argv)
         testRenderPass->execute(commandList, testFramebuffers->getFramebuffer(frameInfo.getCurrentFrame()), [&](RHICommandList* cmd)
         {
             gRHI->getSwapchain()->setScissorViewport(cmd);
-
-            // testPipeline->bind(commandList);
-            // cmd->draw(3, 1, 0, 0);
 
             fwdPipeline->bind(cmd);
             cmd->bindVertexBuffer(vertexBuffer.get());

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Macros.hpp"
+#include "Definitions.hpp"
 
-class RHICommandList;
+rhi_BEGIN_NAMESPACE;
 
 class RHIPipeline
 {
@@ -12,3 +12,5 @@ public:
 
     virtual void bind(RHICommandList* commandList) = 0;
 };
+
+rhi_END_NAMESPACE;

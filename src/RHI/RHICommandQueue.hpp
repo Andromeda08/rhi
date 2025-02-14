@@ -3,7 +3,7 @@
 #include <functional>
 #include "Definitions.hpp"
 
-class RHICommandList;
+rhi_BEGIN_NAMESPACE;
 
 class RHICommandQueue
 {
@@ -18,3 +18,5 @@ public:
 
     virtual void executeSingleTimeCommand(const std::function<void(RHICommandList*)>& lambda) = 0;
 };
+
+rhi_END_NAMESPACE;

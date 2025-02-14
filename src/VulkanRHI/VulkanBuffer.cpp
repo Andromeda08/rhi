@@ -22,7 +22,7 @@ BufferTypeFlags BufferTypeFlags::forType(const RHIBufferType bufferType)
         using enum vk::MemoryPropertyFlagBits;
 
         case Index: {
-            result.usageFlags  |= eIndexBuffer | eStorageBuffer | eAccelerationStructureBuildInputReadOnlyKHR;
+            result.usageFlags  |= eIndexBuffer | eStorageBuffer;
             result.memoryFlags |= eDeviceLocal;
             break;
         }
@@ -42,7 +42,7 @@ BufferTypeFlags BufferTypeFlags::forType(const RHIBufferType bufferType)
             break;
         }
         case Vertex: {
-            result.usageFlags  |= eVertexBuffer | eStorageBuffer | eAccelerationStructureBuildInputReadOnlyKHR;
+            result.usageFlags  |= eVertexBuffer | eStorageBuffer;
             result.memoryFlags |= eDeviceLocal;
             break;
         }

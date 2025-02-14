@@ -15,6 +15,8 @@ namespace vk
 }
 #endif
 
+rhi_BEGIN_NAMESPACE;
+
 class RHIWindow
 {
 public:
@@ -33,3 +35,5 @@ public:
     virtual HWND getWin32Handle() const = 0;
 #endif
 };
+
+rhi_END_NAMESPACE;

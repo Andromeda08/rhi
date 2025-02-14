@@ -1,9 +1,9 @@
 #pragma once
 
 #include <functional>
+#include "Definitions.hpp"
 
-class RHICommandList;
-struct RHIFramebufferHandle;
+rhi_BEGIN_NAMESPACE;
 
 class RHIRenderPass
 {
@@ -15,3 +15,5 @@ public:
 
     virtual void execute(RHICommandList* commandList, RHIFramebufferHandle* framebuffer, std::function<void(RHICommandList*)> lambda) = 0;
 };
+
+rhi_END_NAMESPACE;

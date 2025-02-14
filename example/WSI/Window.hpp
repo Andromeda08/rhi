@@ -3,8 +3,8 @@
 #include <memory>
 
 #ifdef VULKAN_RHI_ENABLED
-#define GLFW_INCLUDE_VULKAN
-#include <vulkan/vk_enum_string_helper.h>
+    #define GLFW_INCLUDE_VULKAN
+    #include <vulkan/vk_enum_string_helper.h>
 #endif
 
 #include <GLFW/glfw3.h>
@@ -14,8 +14,13 @@
     #include <GLFW/glfw3native.h>
 #endif
 
-#include "RHI/RHIWindow.hpp"
-#include "RHI/Macros.hpp"
+#include <RHI/Macros.hpp>
+#include <RHI/RHIWindow.hpp>
+
+#ifdef rhi_USE_NAMESPACE
+    using namespace rhi_NAMESPACE;
+#endif
+
 
 struct WindowCreateInfo
 {
@@ -23,7 +28,7 @@ struct WindowCreateInfo
     std::string title;
 };
 
-class Window : public RHIWindow
+class Window final : public RHIWindow
 {
 public:
     DISABLE_COPY_CTOR(Window);
@@ -50,6 +55,5 @@ public:
 private:
     static void exitKeyHandler(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-private:
     GLFWwindow* mWindow {nullptr};
 };

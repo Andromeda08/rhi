@@ -1,8 +1,11 @@
 #pragma once
 
-#include "Core/Base.hpp"
 #include "RHI/Definitions.hpp"
-#include "RHI/Macros.hpp"
+
+#ifdef rhi_USE_NAMESPACE
+    using namespace rhi_NAMESPACE;
+#endif
+
 
 // Forward Declarations
 class D3D12Device;

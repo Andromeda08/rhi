@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Core/Base.hpp"
 #include "Definitions.hpp"
 
-class RHICommandList;
+rhi_BEGIN_NAMESPACE;
 
 class RHISwapchain
 {
@@ -25,3 +24,5 @@ public:
     virtual Format getFormat() const = 0;
     virtual uint32_t getFrameCount() = 0;
 };
+
+rhi_END_NAMESPACE;
