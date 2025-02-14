@@ -1,6 +1,6 @@
 # ======================================= #
-#       Nebula Shader Utility (0.2)       #
-#    2025, Andromeda08 (Balázs Kovács)    #
+#     Nebula Shader Utility (for RHI)     #
+#   2025 - @Andromeda08 (Balázs Kovács)   #
 # ======================================= #
 
 import io
@@ -16,7 +16,7 @@ from dataclasses import dataclass
 # ======================================= #
 g_shader_langs = ["glsl", "hlsl"]
 g_bin_dir = "bin"
-g_target_vulkan_env = "vulkan1.3"
+g_target_vulkan_env = "vulkan1.2"
 g_excluded_extensions = ["spv", "dxil"]
 g_excluded_dirs = []
 g_copy_target_dirs = ["../../cmake-build-debug/example"]
