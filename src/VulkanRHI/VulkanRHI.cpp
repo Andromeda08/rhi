@@ -11,7 +11,7 @@ VulkanRHI::VulkanRHI(const VulkanRHICreateInfo& createInfo)
 : DynamicRHI()
 , mWindow(createInfo.pWindow)
 {
-    const vk::DynamicLoader dynamicLoader;
+    const vk::detail::DynamicLoader dynamicLoader;
     const auto vkGetInstanceProcAddr = dynamicLoader.getProcAddress<PFN_vkGetInstanceProcAddr>("vkGetInstanceProcAddr");
     VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
